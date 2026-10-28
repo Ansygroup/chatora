@@ -1,0 +1,26 @@
+{
+  "name": "@chatora/mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local MCP server for Chatora public content and user-owned workspace data",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "start:stdio": "node server.mjs stdio",
+    "start:http": "node server.mjs http",
+    "check": "node --check server.mjs && node --check local-env.mjs && node --check launch.mjs && node --check preflight.mjs && node --check test.mjs",
+    "preflight:config": "node preflight.mjs --config",
+    "preflight:live": "node preflight.mjs --verify-live",
+    "test": "node --test test.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/node": "^2.1.2",
+    "@modelcontextprotocol/server": "^2.4.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "^2.4.0"
+  }
+}

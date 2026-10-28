@@ -1,0 +1,90 @@
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "WhatsApp API pricing in 2026: Egypt Meta rates and cost assumptions",
+    "description": "Meta’s Egypt WhatsApp rate-card snapshot effective 1 October 2026, with illustrative calculations separated from provider fees and actual customer invoices.",
+    "datePublished": "2026-10-27",
+    "dateModified": "2026-10-28",
+    "inLanguage": "en",
+    "author": {
+      "@type": "Organization",
+      "name": "Chatora"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Chatora",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://chatora.ansygroup.com/assets/img/logo.svg"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://chatora.ansygroup.com/blog-whatsapp-api-pricing.html"
+    },
+    "image": "https://chatora.ansygroup.com/assets/img/og.jpg"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Is WhatsApp Cloud API free to use?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Meta’s published Cloud API pricing is message-based for the listed categories and markets. Third-party providers may also charge subscription or usage fees; check the current rate card and provider terms for your account."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Are WhatsApp service messages always free?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The Meta card lists 1,000 free service messages per business phone number each month. The October 2026 Egypt card lists $0.0036 for service messages above that allowance. Check current market rules before budgeting."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is a WhatsApp business provider mandatory?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "A third-party provider is not always required for a Cloud API setup, but direct onboarding still involves Meta’s current account, permissions and technical requirements. Check the official documentation and choose a path that fits your team."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does a difference between a provider rate and Meta’s rate prove a markup?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. The difference alone does not establish its cause or prove a particular markup. Ask the provider which rate and fees apply to your account and request a sample invoice."
+        }
+      }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://chatora.ansygroup.com/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Blog",
+        "item": "https://chatora.ansygroup.com/blog.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "WhatsApp API pricing in 2026",
+        "item": "https://chatora.ansygroup.com/blog-whatsapp-api-pricing.html"
+      }
+    ]
+  }
+]

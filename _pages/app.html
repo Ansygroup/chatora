@@ -1,0 +1,69 @@
+{{HEAD}}
+<main id="main">
+  <div class="dash-loading" id="dash-loading">
+    <div class="dash-spinner" aria-hidden="true"></div>
+    <p data-i18n="dash.loading">Opening your workspace…</p>
+  </div>
+
+  <div class="dash" id="dash" hidden>
+    <aside class="dash-side">
+      <a class="dash-logo" href="index.html"><img src="assets/img/logo.svg" alt="" width="24" height="24"><span>chatora</span></a>
+      <nav class="dash-nav" id="dash-nav" aria-label="Workspace sections" data-i18n-aria="dash.nav">
+        <button type="button" class="dash-link is-on" data-view="overview" title="Overview" aria-label="Overview" data-i18n-aria="dash.overview" data-i18n-title="dash.overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg><span data-i18n="dash.overview">Overview</span></button>
+        <button type="button" class="dash-link" data-view="inbox" title="Inbox" aria-label="Inbox" data-i18n-aria="dash.inbox" data-i18n-title="dash.inbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.9-.9L3 21l1.9-5a8.4 8.4 0 0 1-.9-3.9 8.4 8.4 0 0 1 8.4-8.4h.5A8.4 8.4 0 0 1 21 11z"/></svg><span data-i18n="dash.inbox">Inbox</span><b class="dash-badge" id="dash-unread" hidden>0</b></button>
+        <button type="button" class="dash-link" data-view="flows" title="Flows" aria-label="Flows" data-i18n-aria="dash.flows" data-i18n-title="dash.flows"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h7"/></svg><span data-i18n="dash.flows">Flows</span></button>
+        <button type="button" class="dash-link" data-view="contacts" title="Contacts" aria-label="Contacts" data-i18n-aria="dash.contacts" data-i18n-title="dash.contacts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M17 11.5a3 3 0 1 0 0-6M18 20a6 6 0 0 0-3-5.2"/></svg><span data-i18n="dash.contacts">Contacts</span></button>
+        <button type="button" class="dash-link" data-view="broadcast" title="Broadcast" aria-label="Broadcast" data-i18n-aria="dash.broadcast" data-i18n-title="dash.broadcast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="2"/></svg><span data-i18n="dash.broadcast">Broadcast</span></button>
+        <button type="button" class="dash-link" data-view="settings" title="Settings" aria-label="Settings" data-i18n-aria="dash.settings" data-i18n-title="dash.settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H10a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V10a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span data-i18n="dash.settings">Settings</span></button>
+      </nav>
+      <div class="dash-side-foot">
+        <div class="dash-who"><b id="dash-email">—</b><span id="dash-ws">—</span></div>
+        <button type="button" class="dash-signout" id="dash-signout" data-i18n="dash.signout">Sign out</button>
+      </div>
+    </aside>
+
+    <div class="dash-main">
+      <header class="dash-top">
+        <div>
+          <p class="dash-crumb" id="dash-crumb" data-i18n="dash.crumb">Workspace</p>
+          <h1 id="dash-title" data-i18n="dash.overview">Overview</h1>
+        </div>
+        <div class="dash-top-right">
+          <label class="sr-only" for="dash-lang" data-i18n="footer.lang">Language</label>
+          <select id="dash-lang" class="dash-lang-select" data-lang-select>
+            {{LANG_OPTIONS}}
+          </select>
+          <span class="dash-plan" id="dash-plan">Preview · no billing</span>
+          <a class="btn btn-ghost btn-sm" href="#panel-flows" id="dash-build" data-i18n="dash.build">Open the editor</a>
+        </div>
+      </header>
+
+      <div class="dash-views" id="dash-views">
+        <section class="dash-view" data-panel="overview" id="panel-overview"></section>
+        <section class="dash-view" data-panel="inbox" id="panel-inbox" hidden></section>
+        <section class="dash-view" data-panel="flows" id="panel-flows" hidden></section>
+        <section class="dash-view" data-panel="contacts" id="panel-contacts" hidden></section>
+        <section class="dash-view" data-panel="broadcast" id="panel-broadcast" hidden></section>
+        <section class="dash-view" data-panel="settings" id="panel-settings" hidden></section>
+      </div>
+    </div>
+  </div>
+
+  <div class="dash-error" id="dash-error" hidden>
+    <p id="dash-error-text" data-i18n="dash.error">Something went wrong loading your workspace.</p>
+    <button class="btn btn-ghost btn-sm" id="dash-retry" data-i18n="dash.retry">Try again</button>
+  </div>
+</main>
+
+<script src="assets/js/langs.js" defer></script>
+<script src="assets/js/i18n.js" defer></script>
+<script src="assets/js/i18n-pages.js" defer></script>
+<script src="assets/js/main.js" defer></script>
+<script src="assets/js/config.js" defer></script>
+<script src="assets/js/auth.js" defer></script>
+<script src="assets/js/templates-data.js" defer></script>
+<script src="assets/js/meta-onboarding.js" defer></script>
+<script src="assets/js/meta-send-client.js" defer></script>
+<script src="assets/js/app.js" defer></script>
+</body>
+</html>

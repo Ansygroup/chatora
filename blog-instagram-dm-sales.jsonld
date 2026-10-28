@@ -1,0 +1,52 @@
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "How to use Instagram DMs in sales: a practical 2026 guide",
+    "description": "Seven illustrative Instagram DM workflow ideas and ways to measure your own results without relying on unsupported conversion benchmarks.",
+    "datePublished": "2026-10-21",
+    "dateModified": "2026-10-28",
+    "inLanguage": "en",
+    "author": {
+      "@type": "Organization",
+      "name": "Chatora"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Chatora",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://chatora.ansygroup.com/assets/img/logo.svg"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://chatora.ansygroup.com/blog-instagram-dm-sales.html"
+    },
+    "image": "https://chatora.ansygroup.com/assets/img/og.jpg"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://chatora.ansygroup.com/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Blog",
+        "item": "https://chatora.ansygroup.com/blog.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Instagram DM sales guide",
+        "item": "https://chatora.ansygroup.com/blog-instagram-dm-sales.html"
+      }
+    ]
+  }
+]

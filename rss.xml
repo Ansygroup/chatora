@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Chatora blog — conversation marketing playbooks</title>
+    <link>https://chatora.ansygroup.com/blog.html</link>
+    <description>Honest, dated playbooks for selling in Instagram DMs, WhatsApp and Telegram: pricing maths, migration notes and the flows that convert.</description>
+    <language>en</language>
+    <lastBuildDate>Tue, 27 Oct 2026 09:00:00 +0000</lastBuildDate>
+    <atom:link href="https://chatora.ansygroup.com/rss.xml" rel="self" type="application/rss+xml"/>
+    <item>
+      <title>ManyChat alternatives in 2026: plans and trade-offs</title>
+      <link>https://chatora.ansygroup.com/blog-manychat-alternative.html</link>
+      <guid isPermaLink="true">https://chatora.ansygroup.com/blog-manychat-alternative.html</guid>
+      <pubDate>Tue, 27 Oct 2026 09:00:00 +0000</pubDate>
+      <description>A dated comparison of ManyChat’s published plans and questions to ask before switching. Chatora is a product preview without a published subscription price or live channel messaging.</description>
+    </item>
+    <item>
+      <title>ManyChat pricing explained (2026): published tiers and what to verify</title>
+      <link>https://chatora.ansygroup.com/blog-manychat-pricing.html</link>
+      <guid isPermaLink="true">https://chatora.ansygroup.com/blog-manychat-pricing.html</guid>
+      <pubDate>Tue, 27 Oct 2026 09:00:00 +0000</pubDate>
+      <description>A dated summary of ManyChat’s public plan page. Your country, billing interval, taxes, and usage can change the final amount; confirm details before purchase.</description>
+    </item>
+    <item>
+      <title>WhatsApp abandoned-cart messages: copy and fee scenarios</title>
+      <link>https://chatora.ansygroup.com/blog-abandoned-cart-whatsapp.html</link>
+      <guid isPermaLink="true">https://chatora.ansygroup.com/blog-abandoned-cart-whatsapp.html</guid>
+      <pubDate>Tue, 27 Oct 2026 09:00:00 +0000</pubDate>
+      <description>Illustrative cart-reminder copy and Meta fee scenarios. Message category, consent, provider charges and customer results depend on current rules and account data.</description>
+    </item>
+    <item>
+      <title>WhatsApp API pricing in Egypt (2026): Meta rates and assumptions</title>
+      <link>https://chatora.ansygroup.com/blog-whatsapp-api-pricing.html</link>
+      <guid isPermaLink="true">https://chatora.ansygroup.com/blog-whatsapp-api-pricing.html</guid>
+      <pubDate>Tue, 27 Oct 2026 09:00:00 +0000</pubDate>
+      <description>Meta’s published Egypt rates effective 1 October 2026, with worked examples labeled as estimates. Provider charges, taxes, and eligibility may differ.</description>
+    </item>
+    <item>
+      <title>Chatfuel pricing explained (2026): plans and AI credits</title>
+      <link>https://chatora.ansygroup.com/blog-chatfuel-pricing.html</link>
+      <guid isPermaLink="true">https://chatora.ansygroup.com/blog-chatfuel-pricing.html</guid>
+      <pubDate>Tue, 27 Oct 2026 09:00:00 +0000</pubDate>
+      <description>A dated overview of Chatfuel’s published subscription prices, monthly credits and wallet billing model. Costs vary with usage; verify current account terms and Meta message fees before estimating a total.</description>
+    </item>
+    <item>
+      <title>ManyChat vs Chatfuel (2026): published pricing models</title>
+      <link>https://chatora.ansygroup.com/blog-manychat-vs-chatfuel.html</link>
+      <guid isPermaLink="true">https://chatora.ansygroup.com/blog-manychat-vs-chatfuel.html</guid>
+      <pubDate>Tue, 27 Oct 2026 09:00:00 +0000</pubDate>
+      <description>A dated comparison of ManyChat contact-tier prices, Chatfuel subscriptions, credits and wallet usage, and Egypt WhatsApp fee references. Chatora has no published price or live channels, so no all-in total is claimed.</description>
+    </item>
+    <item>
+      <title>How to turn Instagram DMs into a sales channel (2026 playbook)</title>
+      <link>https://chatora.ansygroup.com/blog-instagram-dm-sales.html</link>
+      <guid isPermaLink="true">https://chatora.ansygroup.com/blog-instagram-dm-sales.html</guid>
+      <pubDate>Wed, 21 Oct 2026 09:00:00 +0000</pubDate>
+      <description>A practical checklist for planning opt-in Instagram workflows. Examples are illustrative; no response-time benchmark or Chatora customer outcome is claimed.</description>
+    </item>
+    <item>
+      <title>Instagram automation tools in 2026: what to verify</title>
+      <link>https://chatora.ansygroup.com/blog-instagram-automation-tools.html</link>
+      <guid isPermaLink="true">https://chatora.ansygroup.com/blog-instagram-automation-tools.html</guid>
+      <pubDate>Tue, 20 Oct 2026 09:00:00 +0000</pubDate>
+      <description>A dated buyer checklist for official API access, comment and DM workflows, rate limits and plan terms. No Chatora performance benchmark or load test is claimed.</description>
+    </item>
+    <item>
+      <title>WhatsApp commerce in MENA: the 2026 playbook</title>
+      <link>https://chatora.ansygroup.com/blog-whatsapp-commerce.html</link>
+      <guid isPermaLink="true">https://chatora.ansygroup.com/blog-whatsapp-commerce.html</guid>
+      <pubDate>Wed, 14 Oct 2026 09:00:00 +0000</pubDate>
+      <description>A neutral guide to consent, official provider access, templates, and Meta message charges. No channel integration or conversion result is claimed for Chatora.</description>
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,48 @@
+<header class="site-header">
+  <nav class="nav container" aria-label="Main navigation">
+    <a href="index.html" class="logo" aria-label="Chatora home">
+      <img src="assets/img/logo.svg" alt="" width="34" height="34">
+      <span>chatora</span>
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="features.html" {{ACTIVE_FEATURES}} data-i18n="nav.features">Features</a></li>
+      <li><a href="index.html#product" data-i18n="nav.product">Product</a></li>
+      <li><a href="channels.html" {{ACTIVE_CHANNELS}} data-i18n="nav.channels">Channels</a></li>
+      <li><a href="templates.html" {{ACTIVE_TEMPLATES}} data-i18n="nav.templates">Templates</a></li>
+      <li><a href="pricing.html" {{ACTIVE_PRICING}} data-i18n="nav.pricing">Pricing</a></li>
+      <li><a href="compare.html" {{ACTIVE_COMPARE}} data-i18n="nav.compare">Compare</a></li>
+      <li><a href="blog.html" {{ACTIVE_BLOG}} data-i18n="nav.blog">Blog</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <div class="lang">
+        <button class="lang-btn" type="button" aria-expanded="false" aria-haspopup="listbox" data-i18n-aria="nav.langAria" aria-label="Change language">
+          <svg class="globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
+          <span data-lang-current>EN</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div class="lang-menu" role="listbox" aria-label="Languages"></div>
+      </div>
+      <a href="login.html" class="nav-login" data-i18n="nav.login">Log in</a>
+      <a href="login.html?mode=signup" class="btn btn-primary btn-sm" data-i18n="nav.start">Open preview<span class="nowrap">&nbsp;→</span></a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="mobile-drawer" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="mobile-drawer" id="mobile-drawer">
+    <a href="features.html" data-i18n="nav.features">Features</a>
+    <a href="index.html#product" data-i18n="nav.product">Product</a>
+    <a href="channels.html" data-i18n="nav.channels">Channels</a>
+    <a href="templates.html" data-i18n="nav.templates">Templates</a>
+    <a href="use-cases.html" data-i18n="nav.usecases">Use cases</a>
+    <a href="playground.html" data-i18n="nav.playground">Flow builder</a>
+    <a href="pricing.html" data-i18n="nav.pricing">Pricing</a>
+    <a href="compare.html" data-i18n="nav.compare">Compare</a>
+    <a href="blog.html" data-i18n="nav.blog">Blog</a>
+    <a href="integrations.html" data-i18n="nav.integrations">Integrations</a>
+    <a href="login.html?mode=signup" class="btn btn-primary btn-block" data-i18n="nav.startLong">Open the product preview</a>
+  </div>
+</header>

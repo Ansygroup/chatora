@@ -1,0 +1,25 @@
+# Local Supabase CLI configuration for Meta integration scaffolding.
+[functions.meta-webhook]
+# Meta must call the public callback; POSTs are authenticated with the
+# X-Hub-Signature-256 HMAC check inside the function.
+verify_jwt = false
+
+[functions.meta-connect]
+# All OAuth onboarding actions require a signed user session and re-check
+# workspace ownership inside the function. The kill switch defaults off.
+verify_jwt = true
+
+[functions.meta-retention]
+# Scheduled server-to-server cleanup uses META_RETENTION_CRON_SECRET; never call
+# this function from browser code. Keep the secret in Supabase's secret store.
+verify_jwt = false
+
+[functions.meta-replay]
+# Private retry worker; it requires META_REPLAY_CRON_SECRET and service-role
+# access, and is invoked only by a trusted scheduler, never by browser code.
+verify_jwt = false
+
+[functions.meta-send]
+# Outbound sends require a signed Supabase user session and are authorized
+# against workspace ownership inside the function as a second check.
+verify_jwt = true

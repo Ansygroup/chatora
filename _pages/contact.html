@@ -1,0 +1,86 @@
+<main id="main">
+
+  <section class="page-hero">
+    <div class="hero-bg" aria-hidden="true"><div class="aurora a1"></div><div class="aurora a3"></div><div class="grid-overlay"></div><div class="noise"></div></div>
+    <div class="container">
+      <nav class="crumb" aria-label="Breadcrumb"><a href="index.html">Home</a><span aria-hidden="true">/</span><span>Contact</span></nav>
+      <span class="eyebrow" data-reveal><span class="dot"></span><span data-i18n="ct.badge">Contact Chatora</span></span>
+      <h1 class="text-grad" data-reveal style="--d:60ms" data-i18n="ct.title">Send a question or product-preview feedback</h1>
+      <p class="lede" data-reveal style="--d:120ms" data-i18n="ct.lead">Questions about the preview, dated vendor comparisons, partnerships or press — send them here. Chatora has no paid plan, live channel messaging or migration service enabled; response times are not guaranteed.</p>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container">
+      <div class="ai-panel" style="align-items:start">
+
+        <div data-reveal>
+          <span class="kicker" data-i18n="ct.k1">Direct lines</span>
+          <h2 class="text-grad" data-i18n="ct.h2">Find existing answers or contact us</h2>
+          <p class="sub" data-i18n="ct.p1">If your question is about a plan, a migration or WhatsApp fees, the answer is probably already written down — with dates and sources.</p>
+
+          <ul class="ai-list">
+            <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m4 12 5 5L20 6"/></svg></span><span data-i18n="ct.l1"><a href="pricing.html#faq">Pricing FAQ</a> — dated vendor snapshots; Chatora has no published plan</span></li>
+            <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m4 12 5 5L20 6"/></svg></span><span data-i18n="ct.l2"><a href="compare.html">Honest comparison</a> — Chatora vs ManyChat, dated 2026</span></li>
+            <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m4 12 5 5L20 6"/></svg></span><span data-i18n="ct.l3"><a href="alternatives.html">Alternatives hub</a> — including where a competitor is the better buy</span></li>
+            <li><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m4 12 5 5L20 6"/></svg></span><span data-i18n="ct.l4"><a href="blog.html">Playbooks</a> — illustrative workflow ideas and dated research</span></li>
+          </ul>
+
+          <div class="contact-cards">
+            <div class="contact-card">
+              <div class="cc-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></svg></div>
+              <div>
+                <strong data-i18n="ct.emailT">Email</strong>
+                <a href="mailto:hello@chatora.ansygroup.com">hello@chatora.ansygroup.com</a>
+              </div>
+            </div>
+            <div class="contact-card">
+              <div class="cc-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+              <div>
+                <strong data-i18n="ct.hoursT">Response policy</strong>
+                <span data-i18n="ct.hoursD">No response-time commitment is published.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <form data-demo-form data-form-variant="contact" novalidate class="contact-form">
+            <label for="ct-name" data-i18n="ct.name">Your name</label>
+            <input id="ct-name" name="name" type="text" required autocomplete="name" placeholder="Nour Hassan" data-i18n-ph="ct.namePh">
+
+            <label for="ct-email" data-i18n="ct.email">Work email</label>
+            <input id="ct-email" name="email" type="email" required autocomplete="email" placeholder="you@brand.com" data-i18n-ph="ct.emailPh">
+
+            <label for="ct-topic" data-i18n="ct.topic">What's it about?</label>
+            <select id="ct-topic" name="topic">
+              <option data-i18n="ct.t1">Pricing & plans</option>
+              <option data-i18n="ct.t2">Migration from ManyChat or Chatfuel</option>
+              <option data-i18n="ct.t3">WhatsApp API access</option>
+              <option data-i18n="ct.t4">Partnership or agency programme</option>
+              <option data-i18n="ct.t5">Press & media</option>
+              <option data-i18n="ct.t6">Something else</option>
+            </select>
+
+            <label for="ct-msg" data-i18n="ct.msg">Message</label>
+            <textarea id="ct-msg" name="message" rows="5" required maxlength="2000" placeholder="Tell us what you're trying to do — the more specific, the better the answer." data-i18n-ph="ct.msgPh"></textarea>
+
+            <!-- honeypot: hidden from humans, tempting to bots -->
+            <div class="hp-field" aria-hidden="true">
+              <label for="ct-website">Website</label>
+              <input id="ct-website" name="company_website" type="text" tabindex="-1" autocomplete="off">
+            </div>
+            <input type="hidden" name="form_ts" value="" data-form-ts>
+
+            <button type="submit" class="btn btn-primary btn-block" data-i18n="ct.send">Send message</button>
+            <p class="form-fine" data-i18n="ct.fine">We use the details to handle your enquiry. If you submit while offline, the form may be queued in this browser until it can be sent. See the privacy note on the legal page.</p>
+            <p class="form-note" data-form-note role="status" aria-live="polite"></p>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  {{CTA}}
+</main>

@@ -1,0 +1,82 @@
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "WhatsApp abandoned-cart messages: examples, fee scenarios and policy checks",
+    "description": "Illustrative cart-reminder copy and Meta fee scenarios. Message category, consent, provider charges and customer results depend on current rules and account data.",
+    "datePublished": "2026-10-27",
+    "dateModified": "2026-10-28",
+    "inLanguage": "en",
+    "author": {
+      "@type": "Organization",
+      "name": "Chatora"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Chatora",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://chatora.ansygroup.com/assets/img/logo.svg"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://chatora.ansygroup.com/blog-abandoned-cart-whatsapp.html"
+    },
+    "image": "https://chatora.ansygroup.com/assets/img/og.jpg"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How many messages should an abandoned-cart flow have?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "There is no universal best number. Start with the smallest sequence that meets the customer need, then test timing and frequency within consent and platform rules while monitoring opt-outs and complaints."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does an abandoned-cart WhatsApp flow need a discount?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Not always. A discount can reduce margin; compare it with an informative reminder and measure attributable orders and contribution margin before deciding."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is an abandoned-cart message Marketing or Utility on WhatsApp?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Not automatically Utility. Meta’s approved category depends on message content and current rules. A promotional cart reminder may be Marketing; do not label it Utility just because a cart exists."
+        }
+      }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://chatora.ansygroup.com/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Blog",
+        "item": "https://chatora.ansygroup.com/blog.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Abandoned-cart messages on WhatsApp",
+        "item": "https://chatora.ansygroup.com/blog-abandoned-cart-whatsapp.html"
+      }
+    ]
+  }
+]

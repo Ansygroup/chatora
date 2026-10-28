@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+
+# machine-readable summary for AI crawlers: /llms.txt
+
+# build sources — not content
+Disallow: /_pages/
+Disallow: /_partials/
+Disallow: /_tools/
+Disallow: /_deploy/
+
+# private app surfaces (also noindex on the page itself)
+Disallow: /login.html
+Disallow: /app.html
+Disallow: /ar/login.html
+Disallow: /ar/app.html
+
+Sitemap: https://chatora.ansygroup.com/sitemap.xml

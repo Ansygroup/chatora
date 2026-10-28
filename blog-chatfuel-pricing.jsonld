@@ -1,0 +1,90 @@
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Chatfuel pricing explained (2026): plans, wallet and WhatsApp fees",
+    "description": "A dated overview of Chatfuel’s published subscription prices, monthly credits and wallet billing model. Costs vary with usage; verify current account terms and Meta message fees before estimating a total.",
+    "datePublished": "2026-10-27",
+    "dateModified": "2026-10-28",
+    "inLanguage": "en",
+    "author": {
+      "@type": "Organization",
+      "name": "Chatora"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Chatora",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://chatora.ansygroup.com/assets/img/logo.svg"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://chatora.ansygroup.com/blog-chatfuel-pricing.html"
+    },
+    "image": "https://chatora.ansygroup.com/assets/img/og.jpg"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Does Chatfuel have a permanent free plan?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The pricing page checked on 28 October 2026 lists a seven-day free trial and paid plans; it does not list a permanent free plan. Trial details can change, so verify the current offer directly."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I calculate one AI reply’s cost?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Not from a single flat per-reply figure. Usage depends on the model and actual consumption, and the provider’s current wallet terms determine deductions. Use your own billing data for an estimate."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is Chatfuel cheaper than ManyChat?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The listed subscription prices and limits differ, so a full comparison must include contact or conversation allowances, channels, credits, message charges, taxes and billing cycle."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I move a Chatfuel bot to Chatora?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Chatora’s preview has no tested migration tool or migration service. Keep your original exports and confirm that any future importer is implemented and tested before planning a switch."
+        }
+      }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://chatora.ansygroup.com/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Blog",
+        "item": "https://chatora.ansygroup.com/blog.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Chatfuel pricing explained",
+        "item": "https://chatora.ansygroup.com/blog-chatfuel-pricing.html"
+      }
+    ]
+  }
+]

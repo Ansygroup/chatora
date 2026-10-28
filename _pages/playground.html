@@ -1,0 +1,104 @@
+<main id="main">
+
+  <section class="page-hero" style="padding-bottom:clamp(20px,3vw,32px)">
+    <div class="hero-bg" aria-hidden="true"><div class="aurora a1"></div><div class="aurora a3"></div><div class="grid-overlay"></div><div class="noise"></div></div>
+    <div class="container">
+      <nav class="crumb" aria-label="Breadcrumb"><a href="index.html">Home</a><span aria-hidden="true">/</span><span>Flow builder</span></nav>
+      <span class="eyebrow" data-reveal><span class="dot"></span><span data-i18n="pg.badge">Local browser simulation · no signup</span></span>
+      <h1 class="text-grad" data-reveal style="--d:60ms" data-i18n="pg.title">Build a flow with your hands. Right here.</h1>
+      <p class="lede" data-reveal style="--d:120ms" data-i18n="pg.lead">This local simulation lets you drag nodes, add steps and preview a sample run. It does not connect a channel, save to a workspace, call an AI model or send messages.</p>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="container">
+      <p class="callout" data-i18n="pg.availability" role="note" style="margin-bottom:24px">Simulation only: steps run in this browser tab with sample text and are not saved or sent. For the real workspace preview, use the dashboard; channel connections and automation remain disabled.</p>
+      <div class="pg-shell" data-pg data-reveal>
+
+        <!-- palette -->
+        <div class="pg-toolbar">
+          <div class="pg-palette" role="group" aria-label="Add a step" data-i18n-aria="pg.addstep">
+            <button class="pg-add" type="button" data-add="trigger"><span class="pg-dot t"></span><span data-i18n="pg.n.trigger">Trigger</span></button>
+            <button class="pg-add" type="button" data-add="message"><span class="pg-dot m"></span><span data-i18n="pg.n.message">Message</span></button>
+            <button class="pg-add" type="button" data-add="ai"><span class="pg-dot a"></span><span data-i18n="pg.n.ai">AI reply</span></button>
+            <button class="pg-add" type="button" data-add="condition"><span class="pg-dot c"></span><span data-i18n="pg.n.condition">Condition</span></button>
+            <button class="pg-add" type="button" data-add="delay"><span class="pg-dot d"></span><span data-i18n="pg.n.delay">Delay</span></button>
+            <button class="pg-add" type="button" data-add="tag"><span class="pg-dot g"></span><span data-i18n="pg.n.tag">Tag</span></button>
+            <button class="pg-add" type="button" data-add="human"><span class="pg-dot h"></span><span data-i18n="pg.n.human">Human</span></button>
+            <button class="pg-add" type="button" data-add="link"><span class="pg-dot l"></span><span data-i18n="pg.n.link">Checkout</span></button>
+          </div>
+
+          <div class="pg-controls">
+            <label class="sr-only" for="pg-preset" data-i18n="pg.loadpreset">Load a preset</label>
+            <select id="pg-preset" class="pg-select">
+              <option value="" data-i18n="pg.presetph">Load a preset…</option>
+              <option value="comment" data-i18n="pg.p.comment">Comment-to-DM</option>
+              <option value="cod" data-i18n="pg.p.cod">WhatsApp COD confirmation</option>
+              <option value="cart" data-i18n="pg.p.cart">Cart recovery</option>
+              <option value="support" data-i18n="pg.p.support">Support triage</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" type="button" data-pg-clear data-i18n="pg.clear">Clear</button>
+            <button class="btn btn-primary btn-sm" type="button" data-pg-run>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7L8 5Z"/></svg>
+              <span data-i18n="pg.run">Run flow</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- canvas + log -->
+        <div class="pg-main">
+          <div class="pg-canvas" data-pg-canvas tabindex="0" role="application" aria-label="Flow canvas">
+            <div class="pg-grid" aria-hidden="true"></div>
+            <svg class="pg-links" data-pg-links aria-hidden="true"></svg>
+            <div class="pg-empty" data-pg-empty>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="3" y="3" width="7" height="6" rx="2"/><rect x="14" y="15" width="7" height="6" rx="2"/><path d="M6.5 9v4a2 2 0 0 0 2 2h9"/></svg>
+              <p data-i18n="pg.empty">Add a step above, or load a preset to see a full flow.</p>
+            </div>
+            <div class="pg-nodes" data-pg-nodes></div>
+          </div>
+
+          <div class="pg-side">
+            <div class="pg-side-head">
+              <span data-i18n="pg.sim">Simulation log</span>
+              <span class="pg-live"><i></i><span data-i18n="pg.ready">ready</span></span>
+            </div>
+            <div class="pg-log" data-pg-log aria-live="polite">
+              <div class="pg-log-line muted" data-i18n="pg.logIdle">Waiting for a run…</div>
+            </div>
+            <div class="pg-side-foot">
+              <div class="pg-stat"><span data-i18n="pg.steps">Steps</span><b data-pg-count>0</b></div>
+              <div class="pg-stat"><span data-i18n="pg.est">Reply speed</span><b data-i18n="pg.estValue">Not measured</b></div>
+            </div>
+          </div>
+        </div>
+
+        <p class="pg-hint" data-i18n="pg.hint">Tip: drag nodes to rearrange. Connections redraw within this local simulation.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container">
+      <div class="bento">
+        <article class="bento-card span-4" data-reveal>
+          <div class="bento-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M5 8l7-5 7 5v8l-7 5-7-5V8Z"/></svg></div>
+          <h2 data-i18n="pg.f1t">No live AI integration</h2>
+          <p data-i18n="pg.f1d">The playground uses sample text only. It does not query your catalogue, FAQs or policy pages.</p>
+        </article>
+        <article class="bento-card span-4" data-reveal style="--d:80ms">
+          <div class="bento-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h10"/><circle cx="18" cy="17" r="2.4"/></svg></div>
+          <h2 data-i18n="pg.f2t">Workspace drafts save separately</h2>
+          <p data-i18n="pg.f2d">The signed-in workspace can save editable flow drafts. Version history, one-click rollback and cross-channel duplication are not available.</p>
+        </article>
+        <article class="bento-card span-4" data-reveal style="--d:160ms">
+          <div class="bento-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg></div>
+          <h2 data-i18n="pg.f3t">Delay steps are illustrative</h2>
+          <p data-i18n="pg.f3d">The preview can simulate a saved delay; timezone-aware quiet-hour rules and message delivery are not enabled.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  {{CTA}}
+</main>
+<script src="assets/js/playground.js" defer></script>

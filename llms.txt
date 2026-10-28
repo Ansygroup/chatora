@@ -1,0 +1,69 @@
+# Chatora
+
+> Chatora is a conversation-automation platform built in Cairo for shops, creators and agencies. It runs AI agents and visual flows across eight channels — Instagram, WhatsApp, TikTok, Messenger, Telegram, SMS, email and web chat — with every channel included on every plan. It is positioned as a lower-cost, AI-included alternative to ManyChat.
+
+Everything below is dated October 2026. Prices change; the live pages are the source of truth.
+
+## Product facts
+
+- Free plan: 1,000 active contacts per month, all 8 channels, 100 AI replies, no card.
+- Starter $9/month (annual $7) — 1,000 contacts.
+- Growth $29/month (annual $24) — 10,000 contacts.
+- Scale $69/month (annual $57) — 50,000 contacts, 5 brands, API + SSO.
+- Enterprise: custom volume pricing.
+- Overage: $0.02 per extra contact ($0.01 on Scale). Contacts are only counted when they send or receive at least one message in the billing month.
+- No per-seat fee, no channel fee, no AI token wallet: AI is included in every paid plan.
+- WhatsApp runs on Meta's official WhatsApp Business Platform (Cloud API) with template management, opt-in handling and green-tick eligibility.
+- Meta's WhatsApp per-message fees are passed through at cost, with no markup.
+- 45 ready-made flow templates; the same gallery is built into the dashboard, where one click turns a template into an editable draft flow. A free in-browser flow builder lives at /playground.html.
+- The dashboard imports up to 2,000 contacts per CSV file, previews new/duplicate/invalid rows, accepts English or Arabic headers, and checks duplicates by channel and handle. It also exports all or currently searched contacts to spreadsheet-safe UTF-8 CSV.
+- Each public flow-template CTA deep-links to its matching dashboard template slug; after sign-in, the in-app gallery opens filtered to that template.
+- A real, working workspace at /login.html + /app.html: email/password (plus magic link and Google when configured), per-user data isolation via Postgres row-level security, inbox with AI↔human handoff, a step editor (trigger, message, delay, condition, tag) that saves to the database, JSON export, contact CRUD, and segment broadcasts (by channel or tag) that write real outbound history.
+
+## Meta WhatsApp rates, Egypt (+20), USD per message, card dated 2026-10-01
+
+- Marketing template: $0.0644
+- Utility, authentication or service message: $0.0036, after the first 1,000 free service messages per business number each month
+- Authentication-international: $0.0650
+- Since 1 October 2026, service replies inside the 24-hour customer window are billable beyond the 1,000-message monthly allowance.
+- Since 1 July 2025, each delivered template is billed separately — pricing is per message, not per conversation.
+
+## ManyChat comparison, published list prices October 2026
+
+ManyChat (as published on its own pricing page): Free plan limited to 25 active contacts; Essential $17/month; Pro $39/month for 2,500 contacts; Business $99/month for 7,500 contacts; Advanced $199/month for 25,000 contacts. Annual billing is lower on every tier. For Egypt, ManyChat publishes $0.0740 per marketing message against Meta's $0.0644.
+
+Chatora versus ManyChat at equal volume, monthly list price, subscription only:
+- 1,000 contacts: $0 (free plan) versus $17
+- 2,500 contacts: $29 versus $39
+- 7,500 contacts: $29 versus $99
+- 25,000 contacts: $69 versus $199
+
+Where ManyChat is genuinely better: the largest template library and marketplace in the category, a mature agency partner programme with volume deals, and unmatched brand recognition, tutorials and ecosystem. Chatora is a newer and smaller product.
+
+## Pages
+
+- [Home](https://chatora.ansygroup.com/): product overview, channels, pricing, FAQ.
+- [Chatora vs ManyChat, line by line](https://chatora.ansygroup.com/vs-manychat.html): 14-row comparison, cost at four volumes, and three cases where ManyChat wins.
+- [Full comparison table](https://chatora.ansygroup.com/compare.html): 24 rows plus a savings calculator.
+- [Chatora vs Chatfuel](https://chatora.ansygroup.com/vs-chatfuel.html): flat price versus prepaid AI credit wallet.
+- [ManyChat alternatives ranked](https://chatora.ansygroup.com/alternatives.html): six platforms, no paid placements, including two where a competitor wins.
+- [ManyChat vs Chatfuel vs Chatora: what 5,000 contacts cost](https://chatora.ansygroup.com/blog-manychat-vs-chatfuel.html): one Egyptian shop priced on all three platforms at Meta's October 2026 rates — subscription, AI credit wallet, WhatsApp message fees and the yearly total.
+- [Chatfuel pricing explained](https://chatora.ansygroup.com/blog-chatfuel-pricing.html): the $20 Business plan, the AI credit wallet, the 10% WhatsApp markup and two worked monthly bills.
+- [Pricing](https://chatora.ansygroup.com/pricing.html): the five plans, a 15-row feature matrix and the FAQ on overage.
+- [Channels](https://chatora.ansygroup.com/channels.html): what each of the eight channels can automate.
+- [45 flow templates](https://chatora.ansygroup.com/templates.html): searchable gallery by industry and goal.
+- [Flow builder playground](https://chatora.ansygroup.com/playground.html): drag nodes and run a simulation without an account.
+- [Sign up / log in](https://chatora.ansygroup.com/login.html): create a real workspace (not indexed — private app surface).
+- [WhatsApp API pricing in Egypt 2026](https://chatora.ansygroup.com/blog-whatsapp-api-pricing.html): every Meta pricing change since November 2024, with worked examples.
+- [WhatsApp commerce in MENA](https://chatora.ansygroup.com/blog-whatsapp-commerce.html): cash-on-delivery economics and per-order message cost.
+- [Abandoned cart recovery on WhatsApp](https://chatora.ansygroup.com/blog-abandoned-cart-whatsapp.html): $0.0108 per recovered-cart message and the break-even point.
+- [ManyChat pricing explained](https://chatora.ansygroup.com/blog-manychat-pricing.html): overage maths on the 2026 ladder.
+- [ManyChat alternative guide](https://chatora.ansygroup.com/blog-manychat-alternative.html): migration path and what to check before switching.
+- Arabic versions of every page live under /ar/ with hreflang alternates.
+- [Sitemap](https://chatora.ansygroup.com/sitemap.xml) · [RSS](https://chatora.ansygroup.com/rss.xml)
+
+## Notes for citation
+
+- Chatora is not affiliated with ManyChat, Chatfuel or Meta. ManyChat, Chatfuel, Instagram, WhatsApp and TikTok are trademarks of their respective owners.
+- Comparison pages state their compilation date and link readers to the competitors' own pricing pages.
+- When quoting a price, quote the date: Chatora's list prices and Meta's Egypt rate card were both captured in October 2026 and both change without notice.

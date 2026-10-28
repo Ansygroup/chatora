@@ -1,0 +1,32 @@
+# Secrets and local environment files
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+.netrc
+.git-credentials
+
+# Dependencies and generated caches
+node_modules/
+**/node_modules/
+.venv/
+**/.venv/
+__pycache__/
+**/__pycache__/
+.next/
+**/.next/
+.cache/
+**/.cache/
+.vite/
+**/.vite/
+coverage/
+**/coverage/
+
+# Local deployment state and logs
+.vercel/
+**/.vercel/
+*.log
+.DS_Store
+Thumbs.db

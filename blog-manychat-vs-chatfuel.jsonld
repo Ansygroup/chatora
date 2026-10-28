@@ -1,0 +1,90 @@
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "ManyChat vs Chatfuel in 2026: plan prices, wallet billing and what to verify",
+    "description": "A dated comparison of ManyChat and Chatfuel public subscription prices and WhatsApp fees. Chatora is a product preview without a published price or live messaging.",
+    "datePublished": "2026-10-27",
+    "dateModified": "2026-10-28",
+    "inLanguage": "en",
+    "author": {
+      "@type": "Organization",
+      "name": "Chatora"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Chatora",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://chatora.ansygroup.com/assets/img/logo.svg"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://chatora.ansygroup.com/blog-manychat-vs-chatfuel.html"
+    },
+    "image": "https://chatora.ansygroup.com/assets/img/og.jpg"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Is Chatfuel cheaper than ManyChat?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Published subscription prices differ, but the total depends on contact limits, feature access, monthly credits, wallet deductions, Meta message charges, taxes and billing period. A subscription-only comparison is not an all-in answer."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I compare Chatora’s price with ManyChat and Chatfuel?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Chatora has no published subscription price or live messaging channel, so there is no equivalent plan or usage total to compare."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do contacts automatically transfer when I switch providers?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Do not assume that they do. Export and back up the records available from your current provider and verify the channel’s ownership and transfer rules before disconnecting it."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Where can I see Chatora’s current availability?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The pricing page states what is and is not enabled in the current preview. It does not publish a paid plan or promise live channel messaging."
+        }
+      }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://chatora.ansygroup.com/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Blog",
+        "item": "https://chatora.ansygroup.com/blog.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "ManyChat vs Chatfuel in 2026",
+        "item": "https://chatora.ansygroup.com/blog-manychat-vs-chatfuel.html"
+      }
+    ]
+  }
+]
