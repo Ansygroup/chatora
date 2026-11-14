@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  site:
+    name: Build, links, smoke tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: _tools/requirements.txt
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install build dependencies
+        run: pip install -r _tools/requirements.txt
+      - name: Build all six languages
+        run: python _tools/build.py
+      - name: Generated files are committed
+        # sitemap.xml carries the build date, so it is the one allowed difference.
+        run: |
+          git add -A
+          git diff --cached --stat --exit-code -- . ':(exclude)sitemap.xml'
+      - name: Link and anchor check
+        run: python _tools/linkcheck.py
+      - name: JavaScript syntax
+        run: |
+          for f in assets/js/*.js _deploy/preview/index.js; do node --check "$f"; done
+      - name: Smoke tests
+        run: |
+          set -e
+          for t in assets/js/*.smoke_test.mjs supabase/functions/*/smoke_test.mjs; do
+            echo "::group::$t"; node "$t"; echo "::endgroup::"
+          done
+      - name: Private paths stay out of the published site
+        run: |
+          for p in _pages _partials _tools _deploy docs mcp supabase .github; do
+            grep -qx "/$p" .vercelignore || { echo "::error::$p is missing from .vercelignore"; exit 1; }
+          done
+
+  mcp:
+    name: MCP server
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mcp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: mcp/package-lock.json
+      - run: npm ci
+      - run: npm run check
+      - run: npm test
+      - run: npm audit --audit-level=moderate

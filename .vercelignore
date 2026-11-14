@@ -1,0 +1,19 @@
+# Only the built static site is published. Everything below is source,
+# tooling or server-side code and must never be reachable over HTTP.
+/_pages
+/_partials
+/_tools
+/_deploy
+/docs
+/mcp
+/supabase
+/.github
+/README.md
+/DEPLOY.md
+/netlify.toml
+node_modules
+*.smoke_test.mjs
+*.py
+*.sh
+*.sql
+.env*

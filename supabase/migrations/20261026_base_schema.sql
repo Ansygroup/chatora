@@ -1,0 +1,191 @@
+-- Chatora base schema — baseline of what already exists in the live project.
+--
+-- Reconstructed on 2026-11-14 by introspecting project sytogavpspwgjadorprn
+-- (columns, constraints, indexes, policies, trigger, view). The original DDL
+-- was run by hand and never committed, so the database could not be rebuilt
+-- from this repository. Every statement is idempotent: running this against
+-- the live project changes nothing; running it on an empty project recreates
+-- the schema that 20261027_meta_channel_scaffold.sql and
+-- 20261114_security_hardening.sql build on.
+
+BEGIN;
+
+-- ---------------------------------------------------------------- workspace
+CREATE TABLE IF NOT EXISTS public.workspaces (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  name text NOT NULL DEFAULT 'My workspace',
+  plan text NOT NULL DEFAULT 'free',
+  created_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT workspaces_owner_key UNIQUE (owner)
+);
+
+CREATE TABLE IF NOT EXISTS public.flows (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  workspace_id uuid NOT NULL REFERENCES public.workspaces(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  channel text NOT NULL DEFAULT 'instagram',
+  status text NOT NULL DEFAULT 'draft'
+    CONSTRAINT flows_status_check CHECK (status = ANY (ARRAY['live', 'paused', 'draft'])),
+  runs integer NOT NULL DEFAULT 0,
+  nodes jsonb NOT NULL DEFAULT '[]'::jsonb,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS flows_ws_idx ON public.flows (workspace_id);
+
+CREATE TABLE IF NOT EXISTS public.contacts (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  workspace_id uuid NOT NULL REFERENCES public.workspaces(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  handle text,
+  channel text NOT NULL DEFAULT 'instagram',
+  tags text[] NOT NULL DEFAULT '{}'::text[],
+  last_seen timestamptz NOT NULL DEFAULT now(),
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS contacts_ws_idx ON public.contacts (workspace_id);
+
+CREATE TABLE IF NOT EXISTS public.conversations (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  workspace_id uuid NOT NULL REFERENCES public.workspaces(id) ON DELETE CASCADE,
+  contact_id uuid NOT NULL REFERENCES public.contacts(id) ON DELETE CASCADE,
+  channel text NOT NULL DEFAULT 'instagram',
+  status text NOT NULL DEFAULT 'ai'
+    CONSTRAINT conversations_status_check CHECK (status = ANY (ARRAY['open', 'ai', 'human', 'closed'])),
+  unread integer NOT NULL DEFAULT 0,
+  last_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS conv_ws_idx ON public.conversations (workspace_id);
+
+CREATE TABLE IF NOT EXISTS public.messages (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  conversation_id uuid NOT NULL REFERENCES public.conversations(id) ON DELETE CASCADE,
+  direction text NOT NULL
+    CONSTRAINT messages_direction_check CHECK (direction = ANY (ARRAY['in', 'out'])),
+  author text NOT NULL DEFAULT 'contact'
+    CONSTRAINT messages_author_check CHECK (author = ANY (ARRAY['contact', 'ai', 'human'])),
+  body text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS msg_conv_idx ON public.messages (conversation_id);
+
+CREATE TABLE IF NOT EXISTS public.broadcasts (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  workspace_id uuid NOT NULL REFERENCES public.workspaces(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  channel text,
+  body text NOT NULL,
+  audience integer NOT NULL DEFAULT 0,
+  sent integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS broadcasts_ws_idx ON public.broadcasts (workspace_id, created_at DESC);
+
+-- ------------------------------------------------------ public lead capture
+CREATE TABLE IF NOT EXISTS public.leads (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email text NOT NULL,
+  name text,
+  channel text,
+  source_page text,
+  locale text DEFAULT 'en',
+  referrer text,
+  utm jsonb DEFAULT '{}'::jsonb,
+  user_agent text,
+  variant text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  client_id text,
+  topic text,
+  message text,
+  CONSTRAINT leads_email_len CHECK (char_length(email) >= 5 AND char_length(email) <= 254),
+  CONSTRAINT leads_email_shape CHECK (email ~* '^[^@[:space:]]+@[^@[:space:]]+[.][a-z]{2,}$'),
+  CONSTRAINT leads_message_len CHECK (message IS NULL OR char_length(message) <= 2000),
+  CONSTRAINT leads_name_len CHECK (name IS NULL OR char_length(name) <= 120)
+);
+CREATE UNIQUE INDEX IF NOT EXISTS leads_client_id_key ON public.leads (client_id) WHERE client_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS leads_created_at_idx ON public.leads (created_at DESC);
+CREATE INDEX IF NOT EXISTS leads_source_idx ON public.leads (source_page);
+CREATE INDEX IF NOT EXISTS leads_email_idx ON public.leads (lower(email));
+
+CREATE TABLE IF NOT EXISTS public.events (
+  id bigint GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  name text NOT NULL,
+  page text,
+  locale text,
+  props jsonb DEFAULT '{}'::jsonb,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  client_id text
+);
+CREATE INDEX IF NOT EXISTS events_name_idx ON public.events (name, created_at DESC);
+CREATE UNIQUE INDEX IF NOT EXISTS events_client_id_key ON public.events (client_id) WHERE client_id IS NOT NULL;
+
+-- At most 3 submissions per email address per 10 minutes.
+CREATE OR REPLACE FUNCTION public.leads_throttle()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $function$
+begin
+  if (select count(*) from public.leads l
+      where lower(l.email) = lower(new.email)
+        and l.created_at > now() - interval '10 minutes') >= 3 then
+    raise exception 'too many submissions, try again later' using errcode = 'check_violation';
+  end if;
+  return new;
+end;
+$function$;
+
+DROP TRIGGER IF EXISTS leads_throttle_trg ON public.leads;
+CREATE TRIGGER leads_throttle_trg BEFORE INSERT ON public.leads
+  FOR EACH ROW EXECUTE FUNCTION public.leads_throttle();
+
+CREATE OR REPLACE VIEW public.lead_counts AS
+  SELECT date_trunc('day', created_at) AS day, source_page, count(*) AS total
+  FROM public.leads
+  GROUP BY date_trunc('day', created_at), source_page
+  ORDER BY date_trunc('day', created_at) DESC;
+
+-- ------------------------------------------------------- row-level security
+ALTER TABLE public.workspaces ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.flows ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.contacts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.conversations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.broadcasts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.leads ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.events ENABLE ROW LEVEL SECURITY;
+
+DO $$
+DECLARE
+  owned text := 'workspace_id IN (SELECT id FROM public.workspaces WHERE owner = auth.uid())';
+  owned_msg text := 'conversation_id IN (SELECT id FROM public.conversations WHERE workspace_id IN '
+    || '(SELECT id FROM public.workspaces WHERE owner = auth.uid()))';
+  spec record;
+BEGIN
+  FOR spec IN
+    SELECT * FROM (VALUES
+      ('workspaces',    'ws_owner_all',   'ALL',    'authenticated', 'owner = auth.uid()', 'owner = auth.uid()'),
+      ('flows',         'flows_own',      'ALL',    'authenticated', owned, owned),
+      ('contacts',      'contacts_own',   'ALL',    'authenticated', owned, owned),
+      ('conversations', 'conv_own',       'ALL',    'authenticated', owned, owned),
+      ('messages',      'msg_own',        'ALL',    'authenticated', owned_msg, owned_msg),
+      ('broadcasts',    'broadcasts_own', 'ALL',    'public',        owned, owned),
+      ('leads',  'anon can insert leads',  'INSERT', 'anon', NULL, 'true'),
+      ('events', 'anon can insert events', 'INSERT', 'anon', NULL, 'true')
+    ) AS t(tbl, pol, cmd, grantee, using_expr, check_expr)
+  LOOP
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_policies
+      WHERE schemaname = 'public' AND tablename = spec.tbl AND policyname = spec.pol
+    ) THEN
+      EXECUTE format(
+        'CREATE POLICY %I ON public.%I FOR %s TO %s %s WITH CHECK (%s)',
+        spec.pol, spec.tbl, spec.cmd, spec.grantee,
+        CASE WHEN spec.using_expr IS NULL THEN '' ELSE 'USING (' || spec.using_expr || ')' END,
+        spec.check_expr
+      );
+    END IF;
+  END LOOP;
+END $$;
+
+COMMIT;

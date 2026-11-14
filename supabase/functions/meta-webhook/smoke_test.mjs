@@ -21,7 +21,11 @@ const context = {
       return new Response(null, { status: 201 });
     }
     if (requestUrl.pathname.endsWith("/rpc/chatora_ingest_meta_messages")) {
-      return new Response(JSON.stringify({ processed: 1 }), { status: 200 });
+      if (env.get("TEST_INGEST_MODE") === "error") return new Response("{}", { status: 500 });
+      if (env.get("TEST_INGEST_MODE") === "partial") {
+        return new Response(JSON.stringify({ processed: 0, skipped: 0, failed: 1 }), { status: 200 });
+      }
+      return new Response(JSON.stringify({ processed: 1, skipped: 0, failed: 0 }), { status: 200 });
     }
     if (requestUrl.pathname.endsWith("/rpc/chatora_update_meta_statuses")) {
       return new Response(JSON.stringify({ updated: 1 }), { status: 200 });
@@ -133,4 +137,23 @@ if (igRpc.p_provider !== "instagram_messenger" || igRpc.p_events?.[0]?.external_
   throw new Error("Instagram message normalization failed");
 }
 
+// Once the payload is queued, a processing failure must not be reported to
+// Meta as an error: it is retried privately by meta-replay.
+for (const mode of ["error", "partial"]) {
+  env.set("TEST_INGEST_MODE", mode);
+  const before = fetchCalls.length;
+  const body = igPayload.replace("ig.mid.smoke-1", "ig.mid.smoke-" + mode);
+  const sig = "sha256=" + cryptoNode.createHmac("sha256", "test-app-secret").update(Buffer.from(body)).digest("hex");
+  const deferred = await handler(new Request("https://edge.test/meta-webhook", {
+    method: "POST", headers: { "x-hub-signature-256": sig }, body
+  }));
+  if (deferred.status !== 200) throw new Error("Queued event with a " + mode + " processing failure was not acknowledged");
+  const last = fetchCalls[fetchCalls.length - 1];
+  const patch = JSON.parse(last.init.body);
+  if (last.init.method !== "PATCH" || patch.processing_error !== "processing_failed" || "processed_at" in patch) {
+    throw new Error("Failed event was not left pending for the replay worker");
+  }
+  if (fetchCalls.length - before !== 3) throw new Error("Unexpected call count for deferred processing");
+}
+env.delete("TEST_INGEST_MODE");
 console.log("Meta webhook smoke tests passed for WhatsApp and Instagram (no live network calls). ");

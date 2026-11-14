@@ -115,6 +115,10 @@ _tools/build.py ← يدمج القوالب؛ يشغّل build_ar.py ثم build_
 _tools/build_locales.py ← يبني ES/FR/DE/PT، metadata وJSON-LD وروابط hreflang المتبادلة
 ```
 
+المتطلبات: Python 3.11+ مع `pip install -r _tools/requirements.txt` (beautifulsoup4) و Node.js ≥ 20. لو أي خطوة فشلت (مثلًا `bs4` ناقصة) البناء **يتوقف بكود خطأ** بدل ما يطلّع موقع ناقص.
+
+`_tools/split_i18n.py` (آخر خطوة) يولّد `assets/js/i18n.<lang>.js` — قاموس واحد لكل لغة — ويربط كل صفحة بقاموس لغتها فقط؛ الصفحات الإنجليزية لا تحمّل أي قاموس. المصدر الوحيد للتعديل يفضل `i18n.js` و`i18n-pages.js`.
+
 بعد أي تعديل:
 ```bash
 python3 _tools/build.py
@@ -131,7 +135,9 @@ python3 _tools/linkcheck.py  # تحقق محلي بلا شبكة من روابط
 
 **طبقة الفورم المحلية:** `assets/js/api.js` ترسل إلى Supabase عند توفر الإعداد والاتصال. عند الانقطاع تحفظ حتى 60 إرسالًا محليًا وتعيد المحاولة؛ لا تعتبر أخطاء الخادم الدائمة أو فشل التخزين نجاحًا. هذا التدقيق لم يختبر وصول lead إلى قاعدة حية.
 
-**الوضع الآمن للنشر:** `./_tools/deploy.sh` يبني محليًا فقط افتراضيًا. رفع الملفات إلى الـStorage العام يحتاج `ALLOW_SUPABASE_UPLOAD=YES`، ونشر Vercel Production يحتاج موافقة منفصلة عبر `ALLOW_VERCEL_PRODUCTION_DEPLOY=YES`، إضافةً إلى بيانات الاعتماد اللازمة. لا تستخدم بوابات النشر إلا بعد تصريح إطلاق صريح. انظر `DEPLOY.md`.
+**الوضع الآمن للنشر:** `./_tools/deploy.sh` يبني ويفحص محليًا فقط افتراضيًا. النشر الثابت المباشر على Vercel يحتاج `ALLOW_VERCEL_PREVIEW_DEPLOY=YES` أو `ALLOW_VERCEL_PRODUCTION_DEPLOY=YES` مع `VERCEL_TOKEN`. `.vercelignore` يمنع رفع المصادر والأدوات و`mcp/` و`supabase/`. الحالة الحية المتحقَّق منها ونموذج الاستضافة في `DEPLOY.md` §0.
+
+**CI:** `.github/workflows/ci.yml` يبني اللغات الست، يتأكد إن الملفات المولّدة متسجّلة في git، يفحص الروابط، يشغّل اختبارات smoke واختبارات MCP و`npm audit`.
 
 ---
 

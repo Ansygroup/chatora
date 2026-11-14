@@ -120,10 +120,11 @@ async function decryptPayload(row, config, key) {
 
 async function processNormalized(config, info) {
   if (info.messages.length) {
-    await postJson(config, "/rest/v1/rpc/chatora_ingest_meta_messages", {
+    const result = await postJson(config, "/rest/v1/rpc/chatora_ingest_meta_messages", {
       p_provider: info.provider,
       p_events: info.messages
     });
+    if (result && Number(result.failed) > 0) throw new Error("ingest_partial_failure");
   }
   if (info.statuses.length) {
     await postJson(config, "/rest/v1/rpc/chatora_update_meta_statuses", {

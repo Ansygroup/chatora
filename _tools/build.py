@@ -726,7 +726,8 @@ def main():
             .replace("{{BASE}}", BASE)
             .replace("{{FEEDLINK}}", "" if page.get("noindex") else FEEDLINK)
         )
-        if page.get("noindex"):
+        # The 404 page is served for every unknown URL: it must never be indexed.
+        if page.get("noindex") or page["out"] == "404.html":
             head = head.replace('<meta name="robots" content="index,follow,max-image-preview:large">',
                                 '<meta name="robots" content="noindex,nofollow">')
 
@@ -766,28 +767,24 @@ def main():
 
     # Build the Arabic mirror first; the remaining complete locale mirrors then
     # add reciprocal hreflang across all available static language paths.
-    ar_builder = os.path.join(ROOT, "_tools", "build_ar.py")
-    ar_ok = False
-    if os.path.exists(ar_builder):
-        try:
-            import subprocess
-            import sys
+    # Any failure here aborts the build with a non-zero exit code: a half-built
+    # site (English pages without hreflang, stale mirrors) must never look like
+    # a successful build to deploy.sh or CI.
+    import subprocess
+    import sys
 
-            subprocess.run([sys.executable, ar_builder], check=True)
-            ar_ok = True
-        except Exception as exc:  # keep the English build diagnosable if Arabic fails
-            print("warn: Arabic mirror skipped —", exc)
-
-    locale_builder = os.path.join(ROOT, "_tools", "build_locales.py")
-    if ar_ok and os.path.exists(locale_builder):
-        try:
-            import subprocess
-            import sys
-
-            subprocess.run([sys.executable, locale_builder], check=True)
-        except Exception as exc:
-            print("warn: additional locale mirrors skipped —", exc)
-            raise
+    tools = os.path.join(ROOT, "_tools")
+    for step in ("build_ar.py", "build_locales.py", "split_i18n.py"):
+        script = os.path.join(tools, step)
+        if not os.path.exists(script):
+            sys.exit("error: missing build step %s" % step)
+        result = subprocess.run([sys.executable, script])
+        if result.returncode != 0:
+            sys.exit(
+                "error: %s failed (exit %d). Install build dependencies with "
+                "`pip install -r _tools/requirements.txt` and make sure `node` is on PATH."
+                % (step, result.returncode)
+            )
 
 
 if __name__ == "__main__":

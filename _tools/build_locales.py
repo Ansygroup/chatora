@@ -398,6 +398,9 @@ def localize_jsonld(soup: BeautifulSoup, locale: dict, lang: str, out: str, page
         script.string = NavigableString("\n" + json.dumps(data, ensure_ascii=False, indent=2) + "\n")
 
 
+OG_LOCALES = {"en": "en_US", "ar": "ar_AR", "es": "es_ES", "fr": "fr_FR", "de": "de_DE", "pt": "pt_BR"}
+
+
 def set_meta(soup: BeautifulSoup, lang: str, out: str, title: str, desc: str):
     canonical = localized_url(lang, out)
     if soup.title:
@@ -410,6 +413,8 @@ def set_meta(soup: BeautifulSoup, lang: str, out: str, title: str, desc: str):
             meta["content"] = title
         elif prop == "og:url":
             meta["content"] = canonical
+        elif prop == "og:locale":
+            meta["content"] = OG_LOCALES.get(lang, "en_US")
 
     canonical_link = soup.find("link", rel=lambda rel: rel and "canonical" in rel)
     if canonical_link:
@@ -431,7 +436,8 @@ def add_hreflang(soup: BeautifulSoup, out: str, codes: list[str], indexable: boo
     canonical = soup.find("link", rel=lambda rel: rel and "canonical" in rel)
     if not head or not canonical:
         raise RuntimeError("Cannot add hreflang without <head> and canonical link")
-    tags = [("x-default", "en")] + [(code, code) for code in codes if code != "en"]
+    # Every indexable page lists all six languages (itself included) plus x-default.
+    tags = [(code, code) for code in codes] + [("x-default", "en")]
     for hreflang, code in tags:
         link = soup.new_tag("link", rel="alternate", hreflang=hreflang, href=localized_url(code, out))
         canonical.insert_after(link)

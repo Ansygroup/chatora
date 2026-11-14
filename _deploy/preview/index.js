@@ -20,7 +20,7 @@ const TYPES = {
   woff: "font/woff"
 };
 
-const PRIVATE_PREFIXES = ["_pages", "_partials", "_tools", "_deploy", "docs", "supabase"];
+const PRIVATE_PREFIXES = ["_pages", "_partials", "_tools", "_deploy", "docs", "supabase", "mcp", "node_modules"];
 
 function securityHeaders(res) {
   res.setHeader("X-Content-Type-Options", "nosniff");
@@ -29,9 +29,14 @@ function securityHeaders(res) {
   res.setHeader("X-Frame-Options", "SAMEORIGIN");
 }
 
+/* Only a definite "object does not exist" answer may become a 404. Any other
+   upstream failure (5xx, 429, paused project) must surface as 502 so crawlers
+   never see a healthy page reported as missing. */
 async function grab(path) {
-  const r = await fetch(BASE + path, { headers: { "user-agent": "chatora-site/1.2" } });
-  return r.ok ? Buffer.from(await r.arrayBuffer()) : null;
+  const r = await fetch(BASE + path, { headers: { "user-agent": "chatora-site/1.3" } });
+  if (r.ok) return Buffer.from(await r.arrayBuffer());
+  if (r.status === 400 || r.status === 404) return null;
+  throw new Error("storage_upstream_" + r.status);
 }
 
 module.exports = async (req, res) => {
@@ -104,6 +109,7 @@ module.exports = async (req, res) => {
   } catch (err) {
     res.setHeader("Content-Type", TYPES.txt);
     res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Retry-After", "120");
     res.statusCode = 502;
     res.end(headOnly ? undefined : "Site content is temporarily unavailable.");
   }

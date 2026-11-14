@@ -77,7 +77,11 @@
       savedFlow: "Flow saved", deleteFlow: "Delete this flow", confirmDelete: "Delete this flow and its steps?",
       noSteps: "No steps yet — add the first one below.", flowName: "Flow name",
       pwdTitle: "Password", pwNew: "New password", pwSave: "Change password", pwOk: "Password changed.",
-      pwShort: "At least 6 characters.", exportTitle: "Your data", exportBtn: "Download a JSON copy",
+      delTitle: "Delete account", delNote: "Permanently deletes your account, workspace, contacts, conversations and flow drafts. This cannot be undone.",
+      delPass: "Current password", delBtn: "Delete my account", delConfirm: "Delete your account and all workspace data permanently?",
+      delWrong: "That password is not correct.", delFailed: "The account could not be deleted. Nothing was removed — try again later.",
+      metaDisconnect: "Disconnect", metaDisconnectConfirm: "Disconnect this channel? Chatora deletes the stored access token and stops receiving its messages.",
+      pwShort: "At least 8 characters.", exportTitle: "Your data", exportBtn: "Download a JSON copy",
       emptyWs: "Empty workspace — no demo records are added. Import real contacts or create your first flow.",
       newContact: "New contact", editContact: "Edit contact", contactName: "Name", tagsPh: "vip, reorder", cMore: "Load more", cShowing: "Showing {n} of {total}",
       cExport: "Export CSV", cExported: "CSV downloaded: {n} contacts.", cExportEmpty: "No contacts match this search.",
@@ -179,7 +183,11 @@
       savedFlow: "السيناريو اتحفظ", deleteFlow: "امسح السيناريو", confirmDelete: "تمسح السيناريو وخطواته؟",
       noSteps: "مفيش خطوات لسه — ضيف أول واحدة تحت.", flowName: "اسم السيناريو",
       pwdTitle: "الباسورد", pwNew: "باسورد جديد", pwSave: "تغيير الباسورد", pwOk: "الباسورد اتغيّر.",
-      pwShort: "6 حروف على الأقل.", exportTitle: "بياناتك", exportBtn: "نزّل نسخة JSON",
+      delTitle: "حذف الحساب", delNote: "بيحذف حسابك ومساحة العمل وجهات الاتصال والمحادثات ومسودات السيناريوهات نهائيًا. مفيش رجوع بعد كده.",
+      delPass: "كلمة السر الحالية", delBtn: "احذف حسابي", delConfirm: "تحذف حسابك وكل بيانات مساحة العمل نهائيًا؟",
+      delWrong: "كلمة السر مش صحيحة.", delFailed: "ماقدرناش نحذف الحساب. مفيش حاجة اتحذفت — حاول تاني بعدين.",
+      metaDisconnect: "افصل القناة", metaDisconnectConfirm: "تفصل القناة دي؟ شاتورا هيحذف رمز الوصول المحفوظ وهيوقف استقبال رسايلها.",
+      pwShort: "8 حروف على الأقل.", exportTitle: "بياناتك", exportBtn: "نزّل نسخة JSON",
       emptyWs: "مساحة عمل فاضية — مفيش سجلات تجريبية بتتضاف. استورد جهات اتصالك أو اعمل أول سيناريو.",
       newContact: "جهة اتصال جديدة", editContact: "تعديل جهة الاتصال", contactName: "الاسم", tagsPh: "vip, reorder", cMore: "عرض المزيد", cShowing: "معروض {n} من {total}",
       cExport: "تصدير CSV", cExported: "تم تنزيل {n} جهة اتصال بصيغة CSV.", cExportEmpty: "مفيش جهات اتصال مطابقة للبحث.",
@@ -1004,6 +1012,12 @@
     )[0] || null;
   }
 
+  function metaDisconnectButton(connection) {
+    const id = String((connection && connection.id) || "");
+    if (!/^[0-9a-f-]{36}$/i.test(id)) return "";
+    return ` <button type="button" class="btn btn-ghost btn-sm" data-meta-disconnect="${id}"${state.meta.pending ? " disabled" : ""}>${esc(T.metaDisconnect)}</button>`;
+  }
+
   function metaStatusText(connection) {
     if (!state.meta.loaded) return T.metaLoad;
     if (state.meta.loadFailed) return T.metaMigrationPending;
@@ -1047,9 +1061,9 @@
       `<p class="dash-note">${esc(T.metaWaHelp)}</p>` +
       (providerType === "solution_partner" ? `<p class="meta-provider-mode">${esc(T.metaSolutionPartner)}</p>${currencySelect}` : providerType === "tech_provider" ? `<p class="meta-provider-mode">${esc(T.metaTechProvider)}</p>` : `<p class="meta-provider-mode">${esc(T.metaProviderUnselected)}</p>`) +
       waPin +
-      `<button type="button" class="btn btn-primary btn-sm" id="meta-wa-connect"${waReady && !state.meta.pending ? "" : " disabled"}>${esc(waConnection ? T.metaReconnect : T.metaConnect)}</button></section>` +
+      `<button type="button" class="btn btn-primary btn-sm" id="meta-wa-connect"${waReady && !state.meta.pending ? "" : " disabled"}>${esc(waConnection ? T.metaReconnect : T.metaConnect)}</button>${metaDisconnectButton(waConnection)}</section>` +
       `<section class="meta-channel-card" aria-labelledby="meta-ig-title"><div class="meta-channel-head"><div><h3 id="meta-ig-title">${esc(T.metaInstagram)}</h3><p class="meta-channel-status">${esc(metaStatusText(igConnection))}</p></div><span class="meta-channel-mark is-ig" aria-hidden="true">◎</span></div>` +
-      `<p class="dash-note">${esc(T.metaIgHelp)}</p><button type="button" class="btn btn-primary btn-sm" id="meta-ig-connect"${igReady && !state.meta.pending ? "" : " disabled"}>${esc(igConnection ? T.metaReconnect : T.metaConnect)}</button>` +
+      `<p class="dash-note">${esc(T.metaIgHelp)}</p><button type="button" class="btn btn-primary btn-sm" id="meta-ig-connect"${igReady && !state.meta.pending ? "" : " disabled"}>${esc(igConnection ? T.metaReconnect : T.metaConnect)}</button>${metaDisconnectButton(igConnection)}` +
       igPicker + `</section></div></div>`;
   }
 
@@ -1060,14 +1074,18 @@
       `<button class="btn btn-primary btn-sm" type="submit">${esc(T.save)}</button></form>` +
       `<p class="dash-note">${esc(T.planNote)}</p></div>` +
       `<div class="dash-card"><h2>${esc(T.pwdTitle)}</h2>` +
-      `<form id="pw-form" class="dash-inline"><input id="pw-input" type="password" autocomplete="new-password" minlength="6" aria-label="${esc(T.pwNew)}" placeholder="${esc(T.pwNew)}">` +
+      `<form id="pw-form" class="dash-inline"><input id="pw-input" type="password" autocomplete="new-password" minlength="8" aria-label="${esc(T.pwNew)}" placeholder="${esc(T.pwNew)}">` +
       `<button class="btn btn-ghost btn-sm" type="submit">${esc(T.pwSave)}</button></form>` +
       `<p class="dash-note" id="pw-msg"></p></div>` +
       `<div class="dash-card"><h2>${esc(T.plan)}</h2><p class="dash-plan-row"><b>${esc(T.planFree)}</b> — <span>${esc(T.dataIsolation)}</span></p></div>` +
       `<div class="dash-card"><h2>${esc(T.account)}</h2><p>${esc((A.user() && A.user().email) || "")}</p>` +
       `<p class="dash-note">${esc(T.exportTitle)} — <button type="button" class="link-btn" id="export">${esc(T.exportBtn)}</button></p></div>` +
       `<div class="dash-card"><h2>${esc(T.session)}</h2>` +
-      `<button type="button" class="btn btn-ghost btn-sm" id="signout2">${esc(T.signoutLong)}</button></div>`;
+      `<button type="button" class="btn btn-ghost btn-sm" id="signout2">${esc(T.signoutLong)}</button></div>` +
+      `<div class="dash-card dash-danger"><h2>${esc(T.delTitle)}</h2><p class="dash-note">${esc(T.delNote)}</p>` +
+      `<form id="del-form" class="dash-inline"><input id="del-pass" type="password" autocomplete="current-password" required aria-label="${esc(T.delPass)}" placeholder="${esc(T.delPass)}">` +
+      `<button class="btn btn-ghost btn-sm btn-danger" type="submit">${esc(T.delBtn)}</button></form>` +
+      `<p class="dash-note" id="del-msg" role="status"></p></div>`;
   }
 
   const RENDER = { overview: renderOverview, inbox: renderInbox, flows: renderFlows, contacts: renderContacts, broadcast: renderBroadcast, settings: renderSettings };
@@ -1578,7 +1596,7 @@
       if (pf) pf.addEventListener("submit", async (e) => {
         e.preventDefault();
         const el = $("#pw-input"), out = $("#pw-msg");
-        if (el.value.length < 6) { out.textContent = T.pwShort; out.className = "dash-note is-err"; return; }
+        if (el.value.length < 8) { out.textContent = T.pwShort; out.className = "dash-note is-err"; return; }
         try {
           await A.updateUser({ password: el.value });
           el.value = "";
@@ -1589,6 +1607,38 @@
       if (ex) ex.addEventListener("click", exportData);
       const s2 = $("#signout2", p);
       if (s2) s2.addEventListener("click", () => A.signOut());
+      const df = $("#del-form", p);
+      if (df) df.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const el = $("#del-pass"), out = $("#del-msg"), btn = df.querySelector("button");
+        if (!el.value || !window.confirm(T.delConfirm)) return;
+        btn.disabled = true;
+        out.textContent = ""; out.className = "dash-note";
+        try {
+          await A.rest("/functions/v1/account-delete", { method: "POST", body: JSON.stringify({ confirm: "DELETE", password: el.value }) });
+          await A.signOut();
+        } catch (err) {
+          const code = err && err.data && err.data.error;
+          out.textContent = code === "wrong_password" ? T.delWrong : T.delFailed;
+          out.className = "dash-note is-err";
+          btn.disabled = false;
+        }
+      });
+      $$("[data-meta-disconnect]", p).forEach((b) => b.addEventListener("click", async () => {
+        if (state.meta.pending || !window.confirm(T.metaDisconnectConfirm)) return;
+        state.meta.pending = true; paint();
+        try {
+          await A.rest("/functions/v1/meta-connect", { method: "POST", body: JSON.stringify({ action: "disconnect", workspaceId: state.ws.id, connectionId: b.getAttribute("data-meta-disconnect") }) });
+          state.meta.message = ""; state.meta.messageError = false;
+        } catch (error) {
+          state.meta.message = T.metaFailed; state.meta.messageError = true;
+        } finally {
+          state.meta.pending = false;
+          state.meta.loaded = false;
+          loadMetaConnections(true);
+          paint();
+        }
+      }));
     }
   }
 

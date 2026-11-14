@@ -1617,3 +1617,8 @@ html[dir="rtl"] .cform select{background-position:16px 50%,11px 50%}
 .meta-ig-picker .btn{justify-self:start;margin-top:0}
 .meta-channel-card .meta-ig-picker+.btn{margin-top:0}
 @media(max-width:760px){.meta-channels-grid{grid-template-columns:1fr}.meta-readiness ul{grid-template-columns:1fr}}
+
+/* Settings → delete account */
+.dash-danger{border-color:rgba(255,107,107,.35)}
+.btn-danger{color:#ff8f8f;border-color:rgba(255,107,107,.45)}
+.btn-danger:hover,.btn-danger:focus-visible{background:rgba(255,107,107,.14);color:#fff}

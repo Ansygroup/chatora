@@ -14,5 +14,13 @@ Disallow: /login.html
 Disallow: /app.html
 Disallow: /ar/login.html
 Disallow: /ar/app.html
+Disallow: /es/login.html
+Disallow: /es/app.html
+Disallow: /fr/login.html
+Disallow: /fr/app.html
+Disallow: /de/login.html
+Disallow: /de/app.html
+Disallow: /pt/login.html
+Disallow: /pt/app.html
 
 Sitemap: https://chatora.ansygroup.com/sitemap.xml

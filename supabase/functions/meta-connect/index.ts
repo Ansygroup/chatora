@@ -613,6 +613,24 @@ async function handleInstagramSelect(config, user, input) {
   };
 }
 
+// Disconnecting must keep working when onboarding is switched off or Meta is
+// unreachable: it only needs the database. The stored token is deleted and the
+// connection stops routing inbound events in one transaction; revoking the
+// grant on Meta's side is best-effort and never blocks the local removal.
+async function handleDisconnect(config, user, input) {
+  const workspaceId = String(input.workspaceId || "");
+  const connectionId = String(input.connectionId || "");
+  if (!UUID_RE.test(workspaceId)) throw new HttpError(400, "invalid_workspace");
+  if (!UUID_RE.test(connectionId)) throw new HttpError(400, "invalid_connection");
+  await getOwnedWorkspace(config, user.id, workspaceId);
+  const result = await dbRequest(config, "/rest/v1/rpc/chatora_disconnect_channel", {
+    method: "POST",
+    body: { p_workspace_id: workspaceId, p_connection_id: connectionId }
+  });
+  if (!result || result.disconnected !== true) throw new HttpError(404, "connection_not_found");
+  return { disconnected: true };
+}
+
 Deno.serve(async (request) => {
   const origin = request.headers.get("origin");
   if (origin && !allowedOrigins().includes(origin)) return json(request, 403, { error: "origin_not_allowed" });
@@ -648,6 +666,7 @@ Deno.serve(async (request) => {
       const result = await startState(config, user, workspaceId, provider);
       return json(request, 200, result);
     }
+    if (action === "disconnect") return json(request, 200, await handleDisconnect(config, user, input));
     if (action === "whatsapp_finish") return json(request, 200, await handleWhatsAppFinish(config, user, input));
     if (action === "instagram_prepare") return json(request, 200, await handleInstagramPrepare(config, user, input));
     if (action === "instagram_select") return json(request, 200, await handleInstagramSelect(config, user, input));

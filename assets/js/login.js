@@ -6,7 +6,7 @@
   var T = {
     en: {
       submitSignin: "Sign in", submitSignup: "Create my workspace", submitMagic: "Email me a sign-in link",
-      hintPassword: "At least 6 characters.",
+      hintPassword: "At least 8 characters.",
       hintMagic: "We send a one-time link. No password needed.",
       busy: "One moment…",
       created: "Workspace ready — opening it now.",
@@ -14,8 +14,8 @@
       magicSent: "If email delivery is configured, a sign-in link is on its way to {email}. Check your inbox and spam folder.",
       badCreds: "Email or password is not right.",
       exists: "That email already has an account — try signing in.",
-      weak: "Use at least 6 characters.",
-      pwShort: "Use at least 6 characters.",
+      weak: "Use at least 8 characters.",
+      pwShort: "Use at least 8 characters.",
       invalid: "That email doesn't look valid.",
       googleOff: "Google sign-in is not configured yet. Add a Google OAuth client in Supabase → Authentication → Providers.",
       net: "Network problem — check your connection and try again.",
@@ -30,7 +30,7 @@
     },
     ar: {
       submitSignin: "تسجيل الدخول", submitSignup: "اعمل مساحة عملي", submitMagic: "ابعتلي لينك دخول",
-      hintPassword: "6 حروف على الأقل.",
+      hintPassword: "8 حروف على الأقل.",
       hintMagic: "بنبعت لينك لمرة واحدة. من غير باسورد.",
       busy: "لحظة واحدة…",
       created: "مساحة العمل جاهزة — بنفتحها دلوقتي.",
@@ -38,8 +38,8 @@
       magicSent: "لو إرسال الإيميل متاح، هيجيلك لينك دخول على {email}. راجع الوارد والسبام.",
       badCreds: "الإيميل أو الباسورد مش مظبوطين.",
       exists: "الإيميل ده عنده حساب بالفعل — جرّب تسجيل الدخول.",
-      weak: "استخدم 6 حروف على الأقل.",
-      pwShort: "استخدم 6 حروف على الأقل.",
+      weak: "استخدم 8 حروف على الأقل.",
+      pwShort: "استخدم 8 حروف على الأقل.",
       invalid: "الإيميل ده مش صحيح.",
       googleOff: "الدخول بجوجل مش مظبوط لسه. أضف Google OAuth client في Supabase ← Authentication ← Providers.",
       net: "مشكلة في الشبكة — راجع اتصالك وجرّب تاني.",
@@ -102,7 +102,9 @@
     var email = $("#auth-email").value.trim();
     var pass = $("#auth-password").value;
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { msg(T.invalid, "is-err"); return; }
-    if (mode !== "magic" && pass.length < 6) { msg(T.weak, "is-err"); return; }
+    /* New passwords need 8+ characters; sign-in only checks that one was typed. */
+    if (mode === "signup" && pass.length < 8) { msg(T.weak, "is-err"); return; }
+    if (mode === "signin" && !pass.length) { msg(T.weak, "is-err"); return; }
     busy(true);
     try {
       if (mode === "magic") {
@@ -152,7 +154,7 @@
 
     $("#auth-newpass-save").addEventListener("click", async function () {
       var v = $("#auth-newpass-input").value;
-      if (v.length < 6) { msg(T.pwShort, "is-err"); return; }
+      if (v.length < 8) { msg(T.pwShort, "is-err"); return; }
       try {
         await A.updateUser({ password: v });
         msg(T.newpassOk, "is-ok");

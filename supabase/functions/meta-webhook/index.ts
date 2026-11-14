@@ -11,10 +11,11 @@ function reply(status, body, contentType = "text/plain; charset=utf-8") {
   return new Response(body, { status, headers: { "content-type": contentType, "cache-control": "no-store" } });
 }
 
+// Constant-time for a given `b`: never returns early on a length mismatch, so
+// response timing does not reveal the length of the configured secret.
 function safeEqual(a, b) {
-  if (a.length !== b.length) return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  let diff = a.length ^ b.length;
+  for (let i = 0; i < b.length; i++) diff |= (a.charCodeAt(i % (a.length || 1)) || 0) ^ b.charCodeAt(i);
   return diff === 0;
 }
 
@@ -116,10 +117,13 @@ async function markQueuedEvent(provider, hash, patch) {
 
 async function processNormalized(info) {
   if (info.messages.length) {
-    await servicePost("/rest/v1/rpc/chatora_ingest_meta_messages", {
+    const result = await servicePost("/rest/v1/rpc/chatora_ingest_meta_messages", {
       p_provider: info.provider,
       p_events: info.messages
     });
+    // Events are isolated in the database; a non-zero `failed` count leaves the
+    // queued payload unprocessed so meta-replay retries it (ingest is idempotent).
+    if (result && Number(result.failed) > 0) throw new Error("ingest_partial_failure");
   }
   if (info.statuses.length) {
     await servicePost("/rest/v1/rpc/chatora_update_meta_statuses", {
@@ -152,7 +156,6 @@ Deno.serve(async (request) => {
   const raw = new Uint8Array(await request.arrayBuffer());
   if (raw.byteLength === 0 || raw.byteLength > MAX_BODY_BYTES) return reply(413, "Payload size is invalid");
 
-  let queueInfo = null;
   try {
     if (!(await verifySignature(raw, request.headers.get("x-hub-signature-256"), appSecret))) {
       return reply(401, "Invalid signature");
@@ -172,7 +175,6 @@ Deno.serve(async (request) => {
     const externalAccountId = externalIds.size === 1 ? [...externalIds][0] : null;
     const payloadHash = await sha256(raw);
     const encrypted = await encrypt(raw, encryptionKey);
-    queueInfo = { provider: info.provider, hash: payloadHash };
 
     await queueEncryptedEvent({
       provider: info.provider,
@@ -181,21 +183,28 @@ Deno.serve(async (request) => {
       payload_ciphertext: encrypted.ciphertext,
       payload_iv: encrypted.iv
     });
-    await processNormalized(info);
-    await markQueuedEvent(info.provider, payloadHash, {
-      processed_at: new Date().toISOString(),
-      processing_error: null,
-      next_attempt_at: null
-    });
+    // From here on the payload is durably queued (encrypted). A processing
+    // failure is ours to retry through meta-replay; answering Meta with an
+    // error would only make it re-deliver the same batch and, after repeated
+    // failures, disable the webhook subscription for every customer.
+    try {
+      await processNormalized(info);
+      await markQueuedEvent(info.provider, payloadHash, {
+        processed_at: new Date().toISOString(),
+        processing_error: null,
+        next_attempt_at: null
+      });
+    } catch (error) {
+      try {
+        await markQueuedEvent(info.provider, payloadHash, { processing_error: "processing_failed" });
+      } catch (_) { /* The row stays unprocessed; meta-replay will claim it. */ }
+      console.error("Meta webhook processing deferred to replay", error instanceof Error ? error.message : "unknown error");
+    }
     return reply(200, "EVENT_RECEIVED");
   } catch (error) {
-    // Do not log payload bodies, customer IDs, access tokens, or secret values.
-    if (queueInfo) {
-      try {
-        await markQueuedEvent(queueInfo.provider, queueInfo.hash, { processing_error: "processing_failed" });
-      } catch (_) { /* Preserve the original failure; Meta will retry the event. */ }
-    }
-    console.error("Meta webhook intake/processing failed", error instanceof Error ? error.message : "unknown error");
+    // Reached only when the payload could not be queued at all. Do not log
+    // payload bodies, customer IDs, access tokens, or secret values.
+    console.error("Meta webhook intake failed", error instanceof Error ? error.message : "unknown error");
     return reply(503, "Webhook intake unavailable");
   }
 });

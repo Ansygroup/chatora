@@ -49,11 +49,19 @@ function responseBody(row, select) {
   return out;
 }
 
+const disconnectCalls = [];
+const KNOWN_CONNECTION_ID = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
+
 async function mockSupabase(url, init) {
   const method = init.method || "GET";
   const query = url.searchParams;
   const path = url.pathname;
   if (path === "/auth/v1/user") return jsonResponse({ id: USER_ID, email: "owner@example.test" });
+  if (path === "/rest/v1/rpc/chatora_disconnect_channel") {
+    const body = JSON.parse(init.body);
+    disconnectCalls.push(body);
+    return jsonResponse({ disconnected: body.p_connection_id === KNOWN_CONNECTION_ID });
+  }
   if (path === "/rest/v1/workspaces") {
     const match = query.get("id") === `eq.${WORKSPACE_ID}` && query.get("owner") === `eq.${USER_ID}`;
     return jsonResponse(match ? [{ id: WORKSPACE_ID }] : []);
@@ -343,4 +351,16 @@ result = await call({ action: "start", provider: "instagram_messenger", workspac
 assert.equal(result.status, 403);
 assert.equal(result.body.error, "origin_not_allowed");
 
+// Disconnect: ownership is re-checked, IDs are validated, unknown rows are 404.
+result = await call({ action: "disconnect", workspaceId: WORKSPACE_ID, connectionId: "not-a-uuid" });
+assert.equal(result.body.error, "invalid_connection");
+result = await call({ action: "disconnect", workspaceId: "dddddddd-dddd-4ddd-8ddd-dddddddddddd", connectionId: KNOWN_CONNECTION_ID });
+assert.equal(result.body.error, "workspace_not_owned");
+assert.equal(disconnectCalls.length, 0, "no disconnect may run before ownership is proven");
+result = await call({ action: "disconnect", workspaceId: WORKSPACE_ID, connectionId: "ffffffff-ffff-4fff-8fff-ffffffffffff" });
+assert.equal(result.status, 404);
+result = await call({ action: "disconnect", workspaceId: WORKSPACE_ID, connectionId: KNOWN_CONNECTION_ID });
+assert.equal(result.status, 200);
+assert.deepEqual(result.body, { disconnected: true });
+assert.deepEqual(disconnectCalls.at(-1), { p_workspace_id: WORKSPACE_ID, p_connection_id: KNOWN_CONNECTION_ID });
 console.log("meta-connect smoke tests passed (mocked Meta/Supabase requests only)");
