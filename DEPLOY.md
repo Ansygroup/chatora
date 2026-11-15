@@ -1,10 +1,63 @@
 # النشر والبنية الخلفية — Chatora
 
-> آخر تحديث: **28 أكتوبر 2026** · 28 ملف HTML مبني لكل لغة EN/AR/ES/FR/DE/PT؛ العربية RTL. جدول البنية في §1 لقطة تاريخية من 27 أكتوبر وليست تحققًا حيًا.
+> آخر تحديث: **14 نوفمبر 2026** · 28 ملف HTML مبني لكل لغة EN/AR/ES/FR/DE/PT؛ العربية RTL. القسم §0 هو الحالة المتحقَّق منها حيًا؛ ما بعده توثيق تاريخي إلا ما نُصّ على تحديثه.
 
 ---
 
-## 1) لقطة موثقة من 27 أكتوبر 2026 (غير متحققة في هذا التدقيق)
+## 0) الحالة المتحقَّق منها في 14 نوفمبر 2026
+
+تم التحقق عبر واجهات Supabase وVercel مباشرة (قراءة + التغييرات المذكورة فقط).
+
+| البند | الحالة |
+|---|---|
+| Supabase `chatora` (`sytogavpspwgjadorprn`) | شغّال. 8 جداول، RLS مفعّل عليها كلها. لا توجد Edge Functions خاصة بـMeta منشورة. |
+| سكيمة القاعدة في المستودع | `supabase/migrations/20261026_base_schema.sql` (مطابقة للقاعدة الحية، idempotent) ثم `20261114_security_hardening.sql` (**مطبَّقة على القاعدة الحية**). `20261027_meta_channel_scaffold.sql` ما زالت مسودة غير مطبَّقة. |
+| تقوية القاعدة (مطبَّقة) | `lead_counts` بقت `security_invoker` ومقروءة لـ`service_role` فقط · `anon` له INSERT فقط على `leads`/`events` وبلا أي صلاحية على جداول المساحات · `authenticated` له SELECT/INSERT/UPDATE/DELETE فقط · تريجر `workspaces_guard_plan` يمنع المالك من تعديل `plan`/`owner` · حدود طول على أعمدة `leads`/`events` · حد 600 حدث/دقيقة على `events` · `search_path` ثابت وسحب EXECUTE من الدوال. |
+| المصادقة (مطبَّق) | `mailer_autoconfirm = false`: الحساب الجديد لازم يأكّد بريده قبل الدخول. |
+| المصادقة (يدوي — غير متاح عبر الـAPI المستخدم) | من لوحة Supabase → Authentication: حد أدنى لكلمة السر 8 (الواجهة تفرض 8 بالفعل)، تفعيل Leaked password protection، تفعيل CAPTCHA (Turnstile/hCaptcha)، وربط **SMTP مخصّص** — بدون SMTP الحد 2 رسالة/ساعة، يعني تسجيلان جديدان في الساعة كحد أقصى. |
+| Edge Function `account-delete` | منشورة (انظر §0.2). حذف الحساب من الإعدادات يطلب كلمة السر الحالية. |
+| Vercel | مشروع `chatora`؛ النشر الإنتاجي الحالي `dpl_D4h1NXXhfKJrjRuvy7Mpqqqk5xYR` (27 أكتوبر) هو **الدالة الوسيطة القديمة** ويخدم نسخة Storage القديمة (EN+AR فقط). لم يُنشر إصدار جديد من هذا التدقيق — انظر §0.1. |
+| الدومين | `chatora.ansygroup.com` مضاف للمشروع لكن **بلا ريكورد DNS** عند Cloudflare، فلا يوجد رابط عام يعمل. الريكورد المطلوب في §4. |
+
+### 0.1) نموذج الاستضافة الجديد
+
+الموقع بقى يتنشر على Vercel كـ**ملفات ثابتة مباشرة من جذر المستودع**:
+
+- `vercel.json`: بلا build، `trailingSlash: true` (علشان `/ar` يتحوّل لـ`/ar/` والروابط النسبية تفضل سليمة؛ الملفات ذات الامتداد لا تتأثر)، هيدرز أمان (CSP، `X-Frame-Options: DENY`، HSTS، `nosniff`، Referrer/Permissions-Policy) وكاش للأصول، و`X-Robots-Tag: noindex` لصفحات الدخول والداشبورد في كل اللغات.
+- `.vercelignore`: يستبعد `_pages`, `_partials`, `_tools`, `_deploy`, `docs`, `mcp`, `supabase`, `.github` وكل `*.py`/`*.sh`/`*.sql`/اختبارات smoke. سكربت النشر والـCI يرفضان العمل لو أي مسار منهم اتشال من القائمة.
+- لا دالة وسيطة ولا اعتماد على Supabase Storage لعرض الصفحات؛ تعطل Supabase يوقف الفورم والداشبورد فقط، لا الموقع.
+
+النشر:
+
+```bash
+python3 -m pip install -r _tools/requirements.txt     # مرة واحدة (beautifulsoup4) + Node ≥ 20
+./_tools/deploy.sh                                     # بناء + فحص فقط، بلا أي شبكة
+ALLOW_VERCEL_PREVIEW_DEPLOY=YES    VERCEL_TOKEN=… ./_tools/deploy.sh
+ALLOW_VERCEL_PRODUCTION_DEPLOY=YES VERCEL_TOKEN=… ./_tools/deploy.sh
+```
+
+السكربت يتوقف لو: `bs4` أو `node` ناقصين، البناء فشل، في رابط مكسور، لغة فيها أقل من 28 صفحة، مسار خاص مش مستبعد، أو اختبار smoke فشل.
+
+> إعداد المشروع على Vercel ما زال Framework = `node` من النموذج القديم؛ `vercel.json` يفرض `"framework": null` لكل نشر جديد فلا حاجة لتغيير إعدادات المشروع. بعد أول نشر ثابت ناجح: bucket `site` العام في Supabase (106 ملفات قديمة) ومجلد `_deploy/preview/` يبقوا بلا استخدام ويمكن حذفهم. الدالة القديمة اتصلّحت برضه (ترجع 502 + `Retry-After` عند تعطل Storage بدل 404، وتحجب `mcp`/`node_modules`) لو احتجت ترجع لها.
+
+### 0.2) Edge Functions
+
+| الدالة | الحالة | ملاحظات |
+|---|---|---|
+| `account-delete` | منشورة، `verify_jwt = true` | تتحقق من الجلسة، تعيد التحقق بكلمة السر، ثم تحذف مستخدم auth بصلاحية الخدمة؛ الحذف يتسلسل لكل بيانات المساحة. تحتاج السر `APP_ALLOWED_ORIGINS` (مضبوط على الدومين الأساسي و`chatora-three.vercel.app`). |
+| `meta-connect` / `meta-webhook` / `meta-send` / `meta-replay` / `meta-retention` / `meta-data-deletion` | **غير منشورة** — مسودات محلية | تفاصيل وما تغيّر في `docs/integrations/META_WHATSAPP_INSTAGRAM.md`. |
+
+---
+
+### 0.3) الموافقة على التحليلات والاحتفاظ بالبيانات (14 نوفمبر 2026)
+
+- **الموافقة:** `assets/js/api.js` لا يكتب أي صف في `events` إلا بعد موافقة صريحة (`ChatoraAPI.consent()` / `setConsent()`، المفتاح `chatora.consent.v1` في `localStorage`). إشارة GPC أو Do Not Track تُعامل كرفض ولا يظهر الإشعار أصلًا. الإشعار نفسه في `main.js` (`initConsent`) ونصوصه `cc.*` بالست لغات. صفحة `legal.html` فيها زر لتغيير الاختيار. نماذج الليدز غير متأثرة.
+- **الاحتفاظ:** migration `20261115_events_retention.sql` (مطبَّقة على المشروع الحي) تفعّل `pg_cron` وتشغّل `public.chatora_purge_old_events()` يوميًا 03:17 UTC لحذف صفوف `events` الأقدم من 90 يومًا. المدة مذكورة في `legal.html`؛ أي تغيير لازم يتم في المكانين معًا.
+- **العناوين والأوصاف:** `_tools/seo_fit.py` يضبط `<title>` على 65 حرفًا والوصف على 160 حرفًا في الست لغات أثناء البناء، و`main.js` لم يعد يستبدل العنوان من القاموس.
+- **صفحة الدخول:** `login.js` فيه نصوص ES/FR/DE/PT بجانب EN/AR.
+- **Meta (غير منشور):** تبادل الرموز يرسل `client_secret` في جسم POST، و`disconnect` يلغي اشتراك الـ webhook عند Meta قبل حذف الرمز (`providerRevoked`).
+
+## 1) لقطة موثقة من 27 أكتوبر 2026 (تاريخية)
 
 > الحالات والتفاصيل أدناه لقطة تاريخية من توثيق سابق بتاريخ 27 أكتوبر. في 28 أكتوبر أُنشئت محليًا مرايا HTML ثابتة للغات الست وsitemap من 150 URL، لكن **لم يحدث نشر أو اتصال حي** بـSupabase أو Vercel أو DNS؛ لذلك لا تعتمد على جدول البنية بوصفه تحققًا آنيًا قبل فحص لوحة الخدمة.
 
@@ -102,8 +155,8 @@ limit 30;
 ### 3.2) تحليلات أول-طرف
 
 مفيش Google Analytics ولا بيكسل، ومفيش كوكيز تتبع خالص. كل حدث بيتسجل في `public.events`
-(`pageview` مرة واحدة لكل صفحة في الجلسة + `lead_submitted`). يعني بياناتك عندك، والموقع
-مش محتاج بانر كوكيز، ومفيش أرقام بتتسرّب لطرف تالت.
+(`pageview` مرة واحدة لكل صفحة في الجلسة + `lead_submitted`) **بعد موافقة الزائر فقط** — شوف §0.3.
+يعني بياناتك عندك، ومفيش أرقام بتتسرّب لطرف تالت، والصفوف بتتحذف تلقائيًا بعد 90 يوم.
 
 ```sql
 select name, count(*) from public.events
@@ -216,16 +269,7 @@ Project chatora → Settings → Deployment Protection
 
 ## 5) إعادة النشر
 
-```bash
-export SUPABASE_SERVICE_ROLE="<service_role key>"   # سيرفر فقط — متحفظهاش في المستودع
-./_tools/deploy.sh
-```
-
-السكربت بيعمل: بناء الصفحات → رفع الملفات على Supabase Storage → نشر Vercel.
-
-**ليه الملفات في Storage؟** لأن النشر عبر الـ API بيقبل ملفات صغيرة بس (الموقع 1.9MB). فالمحتوى في bucket `site` العام، و`_deploy/preview/api/serve.js` (دالة Vercel صغيرة) بتقدّمه بأنواع المحتوى الصح وروابط نظيفة (`/pricing` بدل `/pricing.html`) وصفحة 404 مخصّصة.
-
-**للإنتاج الجدي:** اربط مستودع GitHub بالمشروع، وامسح `_deploy/preview` — وقتها Vercel هيبني الموقع الثابت مباشرة من `vercel.json` الموجود في الجذر، بدون دالة وسيطة.
+انظر **§0.1** — النشر الآن ثابت ومباشر من الجذر عبر `./_tools/deploy.sh`. نموذج "الرفع على Supabase Storage + دالة Vercel وسيطة" الموصوف في الإصدارات السابقة من هذا الملف أُلغي.
 
 ---
 
@@ -237,6 +281,8 @@ export SUPABASE_SERVICE_ROLE="<service_role key>"   # سيرفر فقط — مت
 |---|---|
 | `SUPABASE_URL` | `https://sytogavpspwgjadorprn.supabase.co` |
 | `SUPABASE_ANON_KEY` | مفتاح anon (صلاحية إدخال فقط) |
+
+> المتغيران كانت تستخدمهما الدالة الوسيطة القديمة فقط. الموقع الثابت يقرأ القيم العامة من `assets/js/config.js` ولا يحتاجهما.
 
 ---
 

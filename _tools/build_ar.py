@@ -13,6 +13,12 @@ so the static copy and the interactive copy never drift apart.
 
 Run: python3 _tools/build_ar.py   (build.py calls it automatically)
 """
+import os as _os
+import sys as _sys
+
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+from seo_fit import fit_description, fit_title  # noqa: E402
+
 import importlib.util
 import json
 import os
@@ -194,6 +200,8 @@ def translate(soup, ar):
 
 
 def set_meta(soup, title, desc, ar_url, en_url):
+    title = fit_title(title)
+    desc = fit_description(desc)
     if soup.title:
         soup.title.string = title
     for m in soup.find_all("meta"):

@@ -1617,3 +1617,17 @@ html[dir="rtl"] .cform select{background-position:16px 50%,11px 50%}
 .meta-ig-picker .btn{justify-self:start;margin-top:0}
 .meta-channel-card .meta-ig-picker+.btn{margin-top:0}
 @media(max-width:760px){.meta-channels-grid{grid-template-columns:1fr}.meta-readiness ul{grid-template-columns:1fr}}
+
+/* Settings → delete account */
+.dash-danger{border-color:rgba(255,107,107,.35)}
+.btn-danger{color:#ff8f8f;border-color:rgba(255,107,107,.45)}
+.btn-danger:hover,.btn-danger:focus-visible{background:rgba(255,107,107,.14);color:#fff}
+
+/* Analytics consent notice */
+.consent{position:fixed;inset-inline:16px;bottom:16px;z-index:95;max-width:720px;margin-inline:auto;display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px;padding:14px 18px;border-radius:16px;background:rgba(14,14,26,.96);border:1px solid rgba(255,255,255,.14);box-shadow:0 24px 60px -24px rgba(0,0,0,.9);backdrop-filter:blur(14px)}
+.consent-text{flex:1 1 280px;margin:0;font-size:14px;line-height:1.5;color:rgba(255,255,255,.86)}
+.consent-text a{color:inherit;text-decoration:underline}
+.consent-actions{display:flex;gap:8px;flex:0 0 auto}
+.consent-choice{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin:14px 0 0}
+@media (max-width:520px){.consent-actions{width:100%}.consent-actions .btn{flex:1}}
+@media print{.consent{display:none}}

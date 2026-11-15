@@ -23,3 +23,13 @@ verify_jwt = false
 # Outbound sends require a signed Supabase user session and are authorized
 # against workspace ownership inside the function as a second check.
 verify_jwt = true
+
+[functions.meta-data-deletion]
+# Called by Meta without a Supabase session; every POST is authenticated by the
+# HMAC-SHA256 signature of `signed_request` (META_APP_SECRET) inside the function.
+verify_jwt = false
+
+[functions.account-delete]
+# A signed-in user deletes their own account. The function re-checks the session,
+# requires the current password, then removes the auth user with the service role.
+verify_jwt = true

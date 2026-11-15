@@ -95,6 +95,7 @@ GRANT ALL ON public.channel_connection_secrets TO service_role;
 -- Encrypted, short-lived webhook ingress queue. Raw message payloads are never
 -- readable by the browser; a later server-side processor decrypts and normalizes
 -- them into contacts/conversations/messages, then marks them processed.
+-- Depends on 20261026_base_schema.sql and 20261114_security_hardening.sql.
 CREATE TABLE IF NOT EXISTS public.meta_webhook_inbox (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   provider text NOT NULL CHECK (provider IN ('whatsapp_cloud', 'instagram_messenger')),
@@ -226,6 +227,8 @@ DECLARE
   v_conversation_id uuid;
   v_message_id uuid;
   v_processed integer := 0;
+  v_skipped integer := 0;
+  v_failed integer := 0;
 BEGIN
   IF p_provider IS NULL OR p_provider NOT IN ('whatsapp_cloud', 'instagram_messenger') THEN
     RAISE EXCEPTION 'Unsupported Meta provider';
@@ -241,6 +244,10 @@ BEGIN
 
   FOR v_event IN SELECT value FROM jsonb_array_elements(p_events) AS items(value)
   LOOP
+   -- Each event runs in its own sub-transaction: one malformed or unroutable
+   -- event must never roll back (and so endlessly retry) its whole batch.
+   BEGIN
+    v_workspace_id := NULL;
     v_account_id := NULLIF(v_event->>'external_account_id', '');
     v_external_contact_id := NULLIF(v_event->>'external_contact_id', '');
     v_external_conversation_id := NULLIF(v_event->>'external_conversation_id', '');
@@ -275,7 +282,10 @@ BEGIN
         AND cc.status = 'connected'
       LIMIT 1;
     IF v_workspace_id IS NULL THEN
-      RAISE EXCEPTION 'No active Chatora connection matches this Meta account';
+      -- Meta keeps delivering for accounts that were disconnected or never
+      -- finished onboarding. That is not an error to retry: drop the event.
+      v_skipped := v_skipped + 1;
+      CONTINUE;
     END IF;
 
     INSERT INTO public.contacts
@@ -321,9 +331,13 @@ BEGIN
         WHERE id = v_conversation_id;
       v_processed := v_processed + 1;
     END IF;
+   EXCEPTION WHEN OTHERS THEN
+    -- Never surface payload content; the caller only needs the count.
+    v_failed := v_failed + 1;
+   END;
   END LOOP;
 
-  RETURN jsonb_build_object('processed', v_processed);
+  RETURN jsonb_build_object('processed', v_processed, 'skipped', v_skipped, 'failed', v_failed);
 END
 $function$;
 REVOKE ALL ON FUNCTION public.chatora_ingest_meta_messages(text, jsonb) FROM PUBLIC, anon, authenticated;
@@ -376,5 +390,160 @@ END
 $function$;
 REVOKE ALL ON FUNCTION public.chatora_update_meta_statuses(text, jsonb) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.chatora_update_meta_statuses(text, jsonb) TO service_role;
+
+-- ---------------------------------------------------------------------------
+-- Provider-owned columns are read-only for browser sessions.
+-- meta-send trusts conversations.last_inbound_at (24-hour window), the
+-- external IDs (recipient routing) and messages.provider_* (delivery state).
+-- The workspace RLS policies are FOR ALL, so without these guards an owner
+-- could PATCH those values through PostgREST and send outside Meta's window
+-- or to an arbitrary recipient. Only service_role / postgres may write them.
+CREATE OR REPLACE FUNCTION public.chatora_guard_provider_columns()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = pg_catalog, public
+AS $function$
+BEGIN
+  IF COALESCE(auth.role(), '') NOT IN ('anon', 'authenticated') THEN
+    RETURN NEW;
+  END IF;
+
+  IF TG_TABLE_NAME = 'contacts' THEN
+    IF TG_OP = 'INSERT' THEN
+      NEW.external_id := NULL;
+    ELSE
+      NEW.external_id := OLD.external_id;
+      -- A provider-linked contact cannot be moved to another channel/workspace.
+      IF OLD.external_id IS NOT NULL THEN
+        NEW.channel := OLD.channel;
+        NEW.workspace_id := OLD.workspace_id;
+      END IF;
+    END IF;
+  ELSIF TG_TABLE_NAME = 'conversations' THEN
+    IF TG_OP = 'INSERT' THEN
+      NEW.external_id := NULL;
+      NEW.last_inbound_at := NULL;
+    ELSE
+      NEW.external_id := OLD.external_id;
+      NEW.last_inbound_at := OLD.last_inbound_at;
+      IF OLD.external_id IS NOT NULL THEN
+        NEW.channel := OLD.channel;
+        NEW.workspace_id := OLD.workspace_id;
+        NEW.contact_id := OLD.contact_id;
+      END IF;
+    END IF;
+  ELSIF TG_TABLE_NAME = 'messages' THEN
+    IF TG_OP = 'INSERT' THEN
+      NEW.provider := NULL;
+      NEW.provider_message_id := NULL;
+      NEW.provider_status := NULL;
+      NEW.provider_status_at := NULL;
+    ELSE
+      NEW.provider := OLD.provider;
+      NEW.provider_message_id := OLD.provider_message_id;
+      NEW.provider_status := OLD.provider_status;
+      NEW.provider_status_at := OLD.provider_status_at;
+      NEW.client_message_id := OLD.client_message_id;
+      IF OLD.provider IS NOT NULL THEN
+        NEW.conversation_id := OLD.conversation_id;
+        NEW.direction := OLD.direction;
+        NEW.author := OLD.author;
+        NEW.body := OLD.body;
+        NEW.created_at := OLD.created_at;
+      END IF;
+    END IF;
+  END IF;
+  RETURN NEW;
+END
+$function$;
+REVOKE ALL ON FUNCTION public.chatora_guard_provider_columns() FROM PUBLIC, anon, authenticated;
+
+DROP TRIGGER IF EXISTS contacts_guard_provider_trg ON public.contacts;
+CREATE TRIGGER contacts_guard_provider_trg BEFORE INSERT OR UPDATE ON public.contacts
+  FOR EACH ROW EXECUTE FUNCTION public.chatora_guard_provider_columns();
+DROP TRIGGER IF EXISTS conversations_guard_provider_trg ON public.conversations;
+CREATE TRIGGER conversations_guard_provider_trg BEFORE INSERT OR UPDATE ON public.conversations
+  FOR EACH ROW EXECUTE FUNCTION public.chatora_guard_provider_columns();
+DROP TRIGGER IF EXISTS messages_guard_provider_trg ON public.messages;
+CREATE TRIGGER messages_guard_provider_trg BEFORE INSERT OR UPDATE ON public.messages
+  FOR EACH ROW EXECUTE FUNCTION public.chatora_guard_provider_columns();
+
+-- ---------------------------------------------------------------------------
+-- Disconnect: drop the stored token and stop routing in one transaction.
+-- Called by meta-connect (action "disconnect") after it re-checks ownership.
+CREATE OR REPLACE FUNCTION public.chatora_disconnect_channel(p_workspace_id uuid, p_connection_id uuid)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $function$
+DECLARE
+  v_found boolean;
+BEGIN
+  UPDATE public.channel_connections
+    SET status = 'disconnected', updated_at = now()
+    WHERE id = p_connection_id AND workspace_id = p_workspace_id
+    RETURNING true INTO v_found;
+  IF v_found IS NULL THEN
+    RETURN jsonb_build_object('disconnected', false);
+  END IF;
+  DELETE FROM public.channel_connection_secrets WHERE connection_id = p_connection_id;
+  RETURN jsonb_build_object('disconnected', true);
+END
+$function$;
+REVOKE ALL ON FUNCTION public.chatora_disconnect_channel(uuid, uuid) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.chatora_disconnect_channel(uuid, uuid) TO service_role;
+
+-- ---------------------------------------------------------------------------
+-- Meta "data deletion request" callback. Meta sends the app-scoped user ID of
+-- a person who removed the app; every contact carrying that ID (and, through
+-- ON DELETE CASCADE, their conversations and messages) is erased. Only a
+-- hashed confirmation code is stored so the status page can answer without
+-- keeping any personal identifier.
+CREATE TABLE IF NOT EXISTS public.meta_data_deletion_requests (
+  confirmation_sha256 text PRIMARY KEY,
+  contacts_deleted integer NOT NULL DEFAULT 0,
+  status text NOT NULL DEFAULT 'completed' CHECK (status IN ('completed', 'failed')),
+  requested_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.meta_data_deletion_requests ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.meta_data_deletion_requests FROM anon, authenticated;
+GRANT ALL ON public.meta_data_deletion_requests TO service_role;
+
+CREATE OR REPLACE FUNCTION public.chatora_delete_meta_user_data(
+  p_external_user_id text,
+  p_confirmation_sha256 text
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $function$
+DECLARE
+  v_deleted integer := 0;
+BEGIN
+  IF p_external_user_id IS NULL OR p_external_user_id !~ '^[0-9]{5,32}$' THEN
+    RAISE EXCEPTION 'Invalid Meta user ID';
+  END IF;
+  IF p_confirmation_sha256 IS NULL OR p_confirmation_sha256 !~ '^[0-9a-f]{64}$' THEN
+    RAISE EXCEPTION 'Invalid confirmation hash';
+  END IF;
+
+  DELETE FROM public.contacts
+    WHERE external_id = p_external_user_id
+      AND channel IN ('instagram', 'whatsapp');
+  GET DIAGNOSTICS v_deleted = ROW_COUNT;
+
+  INSERT INTO public.meta_data_deletion_requests (confirmation_sha256, contacts_deleted)
+  VALUES (p_confirmation_sha256, v_deleted)
+  ON CONFLICT (confirmation_sha256) DO UPDATE
+    SET contacts_deleted = public.meta_data_deletion_requests.contacts_deleted + EXCLUDED.contacts_deleted,
+        requested_at = now();
+
+  RETURN jsonb_build_object('deleted', v_deleted);
+END
+$function$;
+REVOKE ALL ON FUNCTION public.chatora_delete_meta_user_data(text, text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.chatora_delete_meta_user_data(text, text) TO service_role;
 
 COMMIT;

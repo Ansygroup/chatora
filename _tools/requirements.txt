@@ -1,0 +1,3 @@
+# Build-time dependencies for _tools/build.py (build_ar.py, build_locales.py, split_i18n.py).
+# Node.js >= 20 is also required: the builders evaluate the i18n dictionaries with it.
+beautifulsoup4>=4.12,<5
