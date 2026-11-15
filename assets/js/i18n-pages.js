@@ -9454,3 +9454,115 @@ Object.assign(window.CHATORA_I18N_PAGES.pt, {
   "app.metaDisconnect": "Desconectar",
   "app.metaDisconnectConfirm": "Desconectar este canal? A Chatora exclui o token de acesso armazenado e deixa de receber as mensagens dele.",
 });
+
+/* 14 November 2026: analytics consent notice (cc.*) and the legal-page wording
+   for retention, service providers and self-service deletion. These entries
+   supersede the earlier lp.lede / lg.5 / lg.6 / lg.7 / lg.20 / lg.23 values above. */
+Object.assign(window.CHATORA_I18N_PAGES.ar, {
+  "lp.lede": "معلومات الخصوصية والاستخدام في مرحلة المعاينة. آخر تحديث: 14 نوفمبر 2026.",
+  "lg.5": "مدة الاحتفاظ: تُحذف عدادات مشاهدات الصفحات المجهولة تلقائيًا بعد 90 يومًا من تسجيلها. تُحفظ بيانات النماذج إلى أن تطلب حذفها أو تنتهي المعاينة. تُحفظ بيانات الحساب ومساحة العمل إلى أن تحذف الحساب من الإعدادات داخل مساحة العمل، وهذا يحذف الحساب وبيانات مساحة العمل. أي نسخ احتياطية لدى مزوّد الاستضافة تنتهي وفق جدول المزوّد، وهو خارج تحكم هذه المعاينة. قد تبقى بيانات النموذج غير المرسلة في التخزين المحلي لهذا المتصفح حتى إرسالها أو حذف بيانات المتصفح.",
+  "lg.6": "مقدمو الخدمات: Supabase (المصادقة وقاعدة البيانات؛ منطقة المشروع eu-central-1 في فرانكفورت بالاتحاد الأوروبي) و Vercel (استضافة الموقع؛ يستقبل بيانات الطلب المعتادة مثل عنوان IP وتفاصيل المتصفح عند تحميل الصفحة). لا يوجد مزوّد دفع أو قنوات أو ذكاء اصطناعي موصول بالمعاينة. هذه القائمة للعلم وليست ملحقًا تعاقديًا بالمعالجين من الباطن.",
+  "lg.7": "طلبات الخصوصية: يمكنك حذف حسابك وبيانات مساحة العمل بنفسك من الإعدادات داخل مساحة العمل. لطلب الوصول إلى أي بيانات أخرى أو تصحيحها أو حذفها، ومنها بيانات النماذج، استخدم صفحة التواصل؛ لا يوجد التزام منشور بمدة للرد في هذه المعاينة.",
+  "lg.20": "المزوّدون المذكورون في قسم الخصوصية هم القائمة الحالية؛ ولا يوجد التزام منشور بإشعار مسبق عند تغييرها.",
+  "lg.23": "يخزّن المشروع الحي بياناته في منطقة Supabase eu-central-1 (فرانكفورت، الاتحاد الأوروبي). لا يتوفر اختيار لمكان إقامة البيانات.",
+  "lg.cc": "اختيار التحليلات: لا تُحتسب مشاهدات الصفحات إلا إذا وافقت على الإشعار الذي يظهر في أول زيارة. يسجّل العداد الصفحة وعنوانها واللغة وعنوان الصفحة المُحيلة مع معرّف عشوائي لكل مشاهدة؛ ولا يضع ملفات تعريف ارتباط ولا يبني ملفًا شخصيًا. إشارة Global Privacy Control أو Do Not Track من متصفحك تُعامل كرفض. يُحفظ اختيارك في التخزين المحلي لهذا المتصفح، وكذلك رمز الجلسة عند تسجيل الدخول، ويمكنك تغييره من الزر أدناه.",
+  "cc.text": "ممكن نعدّ الزيارة دي؟ عدّاد مشاهدات مجهول فقط، من غير كوكيز ولا تتبّع إعلاني.",
+  "cc.accept": "موافق",
+  "cc.decline": "لا، شكرًا",
+  "cc.more": "التفاصيل",
+  "cc.label": "اختيار التحليلات",
+  "cc.change": "تغيير اختيار التحليلات",
+  "cc.on": "عدّ مشاهدات الصفحات مفعّل.",
+  "cc.off": "عدّ مشاهدات الصفحات متوقف.",
+  "cc.unset": "لم يُحفظ اختيار بعد.",
+  "cc.signal": "متصفحك يرسل إشارة خصوصية (GPC أو Do Not Track)، لذلك يبقى عدّ المشاهدات متوقفًا."
+});
+Object.assign(window.CHATORA_I18N_PAGES.es, {
+  "lp.lede": "Información sobre privacidad y uso en la fase de vista previa. Actualizado el 14 de noviembre de 2026.",
+  "lg.5": "Conservación: los contadores anónimos de páginas vistas se eliminan automáticamente 90 días después de registrarse. Los envíos de formularios se conservan hasta que solicites su eliminación o termine la vista previa. Los datos de la cuenta y del espacio de trabajo se conservan hasta que elimines la cuenta desde Configuración en el espacio de trabajo, lo que borra la cuenta y los datos de su espacio de trabajo. Las copias de seguridad que mantenga el proveedor de alojamiento caducan según el calendario de ese proveedor, que esta vista previa no controla. Los datos de formularios guardados sin conexión pueden permanecer en el almacenamiento local de este navegador hasta que se envíen o borres los datos del navegador.",
+  "lg.6": "Proveedores de servicios: Supabase (autenticación y base de datos; región del proyecto eu-central-1, Fráncfort, UE) y Vercel (alojamiento del sitio; recibe los datos habituales de cada solicitud, como la dirección IP y los datos del navegador, al cargar una página). En esta vista previa no hay conectado ningún proveedor de pagos, canales o IA. Esta lista es informativa y no constituye un anexo contractual de subencargados.",
+  "lg.7": "Solicitudes de privacidad: puedes eliminar tu cuenta y los datos de su espacio de trabajo tú mismo desde Configuración en el espacio de trabajo. Para acceder, corregir o eliminar cualquier otro dato, incluidos los envíos de formularios, usa la página de contacto; esta vista previa no publica un compromiso de tiempo de respuesta.",
+  "lg.20": "Los proveedores indicados en la sección de privacidad son la lista actual; no se ha publicado un compromiso de aviso previo de cambios.",
+  "lg.23": "El proyecto activo almacena sus datos en la región eu-central-1 de Supabase (Fráncfort, UE). No se ofrece elección de residencia de datos.",
+  "lg.cc": "Elección de analítica: las páginas vistas solo se cuentan si aceptas el aviso que aparece en tu primera visita. El contador registra la página, su título, el idioma y la dirección de procedencia con un identificador aleatorio por vista; no instala cookies ni crea perfiles. Una señal Global Privacy Control o Do Not Track de tu navegador se trata como un rechazo. Tu elección se guarda en el almacenamiento local de este navegador, igual que el token de sesión cuando inicias sesión, y puedes cambiarla abajo.",
+  "cc.text": "¿Podemos contar esta visita? Solo un contador anónimo de páginas vistas: sin cookies ni seguimiento publicitario.",
+  "cc.accept": "Permitir",
+  "cc.decline": "No, gracias",
+  "cc.more": "Detalles",
+  "cc.label": "Elección de analítica",
+  "cc.change": "Cambiar la elección de analítica",
+  "cc.on": "El recuento de páginas vistas está activado.",
+  "cc.off": "El recuento de páginas vistas está desactivado.",
+  "cc.unset": "Aún no hay ninguna elección guardada.",
+  "cc.signal": "Tu navegador envía una señal de privacidad (GPC o Do Not Track), así que el recuento de páginas vistas permanece desactivado."
+});
+Object.assign(window.CHATORA_I18N_PAGES.fr, {
+  "lp.lede": "Informations sur la confidentialité et l’utilisation pendant la phase d’aperçu. Mise à jour le 14 novembre 2026.",
+  "lg.5": "Conservation : les compteurs anonymes de pages vues sont supprimés automatiquement 90 jours après leur enregistrement. Les envois de formulaires sont conservés jusqu’à ce que vous en demandiez la suppression ou jusqu’à la fin de l’aperçu. Les données du compte et de l’espace de travail sont conservées jusqu’à ce que vous supprimiez le compte depuis les Paramètres de l’espace de travail, ce qui supprime le compte et les données de son espace de travail. Les sauvegardes éventuellement détenues par l’hébergeur expirent selon le calendrier de ce dernier, que cet aperçu ne maîtrise pas. Les données de formulaires conservées hors ligne peuvent rester dans le stockage local de ce navigateur jusqu’à leur envoi ou jusqu’à ce que vous effaciez les données du navigateur.",
+  "lg.6": "Prestataires de services : Supabase (authentification et base de données ; région du projet eu-central-1, Francfort, UE) et Vercel (hébergement du site ; reçoit les données habituelles de chaque requête, comme l’adresse IP et les informations du navigateur, au chargement d’une page). Aucun prestataire de paiement, de canal ou d’IA n’est connecté dans l’aperçu. Cette liste est fournie à titre d’information et ne constitue pas une annexe contractuelle des sous-traitants.",
+  "lg.7": "Demandes relatives à la confidentialité : vous pouvez supprimer vous-même votre compte et les données de son espace de travail depuis les Paramètres de l’espace de travail. Pour accéder à toute autre donnée, la rectifier ou la supprimer, y compris les envois de formulaires, utilisez la page de contact ; aucun délai de réponse n’est garanti pour cet aperçu.",
+  "lg.20": "Les prestataires cités dans la section confidentialité constituent la liste actuelle ; aucun engagement de préavis en cas de modification n’est publié.",
+  "lg.23": "Le projet en production stocke ses données dans la région Supabase eu-central-1 (Francfort, UE). Aucun choix de résidence des données n’est proposé.",
+  "lg.cc": "Choix de mesure d’audience : les pages vues ne sont comptées que si vous acceptez l’avis affiché lors de votre première visite. Le compteur enregistre la page, son titre, la langue et l’adresse de provenance avec un identifiant aléatoire par vue ; il ne dépose aucun cookie et ne crée aucun profil. Un signal Global Privacy Control ou Do Not Track de votre navigateur est traité comme un refus. Votre choix est conservé dans le stockage local de ce navigateur, tout comme le jeton de session lorsque vous vous connectez, et vous pouvez le modifier ci-dessous.",
+  "cc.text": "Pouvons-nous compter cette visite ? Un simple compteur anonyme de pages vues : ni cookies ni suivi publicitaire.",
+  "cc.accept": "Autoriser",
+  "cc.decline": "Non merci",
+  "cc.more": "Détails",
+  "cc.label": "Choix de mesure d’audience",
+  "cc.change": "Modifier le choix de mesure d’audience",
+  "cc.on": "Le comptage des pages vues est activé.",
+  "cc.off": "Le comptage des pages vues est désactivé.",
+  "cc.unset": "Aucun choix enregistré pour l’instant.",
+  "cc.signal": "Votre navigateur envoie un signal de confidentialité (GPC ou Do Not Track) : le comptage des pages vues reste désactivé."
+});
+Object.assign(window.CHATORA_I18N_PAGES.de, {
+  "lp.lede": "Informationen zu Datenschutz und Nutzung in der Vorschauphase. Aktualisiert am 14. November 2026.",
+  "lg.5": "Aufbewahrung: Anonyme Seitenaufruf-Zähler werden 90 Tage nach der Erfassung automatisch gelöscht. Formularübermittlungen werden aufbewahrt, bis du die Löschung verlangst oder die Vorschau endet. Konto- und Arbeitsbereichsdaten werden aufbewahrt, bis du das Konto in den Einstellungen des Arbeitsbereichs löschst; dabei werden das Konto und die Daten seines Arbeitsbereichs gelöscht. Etwaige Sicherungen des Hosting-Anbieters verfallen nach dessen Zeitplan, auf den diese Vorschau keinen Einfluss hat. Offline gespeicherte Formulardaten können im lokalen Speicher dieses Browsers verbleiben, bis sie übermittelt werden oder du die Browserdaten löschst.",
+  "lg.6": "Dienstleister: Supabase (Authentifizierung und Datenbank; Projektregion eu-central-1, Frankfurt, EU) und Vercel (Website-Hosting; erhält beim Laden einer Seite die üblichen Anfragedaten wie IP-Adresse und Browserangaben). In der Vorschau ist kein Zahlungs-, Kanal- oder KI-Anbieter verbunden. Diese Liste dient der Information und ist kein vertragliches Verzeichnis der Unterauftragsverarbeiter.",
+  "lg.7": "Datenschutzanfragen: Du kannst dein Konto und die Daten seines Arbeitsbereichs selbst in den Einstellungen des Arbeitsbereichs löschen. Für Auskunft, Berichtigung oder Löschung aller anderen Daten, einschließlich Formularübermittlungen, nutze die Kontaktseite; für diese Vorschau ist keine Antwortfrist zugesagt.",
+  "lg.20": "Die im Abschnitt Datenschutz genannten Anbieter sind die aktuelle Liste; eine Zusage zur Vorabinformation über Änderungen wurde nicht veröffentlicht.",
+  "lg.23": "Das Live-Projekt speichert seine Daten in der Supabase-Region eu-central-1 (Frankfurt, EU). Eine Wahl des Speicherorts wird nicht angeboten.",
+  "lg.cc": "Analyse-Auswahl: Seitenaufrufe werden nur gezählt, wenn du dem Hinweis bei deinem ersten Besuch zustimmst. Der Zähler erfasst die Seite, ihren Titel, die Sprache und die verweisende Adresse mit einer zufälligen Kennung pro Aufruf; er setzt keine Cookies und erstellt kein Profil. Ein Signal Global Privacy Control oder Do Not Track deines Browsers gilt als Ablehnung. Deine Auswahl wird im lokalen Speicher dieses Browsers abgelegt, ebenso das Sitzungstoken bei der Anmeldung, und du kannst sie unten ändern.",
+  "cc.text": "Dürfen wir diesen Besuch zählen? Nur ein anonymer Seitenaufruf-Zähler – keine Cookies, kein Werbe-Tracking.",
+  "cc.accept": "Erlauben",
+  "cc.decline": "Nein danke",
+  "cc.more": "Details",
+  "cc.label": "Analyse-Auswahl",
+  "cc.change": "Analyse-Auswahl ändern",
+  "cc.on": "Die Zählung der Seitenaufrufe ist aktiviert.",
+  "cc.off": "Die Zählung der Seitenaufrufe ist deaktiviert.",
+  "cc.unset": "Noch keine Auswahl gespeichert.",
+  "cc.signal": "Dein Browser sendet ein Datenschutzsignal (GPC oder Do Not Track), daher bleibt die Zählung der Seitenaufrufe deaktiviert."
+});
+Object.assign(window.CHATORA_I18N_PAGES.pt, {
+  "lp.lede": "Informações de privacidade e uso durante a fase de prévia. Atualizado em 14 de novembro de 2026.",
+  "lg.5": "Retenção: os contadores anônimos de visualizações de página são excluídos automaticamente 90 dias após o registro. Os envios de formulários são mantidos até você solicitar a exclusão ou até o fim da prévia. Os dados da conta e do espaço de trabalho são mantidos até você excluir a conta em Configurações no espaço de trabalho, o que exclui a conta e os dados do espaço de trabalho dela. Eventuais backups mantidos pelo provedor de hospedagem expiram conforme o cronograma desse provedor, que esta prévia não controla. Dados de formulários armazenados offline podem permanecer no armazenamento local deste navegador até serem enviados ou até você limpar os dados do navegador.",
+  "lg.6": "Prestadores de serviço: Supabase (autenticação e banco de dados; região do projeto eu-central-1, Frankfurt, UE) e Vercel (hospedagem do site; recebe os dados habituais de cada requisição, como endereço IP e informações do navegador, quando uma página é carregada). Nenhum provedor de pagamento, canal ou IA está conectado na prévia. Esta lista é informativa e não constitui um anexo contratual de subprocessadores.",
+  "lg.7": "Solicitações de privacidade: você mesmo pode excluir sua conta e os dados do espaço de trabalho dela em Configurações no espaço de trabalho. Para acessar, corrigir ou excluir qualquer outro dado, incluindo envios de formulários, use a página de contato; nenhum prazo de resposta é prometido para esta prévia.",
+  "lg.20": "Os provedores citados na seção de privacidade são a lista atual; não foi publicado um compromisso de aviso prévio sobre alterações.",
+  "lg.23": "O projeto em produção armazena seus dados na região eu-central-1 do Supabase (Frankfurt, UE). Não é oferecida escolha de residência de dados.",
+  "lg.cc": "Escolha de análise: as visualizações de página só são contadas se você aceitar o aviso exibido na primeira visita. O contador registra a página, o título, o idioma e o endereço de origem com um identificador aleatório por visualização; ele não grava cookies nem cria perfis. Um sinal Global Privacy Control ou Do Not Track do seu navegador é tratado como recusa. Sua escolha fica no armazenamento local deste navegador, assim como o token de sessão quando você entra, e pode ser alterada abaixo.",
+  "cc.text": "Podemos contar esta visita? Apenas um contador anônimo de visualizações de página: sem cookies nem rastreamento de anúncios.",
+  "cc.accept": "Permitir",
+  "cc.decline": "Não, obrigado",
+  "cc.more": "Detalhes",
+  "cc.label": "Escolha de análise",
+  "cc.change": "Alterar a escolha de análise",
+  "cc.on": "A contagem de visualizações de página está ativada.",
+  "cc.off": "A contagem de visualizações de página está desativada.",
+  "cc.unset": "Nenhuma escolha salva ainda.",
+  "cc.signal": "Seu navegador envia um sinal de privacidade (GPC ou Do Not Track), então a contagem de visualizações de página permanece desativada."
+});
+
+/* Search-result titles written by hand where automatic fitting read badly. */
+Object.assign(window.CHATORA_I18N_PAGES.es, {
+  "seo.home.title": "Chatora — marketing con IA para Instagram y WhatsApp",
+  "seo.features.title": "Funciones — IA, flujos visuales y bandeja de entrada | Chatora",
+  "seo.a2.title": "Convertir los DM de Instagram en un canal de ventas | Chatora"
+});
+Object.assign(window.CHATORA_I18N_PAGES.fr, {
+  "seo.features.title": "Fonctionnalités — IA, parcours visuels et boîte de réception"
+});
+Object.assign(window.CHATORA_I18N_PAGES.pt, {
+  "seo.features.title": "Recursos — IA, fluxos visuais e caixa de entrada | Chatora"
+});

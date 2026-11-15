@@ -287,6 +287,7 @@
   };
   const CH_T = { instagram: "channelInstagram", whatsapp: "channelWhatsapp", tiktok: "channelTiktok", messenger: "channelMessenger", telegram: "channelTelegram", sms: "channelSms", email: "channelEmail", web: "channelWeb" };
   const chLabel = (k) => T[CH_T[k]] || (CH[k] || { label: k }).label;
+  const STEP_KINDS = ["trigger", "msg", "delay", "cond", "tag"];
   const chColor = (k) => (CH[k] || { color: "#7C5CFF" }).color;
 
   /* ---------- bootstrap ---------- */
@@ -418,10 +419,10 @@
     return `<ul class="conv-list${compact ? " is-compact" : ""}">` + rows.map((c) => {
       const name = (c.contacts && c.contacts.name) || "—";
       const st = c.status === "closed" ? T.fClosed : c.status === "human" ? T.humanMode : T.aiPaused;
-      return `<li><button type="button" class="conv-item" data-conv="${c.id}">` +
+      return `<li><button type="button" class="conv-item" data-conv="${esc(c.id)}">` +
         `<span class="conv-av" style="--c:${chColor(c.channel)}">${esc(name.slice(0, 1))}</span>` +
         `<span class="conv-mid"><b>${esc(name)}</b><span>${esc(chLabel(c.channel))} · ${esc(st)}</span></span>` +
-        `<span class="conv-end">${esc(when(c.last_at))}${c.unread ? `<i class="conv-unread">${c.unread}</i>` : ""}</span></button></li>`;
+        `<span class="conv-end">${esc(when(c.last_at))}${c.unread ? `<i class="conv-unread">${num(Number(c.unread) || 0)}</i>` : ""}</span></button></li>`;
     }).join("") + `</ul>`;
   }
 
@@ -548,12 +549,13 @@
     const tpl = "";
 
     const cards = state.flows.map((f) => {
-      const st = f.status;
+      /* Values from the database are whitelisted before they reach markup. */
+      const st = ["live", "paused", "draft"].indexOf(f.status) !== -1 ? f.status : "draft";
       const steps = (f.nodes || []).length;
       return `<article class="flow-card"><header><span class="flow-ch" style="--c:${chColor(f.channel)}">${esc(chLabel(f.channel))}</span>` +
         `<span class="flow-status is-${st}">${esc(T[st])}</span></header><h3>${esc(f.name)}</h3>` +
         `<p class="flow-meta">${num(f.runs)} ${esc(T.runs)}${steps ? ` · ${num(steps)} ${esc(T.steps)}` : ""} · ${esc(when(f.updated_at))}</p>` +
-        `<div class="flow-foot"><button type="button" class="btn btn-ghost btn-sm" data-edit="${f.id}">${esc(T.edit)}</button></div></article>`;
+        `<div class="flow-foot"><button type="button" class="btn btn-ghost btn-sm" data-edit="${esc(f.id)}">${esc(T.edit)}</button></div></article>`;
     }).join("");
 
     return `<div class="dash-head"><span></span><button type="button" class="btn btn-primary btn-sm" data-new-flow>+ ${esc(T.newFlow)}</button></div>` +
@@ -565,11 +567,12 @@
     const f = state.edit;
     const rows = state.steps.map((s, i) => {
       const first = i === 0;
+      const kind = STEP_KINDS.indexOf(s.t) !== -1 ? s.t : "msg";
       const body = s.t === "msg" ? `<textarea class="dstep-in" rows="2" data-i="${i}" data-k="text" placeholder="${esc(T.sMsgPh)}">${esc(s.text || "")}</textarea>`
         : s.t === "delay" ? `<input class="dstep-in" data-i="${i}" data-k="v" type="number" min="1" max="1440" value="${esc(s.v || 5)}" aria-label="${esc(T.sDelayPh)}" placeholder="${esc(T.sDelayPh)}">`
           : `<input class="dstep-in" data-i="${i}" data-k="text" value="${esc(s.text || "")}" aria-label="${esc(s.t === "tag" ? T.sTagPh : T.sCondPh)}" placeholder="${esc(s.t === "tag" ? T.sTagPh : T.sCondPh)}">`;
-      return `<li class="dstep is-${s.t}"><span class="dstep-n">${i + 1}</span>` +
-        `<span class="dstep-type">${esc(T["s" + s.t[0].toUpperCase() + s.t.slice(1)])}</span>` +
+      return `<li class="dstep is-${kind}"><span class="dstep-n">${i + 1}</span>` +
+        `<span class="dstep-type">${esc(T["s" + kind[0].toUpperCase() + kind.slice(1)])}</span>` +
         `<div class="dstep-body">${body}</div>` +
         `<div class="dstep-acts">` +
         (i > 1 ? `<button type="button" class="icon-btn" data-move="${i}" data-dir="-1" aria-label="${esc(T.stepUp)}">↑</button>` : "") +
@@ -587,7 +590,7 @@
       `<button type="button" class="btn btn-primary btn-sm" id="ed-save">${esc(T.save)}</button></div></div>` +
       `<div class="dash-card"><h2>${esc(T.flowName)}</h2>` +
       `<input id="ed-name" class="ed-name" value="${esc(f.name)}" maxlength="70" aria-label="${esc(T.flowName)}">` +
-      `<p class="dash-note">${esc(chLabel(f.channel))} · ${esc(T[f.status])}</p></div>` +
+      `<p class="dash-note">${esc(chLabel(f.channel))} · ${esc(T[["live", "paused", "draft"].includes(f.status) ? f.status : "draft"] || "")}</p></div>` +
       `<div class="dash-card"><h2>${esc(T.steps)}</h2>` +
       `<ol class="dsteps">${rows || `<li class="dash-empty">${esc(T.noSteps)}</li>`}</ol>` +
       `<div class="dstep-add"><span>${esc(T.addStep)}</span>${adds}</div></div>` +
@@ -663,9 +666,9 @@
       `<td><span class="pill" style="--c:${chColor(c.channel)}">${esc(chLabel(c.channel))}</span></td>` +
       `<td>${(c.tags || []).map((t) => `<span class="tagpill">${esc(t)}</span>`).join(" ") || "—"}</td>` +
       `<td>${esc(when(c.last_seen))}</td>` +
-      `<td class="td-acts"><button type="button" class="row-btn" data-msg="${c.id}">${esc(T.message)}</button>` +
-      `<button type="button" class="row-btn" data-cedit="${c.id}">${esc(T.edit)}</button>` +
-      `<button type="button" class="row-btn is-del" data-cdel="${c.id}">${esc(T.deleteContact)}</button></td></tr>`).join("");
+      `<td class="td-acts"><button type="button" class="row-btn" data-msg="${esc(c.id)}">${esc(T.message)}</button>` +
+      `<button type="button" class="row-btn" data-cedit="${esc(c.id)}">${esc(T.edit)}</button>` +
+      `<button type="button" class="row-btn is-del" data-cdel="${esc(c.id)}">${esc(T.deleteContact)}</button></td></tr>`).join("");
   }
 
   function csvHeaderKey(value) {

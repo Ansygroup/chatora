@@ -146,11 +146,8 @@
       el.setAttribute("alt", !isEn && dict[key] != null ? dict[key] : en);
     });
 
-    const titleKey = document.documentElement.getAttribute("data-title-key");
-    if (titleKey) {
-      const en = remember(document.documentElement, "docTitle", document.title);
-      document.title = !isEn && dict[titleKey] ? dict[titleKey] : en;
-    }
+    /* <title> is written by the build for every language (and fitted to the
+       length search results show), so it is not replaced from the dictionary. */
 
     // language switch UI
     $$("[data-lang]").forEach((b) => {
@@ -771,6 +768,72 @@
     $$("[data-year]").forEach((el) => (el.textContent = new Date().getFullYear()));
   }
 
+  /* ---------------- Analytics consent ----------------
+     Page views are counted only after an explicit yes (see api.js). The
+     notice is not shown when the browser already sends GPC / Do Not Track. */
+  function initConsent() {
+    const api = window.ChatoraAPI;
+    if (!api || !api.consent) return;
+    const status = $("[data-consent-status]");
+    const paint = () => {
+      if (!status) return;
+      const state = api.consent();
+      status.textContent = api.privacySignal()
+        ? t("cc.signal", "Your browser sends a privacy signal (GPC / Do Not Track), so page-view counting stays off.")
+        : state === "granted" ? t("cc.on", "Page-view counting is on.")
+        : state === "denied" ? t("cc.off", "Page-view counting is off.")
+        : t("cc.unset", "No choice saved yet.");
+    };
+    let bar = null;
+    const close = () => { if (bar) { bar.remove(); bar = null; } };
+    const decide = (value) => {
+      api.setConsent(value);
+      close();
+      paint();
+      if (value === "granted") api.pageview();
+    };
+    const show = () => {
+      if (bar || api.privacySignal()) return;
+      bar = document.createElement("div");
+      bar.className = "consent";
+      bar.setAttribute("role", "region");
+      bar.setAttribute("aria-label", t("cc.label", "Analytics choice"));
+      const text = document.createElement("p");
+      text.className = "consent-text";
+      text.textContent = t("cc.text", "May we count this visit? One anonymous page-view counter — no cookies, no ad tracking.") + " ";
+      const more = document.createElement("a");
+      more.href = "legal.html#privacy";
+      more.textContent = t("cc.more", "Details");
+      text.appendChild(more);
+      const actions = document.createElement("div");
+      actions.className = "consent-actions";
+      const no = document.createElement("button");
+      no.type = "button";
+      no.className = "btn btn-ghost btn-sm";
+      no.textContent = t("cc.decline", "No thanks");
+      no.addEventListener("click", () => decide("denied"));
+      const yes = document.createElement("button");
+      yes.type = "button";
+      yes.className = "btn btn-primary btn-sm";
+      yes.textContent = t("cc.accept", "Allow");
+      yes.addEventListener("click", () => decide("granted"));
+      actions.appendChild(no);
+      actions.appendChild(yes);
+      bar.appendChild(text);
+      bar.appendChild(actions);
+      document.body.appendChild(bar);
+    };
+    $$("[data-consent-reset]").forEach((b) => b.addEventListener("click", () => {
+      api.setConsent(null);
+      paint();
+      show();
+    }));
+    paint();
+    const state = api.consent();
+    if (state === "granted") setTimeout(() => api.pageview(), 1200);
+    else if (state === "unset") show();
+  }
+
   /* ---------------- Boot ---------------- */
   function boot() {
     initHeader();
@@ -788,9 +851,7 @@
     initDemo();
     initForms();
     initMisc();
-    if (window.ChatoraAPI && window.ChatoraAPI.pageview) {
-      setTimeout(() => window.ChatoraAPI.pageview(), 1200);
-    }
+    initConsent();
     document.documentElement.classList.add("is-ready");
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);

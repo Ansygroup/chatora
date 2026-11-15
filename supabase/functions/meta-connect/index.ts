@@ -260,16 +260,28 @@ async function claimWhatsAppState(config, user, workspaceId, rawState) {
   return result[0];
 }
 
+// The app secret travels in a POST body. A query string would put it into
+// URL logs on every hop between this function and Meta.
+function oauthTokenRequest(config, params, signal) {
+  const url = new URL(`/${config.version}/oauth/access_token`, "https://graph.facebook.com");
+  return fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams(params).toString(),
+    signal
+  });
+}
+
 async function metaCodeExchange(config, meta, code) {
   if (typeof code !== "string" || code.length < 10 || code.length > 4096) throw new HttpError(400, "invalid_authorization_code");
-  const url = new URL(`/${config.version}/oauth/access_token`, "https://graph.facebook.com");
-  url.searchParams.set("client_id", meta.appId);
-  url.searchParams.set("client_secret", meta.appSecret);
-  url.searchParams.set("code", code);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 9000);
   try {
-    const response = await fetch(url, { method: "GET", signal: controller.signal });
+    const response = await oauthTokenRequest(config, {
+      client_id: meta.appId,
+      client_secret: meta.appSecret,
+      code
+    }, controller.signal);
     const text = await response.text();
     let data = null;
     try { data = text ? JSON.parse(text) : null; } catch (_) { data = null; }
@@ -508,16 +520,16 @@ async function handleInstagramPrepare(config, user, input) {
     code_exchange_started_at: "is.null"
   }, { code_exchange_started_at: claimAt });
   const short = await metaCodeExchange(config, meta, input.code);
-  const longUrl = new URL(`/${config.version}/oauth/access_token`, "https://graph.facebook.com");
-  longUrl.searchParams.set("grant_type", "fb_exchange_token");
-  longUrl.searchParams.set("client_id", meta.appId);
-  longUrl.searchParams.set("client_secret", meta.appSecret);
-  longUrl.searchParams.set("fb_exchange_token", short.accessToken);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 9000);
   let long;
   try {
-    const response = await fetch(longUrl, { method: "GET", signal: controller.signal });
+    const response = await oauthTokenRequest(config, {
+      grant_type: "fb_exchange_token",
+      client_id: meta.appId,
+      client_secret: meta.appSecret,
+      fb_exchange_token: short.accessToken
+    }, controller.signal);
     long = await response.json().catch(() => null);
     if (!response.ok || !long || typeof long.access_token !== "string" || !long.access_token) {
       throw new HttpError(502, "instagram_long_lived_token_exchange_failed");
@@ -615,20 +627,48 @@ async function handleInstagramSelect(config, user, input) {
 
 // Disconnecting must keep working when onboarding is switched off or Meta is
 // unreachable: it only needs the database. The stored token is deleted and the
-// connection stops routing inbound events in one transaction; revoking the
-// grant on Meta's side is best-effort and never blocks the local removal.
+// connection stops routing inbound events in one transaction. Before that,
+// the app is unsubscribed from the Page / WhatsApp Business Account so Meta
+// stops delivering webhooks; that call is best-effort and never blocks the
+// local removal. `providerRevoked` tells the caller whether it succeeded.
+async function unsubscribeAtMeta(config, workspaceId, connectionId) {
+  try {
+    if (!/^v\d+\.\d+$/.test(config.version || "")) return false;
+    const found = await rows(config, "channel_connections", {
+      id: `eq.${connectionId}`, workspace_id: `eq.${workspaceId}`, limit: "1"
+    }, "id,provider,status,external_messaging_account_id,external_page_id");
+    const connection = found[0];
+    if (!connection || connection.status === "disconnected") return false;
+    const target = safeMetaId(connection.provider === "whatsapp_cloud"
+      ? connection.external_messaging_account_id
+      : connection.external_page_id);
+    if (!target) return false;
+    const secretRows = await rows(config, "channel_connection_secrets", {
+      connection_id: `eq.${connectionId}`, limit: "1"
+    }, "connection_id,access_token_ciphertext,access_token_iv");
+    const secret = secretRows[0];
+    if (!secret || !secret.access_token_ciphertext || !secret.access_token_iv) return false;
+    const token = await decrypt(secret.access_token_ciphertext, secret.access_token_iv);
+    await graph(config, `${target}/subscribed_apps`, token, { method: "DELETE", failCode: "meta_unsubscribe_failed" });
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
 async function handleDisconnect(config, user, input) {
   const workspaceId = String(input.workspaceId || "");
   const connectionId = String(input.connectionId || "");
   if (!UUID_RE.test(workspaceId)) throw new HttpError(400, "invalid_workspace");
   if (!UUID_RE.test(connectionId)) throw new HttpError(400, "invalid_connection");
   await getOwnedWorkspace(config, user.id, workspaceId);
+  const providerRevoked = await unsubscribeAtMeta(config, workspaceId, connectionId);
   const result = await dbRequest(config, "/rest/v1/rpc/chatora_disconnect_channel", {
     method: "POST",
     body: { p_workspace_id: workspaceId, p_connection_id: connectionId }
   });
   if (!result || result.disconnected !== true) throw new HttpError(404, "connection_not_found");
-  return { disconnected: true };
+  return { disconnected: true, providerRevoked };
 }
 
 Deno.serve(async (request) => {

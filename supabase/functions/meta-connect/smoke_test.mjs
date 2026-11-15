@@ -60,7 +60,13 @@ async function mockSupabase(url, init) {
   if (path === "/rest/v1/rpc/chatora_disconnect_channel") {
     const body = JSON.parse(init.body);
     disconnectCalls.push(body);
-    return jsonResponse({ disconnected: body.p_connection_id === KNOWN_CONNECTION_ID });
+    const real = connections.find((row) => row.id === body.p_connection_id);
+    if (real) {
+      real.status = "disconnected";
+      const at = secrets.findIndex((item) => item.connection_id === real.id);
+      if (at !== -1) secrets.splice(at, 1);
+    }
+    return jsonResponse({ disconnected: !!real || body.p_connection_id === KNOWN_CONNECTION_ID });
   }
   if (path === "/rest/v1/workspaces") {
     const match = query.get("id") === `eq.${WORKSPACE_ID}` && query.get("owner") === `eq.${USER_ID}`;
@@ -118,6 +124,10 @@ async function mockSupabase(url, init) {
   }
   if (path === "/rest/v1/channel_connections") {
     const select = query.get("select");
+    if (method === "GET" && query.has("id")) {
+      const found = connections.filter((row) => row.id === query.get("id").slice(3) && row.workspace_id === query.get("workspace_id")?.slice(3));
+      return jsonResponse(found.slice(0, 1).map((row) => responseBody(row, select)));
+    }
     if (method === "GET") {
       const provider = query.get("provider")?.slice(3);
       const accountId = query.get("external_account_id")?.slice(3);
@@ -142,6 +152,10 @@ async function mockSupabase(url, init) {
       return jsonResponse([responseBody(row, select)]);
     }
   }
+  if (path === "/rest/v1/channel_connection_secrets" && method === "GET") {
+    const id = query.get("connection_id")?.slice(3);
+    return jsonResponse(secrets.filter((item) => item.connection_id === id).slice(0, 1));
+  }
   if (path === "/rest/v1/channel_connection_secrets" && method === "POST") {
     const body = JSON.parse(init.body);
     const found = secrets.find((item) => item.connection_id === body.connection_id);
@@ -159,9 +173,13 @@ async function mockMeta(url, init) {
   graphCalls.push({ method, path, token, query: Object.fromEntries(url.searchParams.entries()), body: init.body || "" });
 
   if (path.endsWith("/oauth/access_token")) {
-    if (url.searchParams.has("grant_type")) return jsonResponse({ access_token: "ig-long-lived-user-token", expires_in: 5184000 });
-    if (url.searchParams.get("code") === "whatsapp-code-123456") return new Response("wa-business-token", { status: 200 });
-    if (url.searchParams.get("code") === "instagram-code-123456") return jsonResponse({ access_token: "ig-short-user-token", expires_in: 3600 });
+    assert.equal(method, "POST", "token exchange must be a POST");
+    assert.equal(url.search, "", "no credential may appear in the token-exchange URL");
+    const form = new URLSearchParams(String(init.body || ""));
+    assert.equal(form.get("client_secret"), "app-secret-mock");
+    if (form.has("grant_type")) return jsonResponse({ access_token: "ig-long-lived-user-token", expires_in: 5184000 });
+    if (form.get("code") === "whatsapp-code-123456") return new Response("wa-business-token", { status: 200 });
+    if (form.get("code") === "instagram-code-123456") return jsonResponse({ access_token: "ig-short-user-token", expires_in: 3600 });
     return jsonResponse({ error: { message: "invalid" } }, 400);
   }
   if (path.endsWith(`/${WABA_ID}`) && method === "GET") return jsonResponse({ id: WABA_ID });
@@ -191,6 +209,8 @@ async function mockMeta(url, init) {
     });
   }
   if (path.endsWith(`/${PAGE_ID}/subscribed_apps`) && method === "POST") return jsonResponse({ success: true });
+  if (path.endsWith(`/${PAGE_ID}/subscribed_apps`) && method === "DELETE") return jsonResponse({ success: true });
+  if (path.endsWith(`/${WABA_ID}/subscribed_apps`) && method === "DELETE") return jsonResponse({ error: { message: "down" } }, 500);
   throw new Error(`Unexpected Meta request: ${method} ${url.href}`);
 }
 
@@ -210,6 +230,7 @@ const context = {
   crypto: webcrypto,
   fetch: mockFetch,
   URL,
+  URLSearchParams,
   Request,
   Response,
   Headers,
@@ -361,6 +382,25 @@ result = await call({ action: "disconnect", workspaceId: WORKSPACE_ID, connectio
 assert.equal(result.status, 404);
 result = await call({ action: "disconnect", workspaceId: WORKSPACE_ID, connectionId: KNOWN_CONNECTION_ID });
 assert.equal(result.status, 200);
-assert.deepEqual(result.body, { disconnected: true });
+assert.deepEqual(result.body, { disconnected: true, providerRevoked: false });
 assert.deepEqual(disconnectCalls.at(-1), { p_workspace_id: WORKSPACE_ID, p_connection_id: KNOWN_CONNECTION_ID });
+
+// A real connection is unsubscribed at Meta with its own token, then removed locally.
+const igLive = connections.find((row) => row.provider === "instagram_messenger" && row.status !== "disconnected");
+assert.ok(igLive, "an Instagram connection exists from the flow above");
+result = await call({ action: "disconnect", workspaceId: WORKSPACE_ID, connectionId: igLive.id });
+assert.deepEqual(result.body, { disconnected: true, providerRevoked: true });
+const unsubscribe = graphCalls.find((item) => item.method === "DELETE" && item.path.endsWith(`/${PAGE_ID}/subscribed_apps`));
+assert.ok(unsubscribe, "the Page subscription is removed at Meta");
+assert.equal(unsubscribe.token, "Bearer ig-page-access-token");
+assert.equal(igLive.status, "disconnected");
+assert.ok(!secrets.some((item) => item.connection_id === igLive.id), "stored token is deleted");
+
+// Meta being down must not block the local removal.
+const waLive = connections.find((row) => row.provider === "whatsapp_cloud" && row.status !== "disconnected");
+assert.ok(waLive, "a WhatsApp connection exists from the flow above");
+result = await call({ action: "disconnect", workspaceId: WORKSPACE_ID, connectionId: waLive.id });
+assert.deepEqual(result.body, { disconnected: true, providerRevoked: false });
+assert.equal(waLive.status, "disconnected");
+assert.ok(graphCalls.every((item) => !("client_secret" in item.query)), "the app secret never appears in a Graph URL");
 console.log("meta-connect smoke tests passed (mocked Meta/Supabase requests only)");

@@ -175,7 +175,34 @@
   }
 
   /* ---------- public: lightweight product analytics ---------- */
+  /* ---------- analytics consent ----------
+     Nothing is written to `events` until the visitor says yes. A Global
+     Privacy Control or Do Not Track signal counts as a refusal and cannot be
+     overridden from the page. Lead forms are not analytics and are unaffected. */
+  var CONSENT_KEY = "chatora.consent.v1";
+  function privacySignal() {
+    return navigator.globalPrivacyControl === true ||
+      navigator.doNotTrack === "1" || window.doNotTrack === "1" || navigator.msDoNotTrack === "1";
+  }
+  function consent() {
+    if (privacySignal()) return "denied";
+    try {
+      var v = localStorage.getItem(CONSENT_KEY);
+      return v === "granted" || v === "denied" ? v : "unset";
+    } catch (e) {
+      return "unset";
+    }
+  }
+  function setConsent(value) {
+    try {
+      if (value === "granted" || value === "denied") localStorage.setItem(CONSENT_KEY, value);
+      else localStorage.removeItem(CONSENT_KEY);
+    } catch (e) { /* storage blocked: stays "unset", so nothing is tracked */ }
+    return consent();
+  }
+
   function track(name, props) {
+    if (consent() !== "granted") return Promise.resolve(false);
     if (!online()) return Promise.resolve(false);
     var base = ctx();
     return post("events", [
@@ -236,6 +263,7 @@
   /* ---------- public: one pageview per page per session ---------- */
   var seenView = false;
   function pageview() {
+    if (consent() !== "granted") return Promise.resolve(false);
     if (seenView) return Promise.resolve(false);
     seenView = true;
     var key = "chatora.pv:" + location.pathname;
@@ -257,6 +285,9 @@
     submitLead: submitLead,
     pageview: pageview,
     track: track,
+    consent: consent,
+    setConsent: setConsent,
+    privacySignal: privacySignal,
     flush: flush,
     pending: function () { return read(QUEUE_KEY).length; },
     online: online

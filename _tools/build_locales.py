@@ -8,6 +8,12 @@ static locale page. Run by build.py after the Arabic mirror.
 """
 from __future__ import annotations
 
+import os as _os
+import sys as _sys
+
+_sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+from seo_fit import fit_description, fit_title  # noqa: E402
+
 import importlib.util
 import json
 import os
@@ -224,7 +230,7 @@ def translated_meta(page: dict, soup: BeautifulSoup, locale: dict, slug: str, in
         raise RuntimeError(f"No localized SEO description/lead for {page['out']}")
     if not description:
         description = title
-    return title, trim_description(description)
+    return fit_title(title), fit_description(description)
 
 
 def translate_markup(soup: BeautifulSoup, locale: dict, lang: str, out: str):

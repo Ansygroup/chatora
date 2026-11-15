@@ -6,6 +6,8 @@ import re
 from datetime import date
 from xml.sax.saxutils import escape
 
+from seo_fit import fit_description, fit_title
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE = "https://chatora.ansygroup.com"
 BUILD_DATE = date.today().isoformat()
@@ -14,7 +16,7 @@ PAGES = [
     {
         "src": "index.html",
         "out": "index.html",
-        "title": "Chatora — AI Chat Marketing for Instagram, WhatsApp & TikTok | Preview",
+        "title": "Chatora — AI chat marketing for Instagram, WhatsApp & TikTok",
         "desc": "Chatora is an AI chat-marketing platform preview for Instagram, WhatsApp, TikTok and Messenger workflows. Explore editable flow drafts, templates and contact tools; live channel connections, AI replies and paid plans are not available yet.",
         "title_key": "seo.home.title",
         "active": None,
@@ -140,7 +142,7 @@ PAGES = [
     {
         "src": "templates.html",
         "out": "templates.html",
-        "title": "45 messaging flow templates for Instagram, WhatsApp & TikTok | Chatora",
+        "title": "45 flow templates for Instagram, WhatsApp & TikTok | Chatora",
         "desc": "Browse 45 editable messaging-flow starter drafts for Instagram, WhatsApp and TikTok. These examples are not production-tested or connected to live channels; choosing one creates a draft, not a sent message.",
         "title_key": "seo.templates.title",
         "active": "TEMPLATES",
@@ -176,7 +178,7 @@ PAGES = [
     {
         "src": "playground.html",
         "out": "playground.html",
-        "title": "Flow builder playground — build a chat flow in your browser | Chatora",
+        "title": "Flow builder playground — try it in your browser | Chatora",
         "desc": "Try a browser-based flow simulation. It does not connect to messaging providers, use customer data, or send messages.",
         "title_key": "seo.playground.title",
         "active": None,
@@ -386,7 +388,7 @@ ARTICLES = [
     {
         "src": "blog-instagram-dm-sales.html",
         "out": "blog-instagram-dm-sales.html",
-        "title": "How to turn Instagram DMs into a sales channel (2026 playbook) | Chatora",
+        "title": "Turn Instagram DMs into a sales channel (2026) | Chatora",
         "desc": "A practical checklist for planning opt-in Instagram workflows. Examples are illustrative; no response-time benchmark or Chatora customer outcome is claimed.",
         "jsonld": "/blog-instagram-dm-sales.jsonld",
     },
@@ -400,21 +402,21 @@ ARTICLES = [
     {
         "src": "blog-manychat-pricing.html",
         "out": "blog-manychat-pricing.html",
-        "title": "ManyChat pricing explained (2026): published tiers and what to verify | Chatora",
+        "title": "ManyChat pricing explained (2026): published tiers | Chatora",
         "desc": "A dated summary of ManyChat’s public plan page. Your country, billing interval, taxes, and usage can change the final amount; confirm details before purchase.",
         "jsonld": "/blog-manychat-pricing.jsonld",
     },
     {
         "src": "blog-abandoned-cart-whatsapp.html",
         "out": "blog-abandoned-cart-whatsapp.html",
-        "title": "WhatsApp abandoned-cart messages: copy and fee scenarios | Chatora",
+        "title": "WhatsApp abandoned-cart messages: copy and fees | Chatora",
         "desc": "Illustrative cart-reminder copy and Meta fee scenarios. Message category, consent, provider charges and customer results depend on current rules and account data.",
         "jsonld": "/blog-abandoned-cart-whatsapp.jsonld",
     },
     {
         "src": "blog-whatsapp-api-pricing.html",
         "out": "blog-whatsapp-api-pricing.html",
-        "title": "WhatsApp API pricing in Egypt (2026): Meta rates and assumptions | Chatora",
+        "title": "WhatsApp API pricing in Egypt (2026): Meta rates | Chatora",
         "desc": "Meta’s published Egypt rates effective 1 October 2026, with worked examples labeled as estimates. Provider charges, taxes, and eligibility may differ.",
         "jsonld": "/blog-whatsapp-api-pricing.jsonld",
     },
@@ -715,8 +717,8 @@ def main():
             jsonld = '<script type="application/ld+json">%s</script>' % json.dumps(jl, ensure_ascii=False)
 
         head = (
-            head_tpl.replace("{{TITLE}}", page["title"])
-            .replace("{{DESC}}", page["desc"])
+            head_tpl.replace("{{TITLE}}", fit_title(page["title"]))
+            .replace("{{DESC}}", fit_description(page["desc"]))
             .replace("{{CANONICAL}}", canonical)
             .replace("{{TITLE_KEY}}", page["title_key"])
             .replace("{{HREFLANG_EN}}", BASE + "/" + ("" if page["out"] == "index.html" else page["out"]))
