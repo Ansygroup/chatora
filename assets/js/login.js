@@ -6,7 +6,7 @@
   var T = {
     en: {
       submitSignin: "Sign in", submitSignup: "Create my workspace", submitMagic: "Email me a sign-in link",
-      hintPassword: "At least 8 characters.",
+      hintPassword: "At least 10 characters.",
       hintMagic: "We send a one-time link. No password needed.",
       busy: "One moment…",
       created: "Workspace ready — opening it now.",
@@ -15,7 +15,7 @@
       badCreds: "Email or password is not right.",
       exists: "That email already has an account — try signing in.",
       weak: "Use at least 10 characters with letters and numbers.",
-      pwShort: "Use at least 8 characters.",
+      pwShort: "Use at least 10 characters.",
       invalid: "That email doesn't look valid.",
       googleOff: "Google sign-in is not configured yet. ",
       net: "Network problem — check your connection and try again.",
@@ -30,7 +30,7 @@
     },
     ar: {
       submitSignin: "تسجيل الدخول", submitSignup: "اعمل مساحة عملي", submitMagic: "ابعتلي لينك دخول",
-      hintPassword: "8 حروف على الأقل.",
+      hintPassword: "10 حروف على الأقل.",
       hintMagic: "بنبعت لينك لمرة واحدة. من غير باسورد.",
       busy: "لحظة واحدة…",
       created: "مساحة العمل جاهزة — بنفتحها دلوقتي.",
@@ -39,7 +39,7 @@
       badCreds: "الإيميل أو الباسورد مش مظبوطين.",
       exists: "الإيميل ده عنده حساب بالفعل — جرّب تسجيل الدخول.",
       weak: "استخدم 10 حروف على الأقل مع أحرف وأرقام.",
-      pwShort: "استخدم 8 حروف على الأقل.",
+      pwShort: "استخدم 10 حروف على الأقل.",
       invalid: "الإيميل ده مش صحيح.",
       googleOff: "الدخول بجوجل مش مظبوط لسه. ",
       net: "مشكلة في الشبكة — راجع اتصالك وجرّب تاني.",
@@ -56,7 +56,7 @@
       "submitSignin": "Iniciar sesión",
       "submitSignup": "Crear mi espacio de trabajo",
       "submitMagic": "Envíame un enlace de acceso",
-      "hintPassword": "Al menos 8 caracteres.",
+      "hintPassword": "Al menos 10 caracteres.",
       "hintMagic": "Enviamos un enlace de un solo uso. Sin contraseña.",
       "busy": "Un momento…",
       "created": "Espacio de trabajo listo: abriéndolo ahora.",
@@ -65,7 +65,7 @@
       "badCreds": "El correo o la contraseña no son correctos.",
       "exists": "Ese correo ya tiene una cuenta: prueba a iniciar sesión.",
       "weak": "Usa al menos 10 caracteres con letras y números.",
-      "pwShort": "Usa al menos 8 caracteres.",
+      "pwShort": "Usa al menos 10 caracteres.",
       "invalid": "Ese correo no parece válido.",
       "googleOff": "El acceso con Google aún no está configurado.",
       "net": "Problema de red: revisa tu conexión e inténtalo de nuevo.",
@@ -86,7 +86,7 @@
       "submitSignin": "Se connecter",
       "submitSignup": "Créer mon espace de travail",
       "submitMagic": "M’envoyer un lien de connexion",
-      "hintPassword": "Au moins 8 caractères.",
+      "hintPassword": "Au moins 10 caractères.",
       "hintMagic": "Nous envoyons un lien à usage unique. Aucun mot de passe requis.",
       "busy": "Un instant…",
       "created": "Espace de travail prêt : ouverture en cours.",
@@ -95,7 +95,7 @@
       "badCreds": "L’adresse e-mail ou le mot de passe est incorrect.",
       "exists": "Cette adresse a déjà un compte : essayez de vous connecter.",
       "weak": "Utilisez au moins 10 caractères avec lettres et chiffres.",
-      "pwShort": "Utilisez au moins 8 caractères.",
+      "pwShort": "Utilisez au moins 10 caractères.",
       "invalid": "Cette adresse e-mail ne semble pas valide.",
       "googleOff": "La connexion Google n’est pas encore configurée.",
       "net": "Problème de réseau : vérifiez votre connexion et réessayez.",
@@ -116,7 +116,7 @@
       "submitSignin": "Anmelden",
       "submitSignup": "Meinen Arbeitsbereich erstellen",
       "submitMagic": "Anmeldelink per E-Mail senden",
-      "hintPassword": "Mindestens 8 Zeichen.",
+      "hintPassword": "Mindestens 10 Zeichen.",
       "hintMagic": "Wir senden einen Einmal-Link. Kein Passwort nötig.",
       "busy": "Einen Moment…",
       "created": "Arbeitsbereich bereit – wird jetzt geöffnet.",
@@ -125,7 +125,7 @@
       "badCreds": "E-Mail oder Passwort stimmt nicht.",
       "exists": "Zu dieser E-Mail gibt es bereits ein Konto – versuche, dich anzumelden.",
       "weak": "Verwende mindestens 10 Zeichen mit Buchstaben und Zahlen.",
-      "pwShort": "Verwende mindestens 8 Zeichen.",
+      "pwShort": "Verwende mindestens 10 Zeichen.",
       "invalid": "Diese E-Mail-Adresse sieht nicht gültig aus.",
       "googleOff": "Die Google-Anmeldung ist noch nicht eingerichtet.",
       "net": "Netzwerkproblem – prüfe deine Verbindung und versuche es erneut.",
@@ -146,7 +146,7 @@
       "submitSignin": "Entrar",
       "submitSignup": "Criar meu espaço de trabalho",
       "submitMagic": "Enviar um link de acesso por e-mail",
-      "hintPassword": "Pelo menos 8 caracteres.",
+      "hintPassword": "Pelo menos 10 caracteres.",
       "hintMagic": "Enviamos um link de uso único. Sem senha.",
       "busy": "Um momento…",
       "created": "Espaço de trabalho pronto — abrindo agora.",
@@ -155,7 +155,7 @@
       "badCreds": "E-mail ou senha incorretos.",
       "exists": "Esse e-mail já tem uma conta — tente entrar.",
       "weak": "Use pelo menos 10 caracteres com letras e números.",
-      "pwShort": "Use pelo menos 8 caracteres.",
+      "pwShort": "Use pelo menos 10 caracteres.",
       "invalid": "Esse e-mail não parece válido.",
       "googleOff": "O login com Google ainda não está configurado.",
       "net": "Problema de rede — verifique sua conexão e tente novamente.",
@@ -225,7 +225,7 @@
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { msg(T.invalid, "is-err"); return; }
     /* New passwords need 8+ characters; sign-in only checks that one was typed. */
     if (mode === "signup" && (pass.length < 10 || !/\d/.test(pass) || !/[^\d\s]/.test(pass))) { msg(T.weak, "is-err"); return; }
-    if (mode === "signin" && !pass.length) { msg(T.weak, "is-err"); return; }
+    if (mode === "signin" && !pass.length) { msg(T.badCreds, "is-err"); return; }
     busy(true);
     try {
       if (mode === "magic") {
@@ -248,7 +248,8 @@
       else if (m.indexOf("already") !== -1 || m.indexOf("registered") !== -1) msg(T.exists, "is-err");
       else if (m.indexOf("password") !== -1) msg(T.weak, "is-err");
       else if ((e && e.status === 429) || m.indexOf("rate") !== -1) msg(T.mailOff, "is-err");
-      else msg((e && e.message) || T.net, "is-err");
+      else if (m.indexOf("invalid email") !== -1) msg(T.invalid, "is-err");
+      else msg(T.net, "is-err");
     } finally { busy(false); }
   }
 
@@ -275,7 +276,7 @@
 
     $("#auth-newpass-save").addEventListener("click", async function () {
       var v = $("#auth-newpass-input").value;
-      if (v.length < 8) { msg(T.pwShort, "is-err"); return; }
+      if (v.length < 10) { msg(T.pwShort, "is-err"); return; }
       try {
         await A.updateUser({ password: v });
         msg(T.newpassOk, "is-ok");
@@ -298,7 +299,8 @@
     $("#auth-google").addEventListener("click", function () {
       A.google().catch(function (e) {
         var off = e && (e.status === 400 || /provider|not enabled|disabled/i.test(e.message || ""));
-        msg(off ? T.googleOff : (e && e.message) || T.net, "is-err");
+        if (/cancel|popup_closed|popup_failed|access_denied/i.test((e && e.message) || "")) { msg("", ""); return; }
+        msg(off ? T.googleOff : T.net, "is-err");
       });
     });
     // If a session already exists, go straight in.
