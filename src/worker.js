@@ -18,6 +18,8 @@ export default {
     const url = new URL(request.url);
     if (url.pathname !== '/api/chat') return env.ASSETS.fetch(request);
     if (request.method !== 'POST') return new Response('Method not allowed', { status: 405 });
+    const origin = request.headers.get('origin');
+    if (origin && origin !== url.origin) return new Response('Forbidden', { status: 403 });
     if (limited(request.headers.get('cf-connecting-ip') || 'x'))
       return Response.json({ reply: 'Too many messages for now. Please continue on WhatsApp.' }, { status: 429 });
     let body;
