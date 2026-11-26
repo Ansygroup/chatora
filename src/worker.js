@@ -26,14 +26,28 @@ export default {
       .filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string')
       .map(m => ({ role: m.role, content: m.content.slice(0, 500) }));
     if (!msgs.length || msgs[msgs.length - 1].role !== 'user') return Response.json({ error: 'no message' }, { status: 400 });
-    try {
-      const r = await env.AI.run('@cf/zai-org/glm-4.7-flash', {
-        messages: [{ role: 'system', content: SYSTEM }, ...msgs], max_tokens: 400,
-      });
-      return Response.json({ reply: String(r.response || (r.choices && r.choices[0] && r.choices[0].message && r.choices[0].message.content) || '').slice(0, 800) });
-    } catch (e) {
-      console.log(String(e));
-      return Response.json({ err: String(e).slice(0,200), reply: 'Sorry, I am unavailable right now. Please tap the WhatsApp button and we will reply there.' }, { status: 200 });
+    const ar = /[\u0600-\u06FF]/.test(msgs[msgs.length - 1].content);
+    const fallback = ar
+      ? 'عذراً، الخدمة غير متاحة الآن. اضغط زر واتساب وسنرد عليك هناك.'
+      : 'Sorry, I am unavailable right now. Please tap the WhatsApp button and we will reply there.';
+    const pick = (r) => {
+      if (!r) return '';
+      if (typeof r.response === 'string' && r.response.trim()) return r.response;
+      const c = r.choices && r.choices[0] && r.choices[0].message && r.choices[0].message.content;
+      return typeof c === 'string' ? c : '';
+    };
+    const models = [
+      ['@cf/google/gemma-3-12b-it', 300],
+      ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', 300],
+      ['@cf/zai-org/glm-4.7-flash', 1500],
+    ];
+    for (const [model, max] of models) {
+      try {
+        const r = await env.AI.run(model, { messages: [{ role: 'system', content: SYSTEM }, ...msgs], max_tokens: max });
+        const text = pick(r).trim();
+        if (text) return Response.json({ reply: text.slice(0, 800) });
+      } catch (e) { console.log(model, String(e)); }
     }
+    return Response.json({ reply: fallback });
   },
 };
