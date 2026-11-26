@@ -14,7 +14,7 @@
       magicSent: "If email delivery is configured, a sign-in link is on its way to {email}. Check your inbox and spam folder.",
       badCreds: "Email or password is not right.",
       exists: "That email already has an account — try signing in.",
-      weak: "Use at least 8 characters.",
+      weak: "Use at least 10 characters with letters and numbers.",
       pwShort: "Use at least 8 characters.",
       invalid: "That email doesn't look valid.",
       googleOff: "Google sign-in is not configured yet. ",
@@ -38,7 +38,7 @@
       magicSent: "لو إرسال الإيميل متاح، هيجيلك لينك دخول على {email}. راجع الوارد والسبام.",
       badCreds: "الإيميل أو الباسورد مش مظبوطين.",
       exists: "الإيميل ده عنده حساب بالفعل — جرّب تسجيل الدخول.",
-      weak: "استخدم 8 حروف على الأقل.",
+      weak: "استخدم 10 حروف على الأقل مع أحرف وأرقام.",
       pwShort: "استخدم 8 حروف على الأقل.",
       invalid: "الإيميل ده مش صحيح.",
       googleOff: "الدخول بجوجل مش مظبوط لسه. ",
@@ -64,7 +64,7 @@
       "magicSent": "Si el envío de correo está configurado, un enlace de acceso va de camino a {email}. Revisa la bandeja de entrada y la carpeta de spam.",
       "badCreds": "El correo o la contraseña no son correctos.",
       "exists": "Ese correo ya tiene una cuenta: prueba a iniciar sesión.",
-      "weak": "Usa al menos 8 caracteres.",
+      "weak": "Usa al menos 10 caracteres con letras y números.",
       "pwShort": "Usa al menos 8 caracteres.",
       "invalid": "Ese correo no parece válido.",
       "googleOff": "El acceso con Google aún no está configurado.",
@@ -94,7 +94,7 @@
       "magicSent": "Si l’envoi d’e-mails est configuré, un lien de connexion est en route vers {email}. Vérifiez votre boîte de réception et vos courriers indésirables.",
       "badCreds": "L’adresse e-mail ou le mot de passe est incorrect.",
       "exists": "Cette adresse a déjà un compte : essayez de vous connecter.",
-      "weak": "Utilisez au moins 8 caractères.",
+      "weak": "Utilisez au moins 10 caractères avec lettres et chiffres.",
       "pwShort": "Utilisez au moins 8 caractères.",
       "invalid": "Cette adresse e-mail ne semble pas valide.",
       "googleOff": "La connexion Google n’est pas encore configurée.",
@@ -124,7 +124,7 @@
       "magicSent": "Falls der E-Mail-Versand eingerichtet ist, ist ein Anmeldelink an {email} unterwegs. Prüfe Posteingang und Spam-Ordner.",
       "badCreds": "E-Mail oder Passwort stimmt nicht.",
       "exists": "Zu dieser E-Mail gibt es bereits ein Konto – versuche, dich anzumelden.",
-      "weak": "Verwende mindestens 8 Zeichen.",
+      "weak": "Verwende mindestens 10 Zeichen mit Buchstaben und Zahlen.",
       "pwShort": "Verwende mindestens 8 Zeichen.",
       "invalid": "Diese E-Mail-Adresse sieht nicht gültig aus.",
       "googleOff": "Die Google-Anmeldung ist noch nicht eingerichtet.",
@@ -154,7 +154,7 @@
       "magicSent": "Se o envio de e-mails estiver configurado, um link de acesso está a caminho de {email}. Confira a caixa de entrada e o spam.",
       "badCreds": "E-mail ou senha incorretos.",
       "exists": "Esse e-mail já tem uma conta — tente entrar.",
-      "weak": "Use pelo menos 8 caracteres.",
+      "weak": "Use pelo menos 10 caracteres com letras e números.",
       "pwShort": "Use pelo menos 8 caracteres.",
       "invalid": "Esse e-mail não parece válido.",
       "googleOff": "O login com Google ainda não está configurado.",
@@ -224,7 +224,7 @@
     var pass = $("#auth-password").value;
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { msg(T.invalid, "is-err"); return; }
     /* New passwords need 8+ characters; sign-in only checks that one was typed. */
-    if (mode === "signup" && pass.length < 8) { msg(T.weak, "is-err"); return; }
+    if (mode === "signup" && (pass.length < 10 || !/\d/.test(pass) || !/[^\d\s]/.test(pass))) { msg(T.weak, "is-err"); return; }
     if (mode === "signin" && !pass.length) { msg(T.weak, "is-err"); return; }
     busy(true);
     try {
