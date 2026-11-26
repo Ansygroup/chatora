@@ -1091,6 +1091,7 @@
       `<form id="pw-form" class="dash-inline"><input id="pw-input" type="password" autocomplete="new-password" minlength="8" aria-label="${esc(T.pwNew)}" placeholder="${esc(T.pwNew)}">` +
       `<button class="btn btn-ghost btn-sm" type="submit">${esc(T.pwSave)}</button></form>` +
       `<p class="dash-note" id="pw-msg"></p></div>` +
+      widgetCard() +
       `<div class="dash-card"><h2>${esc(T.plan)}</h2><p class="dash-plan-row"><b>${esc(T.planFree)}</b> — <span>${esc(T.dataIsolation)}</span></p></div>` +
       `<div class="dash-card"><h2>${esc(T.account)}</h2><p>${esc((A.user() && A.user().email) || "")}</p>` +
       `<p class="dash-note">${esc(T.exportTitle)} — <button type="button" class="link-btn" id="export">${esc(T.exportBtn)}</button></p></div>` +
@@ -1104,6 +1105,73 @@
 
   const RENDER = { overview: renderOverview, inbox: renderInbox, flows: renderFlows, contacts: renderContacts, broadcast: renderBroadcast, settings: renderSettings };
 
+  const WK = { loaded: false, loading: false, keys: [], err: "" };
+  const WKT = ({
+    en: { t: "Website chat widget", n: "Add an AI chat bubble to any website. Paste the snippet before </body>. It answers from your flows and saves each chat in your Inbox.", c: "Create key", d: "Delete", s: "Save", g: "Greeting", o: "Allowed website (optional, e.g. https://example.com)", on: "Active", cp: "Copy snippet", cd: "Copied", lim: "Limit: 5 keys.", cf: "Delete this key? The widget stops working." },
+    ar: { t: "ودجت الدردشة للموقع", n: "أضف فقاعة دردشة بالذكاء الاصطناعي لأي موقع. الصق الكود قبل </body>. يرد من سيناريوهاتك ويحفظ كل محادثة في الإنبوكس.", c: "إنشاء مفتاح", d: "حذف", s: "حفظ", g: "رسالة الترحيب", o: "الموقع المسموح (اختياري، مثل https://example.com)", on: "مفعّل", cp: "نسخ الكود", cd: "تم النسخ", lim: "الحد: 5 مفاتيح.", cf: "حذف هذا المفتاح؟ سيتوقف الودجت." }
+  })[LANG] || null;
+  const WKE = WKT || null;
+  function wkT() { return Object.assign({}, WKX_EN, WKT || {}); }
+  const WKX_EN = { t: "Website chat widget", n: "Add an AI chat bubble to any website. Paste the snippet before </body>. It answers from your flows and saves each chat in your Inbox.", c: "Create key", d: "Delete", s: "Save", g: "Greeting", o: "Allowed website (optional, e.g. https://example.com)", on: "Active", cp: "Copy snippet", cd: "Copied", lim: "Limit: 5 keys.", cf: "Delete this key? The widget stops working." };
+  function widgetCard() {
+    const W = wkT();
+    const snip = (k) => '<script src="https://chatora.us.ci/assets/widget.js" data-key="' + k + '" defer></' + 'script>';
+    const rows = WK.keys.map((k) => `<div class="dash-card" style="margin:10px 0;padding:12px"><textarea readonly rows="2" style="width:100%;font-family:monospace;font-size:12px" data-wk-snip="${esc(k.id)}">${esc(snip(k.key))}</textarea>` +
+      `<div class="dash-inline" style="margin-top:8px;flex-wrap:wrap"><input data-wk-greet="${esc(k.id)}" maxlength="300" value="${esc(k.greeting)}" aria-label="${esc(W.g)}" placeholder="${esc(W.g)}">` +
+      `<input data-wk-origin="${esc(k.id)}" maxlength="200" value="${esc(k.allowed_origin || "")}" aria-label="${esc(W.o)}" placeholder="${esc(W.o)}">` +
+      `<label><input type="checkbox" data-wk-active="${esc(k.id)}"${k.active ? " checked" : ""}> ${esc(W.on)}</label>` +
+      `<button type="button" class="btn btn-primary btn-sm" data-wk-save="${esc(k.id)}">${esc(W.s)}</button>` +
+      `<button type="button" class="btn btn-ghost btn-sm" data-wk-copy="${esc(k.id)}">${esc(W.cp)}</button>` +
+      `<button type="button" class="btn btn-ghost btn-sm btn-danger" data-wk-del="${esc(k.id)}">${esc(W.d)}</button></div></div>`).join("");
+    return `<div class="dash-card"><h2>${esc(W.t)}</h2><p class="dash-note">${esc(W.n)}</p>${rows}` +
+      `<button type="button" class="btn btn-ghost btn-sm" id="wk-create"${WK.keys.length >= 5 ? " disabled" : ""}>${esc(W.c)}</button> <span class="dash-note">${esc(W.lim)}</span>` +
+      `<p class="dash-note is-err" id="wk-msg" role="status">${esc(WK.err)}</p></div>`;
+  }
+  async function wkLoad() {
+    if (WK.loaded || WK.loading) return;
+    WK.loading = true;
+    try { WK.keys = (await A.rest("/rest/v1/widget_keys?select=id,key,name,greeting,allowed_origin,active&order=created_at.asc")) || []; WK.err = ""; }
+    catch (e) { WK.err = String(e.message || e); }
+    WK.loading = false; WK.loaded = true;
+    if (state.view === "settings") paint();
+  }
+  function wkWire(p) {
+    wkLoad();
+    const W = wkT();
+    const fail = (e) => { WK.err = String(e.message || e); const m = $("#wk-msg", p); if (m) m.textContent = WK.err; };
+    const cb = $("#wk-create", p);
+    if (cb) cb.addEventListener("click", async () => {
+      try {
+        const row = await A.rest("/rest/v1/widget_keys", { method: "POST", body: JSON.stringify({ workspace_id: state.ws.id }) });
+        const made = Array.isArray(row) ? row[0] : row;
+        WK.keys.push(made); WK.err = ""; paint();
+      } catch (e) { fail(e); }
+    });
+    $$("[data-wk-save]", p).forEach((b) => b.addEventListener("click", async () => {
+      const id = b.getAttribute("data-wk-save");
+      const q = (a) => p.querySelector("[" + a + '="' + id + '"]');
+      const body = { greeting: q("data-wk-greet").value.trim() || "Hi! How can we help?", allowed_origin: q("data-wk-origin").value.trim() || null, active: q("data-wk-active").checked };
+      try {
+        await A.rest("/rest/v1/widget_keys?id=eq." + encodeURIComponent(id), { method: "PATCH", body: JSON.stringify(body) });
+        const k = WK.keys.find((x) => x.id === id); if (k) Object.assign(k, body);
+        WK.err = ""; paint();
+      } catch (e) { fail(e); }
+    }));
+    $$("[data-wk-copy]", p).forEach((b) => b.addEventListener("click", () => {
+      const ta = p.querySelector('[data-wk-snip="' + b.getAttribute("data-wk-copy") + '"]');
+      ta.select();
+      try { navigator.clipboard.writeText(ta.value); } catch (_) { document.execCommand("copy"); }
+      b.textContent = W.cd;
+    }));
+    $$("[data-wk-del]", p).forEach((b) => b.addEventListener("click", async () => {
+      if (!window.confirm(W.cf)) return;
+      const id = b.getAttribute("data-wk-del");
+      try {
+        await A.rest("/rest/v1/widget_keys?id=eq." + encodeURIComponent(id), { method: "DELETE" });
+        WK.keys = WK.keys.filter((x) => x.id !== id); WK.err = ""; paint();
+      } catch (e) { fail(e); }
+    }));
+  }
   function paint() {
     const panel = $("#panel-" + state.view);
     if (!panel) return;
@@ -1618,6 +1686,7 @@
           out.textContent = T.pwOk; out.className = "dash-note is-ok";
         } catch (err) { out.textContent = err.message; out.className = "dash-note is-err"; }
       });
+      wkWire(p);
       const ex = $("#export", p);
       if (ex) ex.addEventListener("click", exportData);
       const s2 = $("#signout2", p);
