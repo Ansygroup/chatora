@@ -27,7 +27,7 @@ export default {
       .map(m => ({ role: m.role, content: m.content.slice(0, 500) }));
     if (!msgs.length || msgs[msgs.length - 1].role !== 'user') return Response.json({ error: 'no message' }, { status: 400 });
     try {
-      const r = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
+      const r = await env.AI.run('@cf/meta/llama-3.1-8b-instruct-fp8', {
         messages: [{ role: 'system', content: SYSTEM }, ...msgs], max_tokens: 200,
       });
       return Response.json({ reply: String(r.response || '').slice(0, 800) });
