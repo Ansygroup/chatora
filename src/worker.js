@@ -27,10 +27,10 @@ export default {
       .map(m => ({ role: m.role, content: m.content.slice(0, 500) }));
     if (!msgs.length || msgs[msgs.length - 1].role !== 'user') return Response.json({ error: 'no message' }, { status: 400 });
     try {
-      const r = await env.AI.run('@cf/meta/llama-3.1-8b-instruct-fp8', {
-        messages: [{ role: 'system', content: SYSTEM }, ...msgs], max_tokens: 200,
+      const r = await env.AI.run('@cf/zai-org/glm-4.7-flash', {
+        messages: [{ role: 'system', content: SYSTEM }, ...msgs], max_tokens: 400,
       });
-      return Response.json({ reply: String(r.response || '').slice(0, 800) });
+      return Response.json({ reply: String(r.response || (r.choices && r.choices[0] && r.choices[0].message && r.choices[0].message.content) || '').slice(0, 800) });
     } catch (e) {
       console.log(String(e));
       return Response.json({ err: String(e).slice(0,200), reply: 'Sorry, I am unavailable right now. Please tap the WhatsApp button and we will reply there.' }, { status: 200 });
