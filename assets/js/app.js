@@ -1029,6 +1029,11 @@
   }
 
   function renderMetaSettings() {
+    /* Meta channels are not live yet: show a calm note instead of a setup error. Re-enables itself once a Meta App ID is configured. */
+    if (!/^\d{5,32}$/.test(String((window.CHATORA_CONFIG || {}).META_APP_ID || ""))) {
+      const ar = (document.documentElement.lang || "").indexOf("ar") === 0;
+      return `<div class="dash-card meta-setup-card"><h2>${ar ? "قنوات واتساب وإنستجرام" : "WhatsApp and Instagram channels"}</h2><p class="dash-note">${ar ? "قريبًا: ربط القنوات الرسمية. حاليًا فريقنا بيجهّز لك القنوات، كلّمنا على واتساب لو عايز تبدأ." : "Coming soon: connecting official channels yourself. For now our team sets channels up for you. Message us on WhatsApp to get started."}</p></div>`;
+    }
     const meta = window.CHATORA_META_ONBOARDING;
     const waReady = !!(meta && meta.isConfigured("whatsapp") && state.meta.loaded && !state.meta.loadFailed);
     const igReady = !!(meta && meta.isConfigured("instagram") && state.meta.loaded && !state.meta.loadFailed);
