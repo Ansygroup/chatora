@@ -1625,7 +1625,25 @@
         btn.disabled = true;
         out.textContent = ""; out.className = "dash-note";
         try {
-          await A.rest("/functions/v1/account-delete", { method: "POST", body: JSON.stringify({ confirm: "DELETE", password: el.value }) });
+          const cfg = window.CHATORA_CONFIG || {};
+          const me = A.session && A.session();
+          const uid = me && me.user && me.user.id, mail = me && me.user && me.user.email;
+          const IT = "https://identitytoolkit.googleapis.com/v1/";
+          const fk = encodeURIComponent(cfg.FIREBASE_API_KEY || "");
+          const re = await fetch(IT + "accounts:signInWithPassword?key=" + fk, {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: mail, password: el.value, returnSecureToken: true })
+          });
+          if (!re.ok) { const bad = new Error("wrong_password"); bad.data = { error: "wrong_password" }; throw bad; }
+          const fresh = (await re.json()).idToken;
+          const del = await fetch(cfg.SUPABASE_URL + "/rest/v1/workspaces?owner=eq." + encodeURIComponent(uid), {
+            method: "DELETE", headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: "Bearer " + fresh }
+          });
+          if (!del.ok) throw new Error("delete_failed");
+          const fin = await fetch(IT + "accounts:delete?key=" + fk, {
+            method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ idToken: fresh })
+          });
+          if (!fin.ok) throw new Error("delete_failed");
           await A.signOut();
         } catch (err) {
           const code = err && err.data && err.data.error;
