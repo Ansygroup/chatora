@@ -1782,7 +1782,7 @@
     const nm = $("#ed-name", p);
     if (nm) nm.addEventListener("input", () => { state.edit.name = nm.value; });
 
-    $$(".step-in", p).forEach((el) => el.addEventListener("input", () => {
+    $$(".dstep-in, .step-in", p).forEach((el) => el.addEventListener("input", () => {
       const i = +el.getAttribute("data-i"), k = el.getAttribute("data-k");
       state.steps[i][k] = k === "v" ? Math.max(1, parseInt(el.value || "1", 10)) : el.value;
     }));
