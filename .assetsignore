@@ -20,3 +20,5 @@ node_modules
 *.mjs
 .env*
 *.pyc
+src
+.preview-trigger
