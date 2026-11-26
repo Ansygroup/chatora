@@ -58,6 +58,7 @@
       sendError: "Could not send the reply. Check the connection and try again.", sendTooLong: "Message is too long. Maximum 1,000 UTF-8 bytes.",
       sendStatusSending: "Sending", sendStatusSent: "Sent", sendStatusDelivered: "Delivered", sendStatusRead: "Read", sendStatusFailed: "Failed", sendStatusUnknown: "Status unknown",
       flowPending: "Flows stay as drafts until a real messaging channel and automation are connected.",
+      guideTitle: "Two steps to a ready flow", guide1: "Replace the [bracketed] parts with your own details (offer, link, price)", guide2: "Press Save", guideReadyTitle: "Your flow is saved and ready", guideReadyText: "Next step: connect WhatsApp or Instagram so it can reply to real messages. Self-connect is coming soon, so our team sets it up for you (the next page has the link). Until then this stays a draft.", connectCta: "Connect WhatsApp / Instagram", tryOptional: "Try it first (optional)",
       send: "Send", typeMsg: "Write a reply…", aiPaused: "Waiting for a channel connection", humanMode: "Assigned to a person",
       takeOver: "Take over", giveBack: "Hand back to AI", close: "Close", reopen: "Reopen",
       newFlow: "New flow", pickTemplate: "Start from a template", cancel: "Cancel",
@@ -164,6 +165,7 @@
       sendError: "ماقدرناش نبعت الرد. راجع الاتصال وحاول تاني.", sendTooLong: "الرسالة طويلة. الحد الأقصى 1000 بايت UTF-8.",
       sendStatusSending: "جارٍ الإرسال", sendStatusSent: "أُرسلت", sendStatusDelivered: "تم التسليم", sendStatusRead: "مقروءة", sendStatusFailed: "فشل", sendStatusUnknown: "الحالة غير معروفة",
       flowPending: "السيناريوهات تفضل مسودات لحد ربط قناة مراسلة وتشغيل أتمتة فعلية.",
+      guideTitle: "خطوتين وسيناريوك جاهز", guide1: "بدّل الأجزاء اللي بين [أقواس] ببياناتك (العرض، اللينك، السعر)", guide2: "اضغط حفظ", guideReadyTitle: "السيناريو اتحفظ وجاهز", guideReadyText: "الخطوة الجاية: اربط واتساب أو إنستجرام عشان يرد على رسايل حقيقية. الربط الذاتي قريب، فريقنا بيظبطهالك دلوقتي (اللينك في الصفحة الجاية). وطول ما مفيش ربط بيفضل مسودة.", connectCta: "اربط واتساب / إنستجرام", tryOptional: "جرّبه الأول (اختياري)",
       send: "إرسال", typeMsg: "اكتب رد…", aiPaused: "في انتظار ربط القناة", humanMode: "محوّلة لموظف",
       takeOver: "خد المحادثة", giveBack: "رجّعها للذكاء الاصطناعي", close: "اقفل", reopen: "افتحها تاني",
       newFlow: "سيناريو جديد", pickTemplate: "ابدأ من قالب", cancel: "إلغاء",
@@ -588,7 +590,7 @@
       `<div class="ed-actions"><span class="dash-ok" id="ed-ok"></span>` +
       `<button type="button" class="btn btn-ghost btn-sm" id="ed-test">${esc(T.testRun)}</button>` +
       `<button type="button" class="btn btn-primary btn-sm" id="ed-save">${esc(T.save)}</button></div></div>` +
-      `<div class="dash-card"><h2>${esc(T.flowName)}</h2>` +
+      guideHtml() + `<div class="dash-card"><h2>${esc(T.flowName)}</h2>` +
       `<input id="ed-name" class="ed-name" value="${esc(f.name)}" maxlength="70" aria-label="${esc(T.flowName)}">` +
       `<p class="dash-note">${esc(chLabel(f.channel))} · ${esc(T[["live", "paused", "draft"].includes(f.status) ? f.status : "draft"] || "")}</p></div>` +
       `<div class="dash-card"><h2>${esc(T.steps)}</h2>` +
@@ -1737,9 +1739,14 @@
         status: "draft", runs: 0, nodes: starterSteps(tpl, tpl.steps)
       })
     });
-    state.flows.unshift(Array.isArray(row) ? row[0] : row);
+    const made = Array.isArray(row) ? row[0] : row;
+    state.flows.unshift(made);
     state.templates = false;
     state.gq = "";
+    state.edit = made;
+    state.steps = JSON.parse(JSON.stringify(made.nodes || []));
+    state.guide = true;
+    state.ready = false;
     paint();
     const ok = document.createElement("div");
     ok.className = "toast";
@@ -1748,9 +1755,18 @@
     setTimeout(() => ok.remove(), 2600);
   }
 
+  function guideHtml() {
+    if (!state.guide) return "";
+    if (state.ready) return `<div class="dash-card"><h2>\u2713 ${esc(T.guideReadyTitle)}</h2><p class="dash-note">${esc(T.guideReadyText)}</p><div class="dash-inline"><button type="button" class="btn btn-primary btn-sm" id="ed-connect">${esc(T.connectCta)}</button><button type="button" class="btn btn-ghost btn-sm" id="ed-try">${esc(T.tryOptional)}</button></div></div>`;
+    const left = (state.steps || []).reduce((n, s) => n + ((String(s.text || "").match(/\[[^\]]+\]/g) || []).length), 0);
+    return `<div class="dash-card"><h2>${esc(T.guideTitle)}</h2><ol class="dash-note"><li>${esc(T.guide1)}${left ? " (" + left + ")" : ""}</li><li>${esc(T.guide2)}</li></ol></div>`;
+  }
+
   function openEditor(id) {
     const f = state.flows.filter((x) => x.id === id)[0];
     if (!f) return;
+    state.guide = false;
+    state.ready = false;
     state.edit = f;
     state.steps = JSON.parse(JSON.stringify(f.nodes || []));
     paint();
@@ -1758,7 +1774,11 @@
 
   function bindEditor(p) {
     if (!state.edit) return;
-    $("#ed-back", p).addEventListener("click", () => { state.edit = null; state.steps = []; paint(); });
+    $("#ed-back", p).addEventListener("click", () => { state.edit = null; state.steps = []; state.guide = false; state.ready = false; paint(); });
+    const goConnect = $("#ed-connect", p);
+    if (goConnect) goConnect.addEventListener("click", () => { state.edit = null; state.steps = []; state.guide = false; state.ready = false; setView("settings"); });
+    const tryIt = $("#ed-try", p);
+    if (tryIt) tryIt.addEventListener("click", () => { const t = $("#ed-test"); if (t) t.click(); });
     const nm = $("#ed-name", p);
     if (nm) nm.addEventListener("input", () => { state.edit.name = nm.value; });
 
@@ -1789,6 +1809,7 @@
       });
       state.edit.name = name;
       state.edit.nodes = state.steps;
+      if (state.guide) { state.ready = true; paint(); return; }
       const ok = $("#ed-ok");
       ok.textContent = T.savedFlow;
       setTimeout(() => { ok.textContent = ""; }, 2500);
