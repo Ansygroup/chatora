@@ -1,5 +1,6 @@
 var _sf=document.getElementById('svc-form');_sf&&_sf.addEventListener('submit',function(e){e.preventDefault();
-var t='Hi Chatora, I\'d like a free 15-min audit.\nName: '+document.getElementById('f-name').value+'\nBusiness: '+document.getElementById('f-biz').value+'\nChannel: '+document.getElementById('f-ch').value+'\nGoal: '+document.getElementById('f-msg').value;
+var W=({"en": ["Hi Chatora, I'd like a free 15-min audit.", "Name", "Business", "Channel", "Goal"], "es": ["Hola Chatora, quiero una auditoría gratuita de 15 min.", "Nombre", "Negocio", "Canal", "Objetivo"], "fr": ["Bonjour Chatora, je souhaite un audit gratuit de 15 min.", "Nom", "Entreprise", "Canal", "Objectif"], "de": ["Hallo Chatora, ich möchte ein kostenloses 15-Min-Audit.", "Name", "Unternehmen", "Kanal", "Ziel"], "pt": ["Olá Chatora, quero uma auditoria gratuita de 15 min.", "Nome", "Negócio", "Canal", "Objetivo"], "ar": ["مرحبًا شاتورا، أودّ تدقيقًا مجانيًا لمدة 15 دقيقة.", "الاسم", "النشاط", "القناة", "الهدف"]})[(document.documentElement.lang||'en').slice(0,2)]||null;if(!W)W=["Hi Chatora, I'd like a free 15-min audit.",'Name','Business','Channel','Goal'];
+var t=W[0]+'\n'+W[1]+': '+document.getElementById('f-name').value+'\n'+W[2]+': '+document.getElementById('f-biz').value+'\n'+W[3]+': '+document.getElementById('f-ch').value+'\n'+W[4]+': '+document.getElementById('f-msg').value;
 window.open('https://wa.me/201044772636?text='+encodeURIComponent(t),'_blank','noopener');});
 
 /* Chatora AI chat widget (lead qualification + WhatsApp handoff) */
@@ -37,4 +38,4 @@ window.open('https://wa.me/201044772636?text='+encodeURIComponent(t),'_blank','n
 })();
 
 /* Language switch: services page is English-only, so send other languages to their localized home instead of a 404 */
-if(/services/.test(location.pathname))(function(){function go(c){location.href=(c==='en'?'/':'/'+c+'/');}document.addEventListener('click',function(e){var o=e.target.closest&&e.target.closest('[data-lang]');if(o){e.preventDefault();e.stopImmediatePropagation();go(o.getAttribute('data-lang'));}},true);document.addEventListener('change',function(e){var s=e.target;if(s&&s.matches&&s.matches('select[data-lang-select]')){e.stopImmediatePropagation();go(s.value);}},true);})();
+if(/services/.test(location.pathname))(function(){function go(c){location.href=(c==='en'?'/services.html':'/'+c+'/services.html');}document.addEventListener('click',function(e){var o=e.target.closest&&e.target.closest('[data-lang]');if(o){e.preventDefault();e.stopImmediatePropagation();go(o.getAttribute('data-lang'));}},true);document.addEventListener('change',function(e){var s=e.target;if(s&&s.matches&&s.matches('select[data-lang-select]')){e.stopImmediatePropagation();go(s.value);}},true);})();
