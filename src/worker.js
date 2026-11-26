@@ -32,7 +32,8 @@ export default {
       });
       return Response.json({ reply: String(r.response || '').slice(0, 800) });
     } catch (e) {
-      return Response.json({ reply: 'Sorry, I am unavailable right now. Please tap the WhatsApp button and we will reply there.' }, { status: 200 });
+      console.log(String(e));
+      return Response.json({ err: String(e).slice(0,200), reply: 'Sorry, I am unavailable right now. Please tap the WhatsApp button and we will reply there.' }, { status: 200 });
     }
   },
 };
