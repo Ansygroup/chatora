@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS public.widget_keys (
 CREATE INDEX IF NOT EXISTS widget_keys_ws_idx ON public.widget_keys (workspace_id);
 ALTER TABLE public.widget_keys ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS widget_keys_own ON public.widget_keys;
-CREATE POLICY widget_keys_own ON public.widget_keys FOR ALL TO authenticated
+CREATE POLICY widget_keys_own ON public.widget_keys FOR ALL TO anon, authenticated
   USING (workspace_id IN (SELECT id FROM public.workspaces WHERE owner = (auth.jwt() ->> 'sub')))
   WITH CHECK (workspace_id IN (SELECT id FROM public.workspaces WHERE owner = (auth.jwt() ->> 'sub')));
 CREATE OR REPLACE FUNCTION public.widget_keys_limit() RETURNS trigger LANGUAGE plpgsql AS $f$
