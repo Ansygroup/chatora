@@ -22,7 +22,7 @@
       '.m{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#f6f6fa}' +
       '.g{max-width:82%;padding:8px 11px;border-radius:12px;font-size:14px;line-height:1.4;white-space:pre-wrap;word-wrap:break-word}' +
       '.a{background:#fff;color:#222;align-self:flex-start;border:1px solid #e4e4ee}.u{background:#6d4aff;color:#fff;align-self:flex-end}' +
-      'form{display:flex;border-top:1px solid #e4e4ee}input{flex:1;border:0;padding:12px;font-size:14px;outline:0}' +
+      'form{display:flex;border-top:1px solid #e4e4ee}input{flex:1;border:0;background:#fff;color:#222;padding:12px;font-size:14px;outline:0}' +
       'form button{border:0;background:#fff;color:#6d4aff;font-weight:600;padding:0 14px;cursor:pointer}' +
       '</style><div class="p"><div class="h"></div><div class="m"></div><form><input maxlength="400" placeholder="Type a message" aria-label="Message"><button>Send</button></form></div><button class="b" aria-label="Chat">\uD83D\uDCAC</button>';
     var panel = root.querySelector('.p'), msgs = root.querySelector('.m'), inp = root.querySelector('input');
