@@ -82,7 +82,7 @@
       delPass: "Current password", delBtn: "Delete my account", delConfirm: "Delete your account and all workspace data permanently?",
       delWrong: "That password is not correct.", delFailed: "The account could not be deleted. Nothing was removed — try again later.",
       metaDisconnect: "Disconnect", metaDisconnectConfirm: "Disconnect this channel? Chatora deletes the stored access token and stops receiving its messages.",
-      pwShort: "At least 8 characters.", exportTitle: "Your data", exportBtn: "Download a JSON copy",
+      pwShort: "At least 10 characters, with letters and numbers.", exportTitle: "Your data", exportBtn: "Download a JSON copy",
       emptyWs: "Empty workspace — no demo records are added. Import real contacts or create your first flow.",
       newContact: "New contact", editContact: "Edit contact", contactName: "Name", tagsPh: "vip, reorder", cMore: "Load more", cShowing: "Showing {n} of {total}",
       cExport: "Export CSV", cExported: "CSV downloaded: {n} contacts.", cExportEmpty: "No contacts match this search.",
@@ -189,7 +189,7 @@
       delPass: "كلمة السر الحالية", delBtn: "احذف حسابي", delConfirm: "تحذف حسابك وكل بيانات مساحة العمل نهائيًا؟",
       delWrong: "كلمة السر مش صحيحة.", delFailed: "ماقدرناش نحذف الحساب. مفيش حاجة اتحذفت — حاول تاني بعدين.",
       metaDisconnect: "افصل القناة", metaDisconnectConfirm: "تفصل القناة دي؟ شاتورا هيحذف رمز الوصول المحفوظ وهيوقف استقبال رسايلها.",
-      pwShort: "8 حروف على الأقل.", exportTitle: "بياناتك", exportBtn: "نزّل نسخة JSON",
+      pwShort: "10 حروف على الأقل مع أحرف وأرقام.", exportTitle: "بياناتك", exportBtn: "نزّل نسخة JSON",
       emptyWs: "مساحة عمل فاضية — مفيش سجلات تجريبية بتتضاف. استورد جهات اتصالك أو اعمل أول سيناريو.",
       newContact: "جهة اتصال جديدة", editContact: "تعديل جهة الاتصال", contactName: "الاسم", tagsPh: "vip, reorder", cMore: "عرض المزيد", cShowing: "معروض {n} من {total}",
       cExport: "تصدير CSV", cExported: "تم تنزيل {n} جهة اتصال بصيغة CSV.", cExportEmpty: "مفيش جهات اتصال مطابقة للبحث.",
@@ -392,6 +392,10 @@
       `<button type="button" class="link-btn onb-hide" id="ob-hide">${esc(T.obHide)}</button></div>`;
   }
 
+  const BIDI = /[\u202A-\u202E\u2066-\u2069\u200E\u200F\u061C\u200B-\u200D\uFEFF]/g;
+  const tidy = (s, n) => String(s == null ? "" : s).replace(BIDI, "").slice(0, n);
+  const VIEWS = ["overview", "inbox", "flows", "contacts", "broadcast", "settings"];
+  function strongPw(v) { return v.length >= 10 && /\d/.test(v) && /[^\d\s]/.test(v); }
   function setView(v) {
     state.view = v;
     state.edit = null;
@@ -1606,7 +1610,7 @@
       if (pf) pf.addEventListener("submit", async (e) => {
         e.preventDefault();
         const el = $("#pw-input"), out = $("#pw-msg");
-        if (el.value.length < 8) { out.textContent = T.pwShort; out.className = "dash-note is-err"; return; }
+        if (!strongPw(el.value)) { out.textContent = T.pwShort; out.className = "dash-note is-err"; return; }
         try {
           await A.updateUser({ password: el.value });
           el.value = "";
@@ -1671,11 +1675,11 @@
   }
 
   async function saveContact() {
-    const name = $("#cf-name").value.trim();
+    const name = tidy($("#cf-name").value, 80).trim();
     if (!name) { $("#cf-name").focus(); return; }
     const body = {
       name,
-      handle: $("#cf-handle").value.trim() || null,
+      handle: tidy($("#cf-handle").value, 80).trim() || null,
       channel: $("#cf-ch").value,
       tags: $("#cf-tags").value.split(",").map((t) => t.trim()).filter(Boolean).slice(0, 6),
       last_seen: new Date().toISOString()
@@ -1820,7 +1824,8 @@
       paint();
     }));
     $("#ed-save", p).addEventListener("click", async () => {
-      const name = $("#ed-name").value.trim() || state.edit.name;
+      const name = tidy($("#ed-name").value, 70).trim() || state.edit.name;
+      state.steps.forEach((s) => { if (typeof s.text === "string") s.text = tidy(s.text, 1000); });
       await A.rest("/rest/v1/flows?id=eq." + state.edit.id, {
         method: "PATCH",
         body: JSON.stringify({ name, nodes: state.steps, updated_at: new Date().toISOString() })
@@ -1954,12 +1959,13 @@
     applyAppTranslations();
     const params = new URLSearchParams(location.search);
     const wantsTemplates = params.get("view") === "templates";
+    const wantView = VIEWS.indexOf(params.get("view") || "") >= 0 ? params.get("view") : "";
     const candidate = params.get("tpl") || "";
     const tplId = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(candidate) ? candidate : "";
-    const next = wantsTemplates ? "app.html?view=templates" + (tplId ? "&tpl=" + tplId : "") : "app.html";
+    const next = wantsTemplates ? "app.html?view=templates" + (tplId ? "&tpl=" + tplId : "") : wantView ? "app.html?view=" + wantView : "app.html";
     const s = await A.ensure();
     if (!s) { location.replace("login.html?next=" + encodeURIComponent(next)); return; }
-    if (wantsTemplates) { state.view = "flows"; state.templates = true; state.gq = tplId; }
+    if (wantsTemplates) { state.view = "flows"; state.templates = true; state.gq = tplId; } else if (wantView) state.view = wantView;
     try {
       state.ws = await ensureWorkspace(s.user || {});
       await loadAll();
