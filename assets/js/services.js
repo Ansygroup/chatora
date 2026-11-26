@@ -34,3 +34,6 @@ window.open('https://wa.me/201044772636?text='+encodeURIComponent(t),'_blank','n
   p.querySelector('#cw-s').onclick = send;
   i.onkeydown = function (e) { if (e.key === 'Enter') send(); };
 })();
+
+/* Language switch: services page is English-only, so send other languages to their localized home instead of a 404 */
+(function(){function go(c){location.href=(c==='en'?'/':'/'+c+'/');}document.addEventListener('click',function(e){var o=e.target.closest&&e.target.closest('[data-lang]');if(o){e.preventDefault();e.stopImmediatePropagation();go(o.getAttribute('data-lang'));}},true);document.addEventListener('change',function(e){var s=e.target;if(s&&s.matches&&s.matches('select[data-lang-select]')){e.stopImmediatePropagation();go(s.value);}},true);})();
