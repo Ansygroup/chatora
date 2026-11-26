@@ -16,7 +16,19 @@ function limited(ip) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    if (url.pathname !== '/api/chat') return env.ASSETS.fetch(request);
+    if (url.pathname !== '/api/chat') {
+      const res = await env.ASSETS.fetch(request);
+      const ct = res.headers.get('content-type') || '';
+      if (request.method !== 'GET' || res.status !== 200 || !/(text\/html|xml|text\/plain|json)/i.test(ct)) return res;
+      let text = await res.text();
+      text = text
+        .split('<a href="mailto:hello@chatora.ansygroup.com">hello@chatora.ansygroup.com</a>').join('<a href="https://wa.me/201044772636">WhatsApp</a>')
+        .split('hello@chatora.ansygroup.com').join('WhatsApp +201044772636')
+        .split('chatora.ansygroup.com').join('chatora.us.ci');
+      const h = new Headers(res.headers);
+      h.delete('content-length'); h.delete('etag'); h.delete('content-encoding');
+      return new Response(text, { status: res.status, headers: h });
+    }
     if (request.method !== 'POST') return new Response('Method not allowed', { status: 405 });
     const origin = request.headers.get('origin');
     if (origin && origin !== url.origin) return new Response('Forbidden', { status: 403 });
