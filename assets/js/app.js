@@ -541,7 +541,7 @@
         `<button type="button" class="btn btn-ghost btn-sm" data-guse="${esc(x.id)}">${esc(T.gUse)}</button></article>`;
     }).join("");
     return `<div class="dash-head"><button type="button" class="btn btn-ghost btn-sm" id="g-back">← ${esc(T.back)}</button>` +
-      `<input id="g-search" class="dash-search" type="search" aria-label="${esc(T.gSearch)}" placeholder="${esc(T.gSearch)}" value="${esc(state.gq)}"></div>` +
+      `<input id="g-search" class="dash-search" type="search" aria-label="${esc(T.gSearch)}" placeholder="${esc(T.gSearch)}" value="${esc(state.gq)}"><button type="button" class="btn btn-primary btn-sm" id="g-blank">${esc(BLANK.b)}</button></div>` +
       `<div class="dash-card"><h2>${esc(T.gTitle)}</h2><p class="dash-note">${esc(T.gNote)}</p>` +
       `<div class="dchips">${chips}</div>` +
       `<div class="gtpl-grid">${cards || `<p class="dash-empty">${esc(T.gNone)}</p>`}</div>` +
@@ -1356,6 +1356,7 @@
     if (state.view === "flows") {
       const tc = $("#tpl-cancel", p);
       if (tc) tc.addEventListener("click", () => { state.templates = false; paint(); });
+      { const gb = $("#g-blank", p); if (gb) gb.addEventListener("click", () => useBlank().catch((e) => alert(e.message))); }
       $$("[data-guse]", p).forEach((b) => b.addEventListener("click", () => useTemplate(b.getAttribute("data-guse")).catch((e) => alert(e.message))));
       $$("[data-gcat]", p).forEach((b) => b.addEventListener("click", () => { state.gcat = b.getAttribute("data-gcat"); paint(); }));
       const gb = $("#g-back", p);
@@ -1748,6 +1749,26 @@
       i++;
     }
     return steps;
+  }
+
+  const BLANK = ({ en: { b: "Start blank", n: "New flow", t: "Describe what starts this flow (e.g. a customer sends \"price\")", m: "Write the first reply here" },
+    ar: { b: "ابدأ من الصفر", n: "سيناريو جديد", t: "اكتب ما الذي يبدأ السيناريو (مثلاً: العميل يرسل \"السعر\")", m: "اكتب الرد الأول هنا" },
+    es: { b: "Empezar en blanco", n: "Flujo nuevo", t: "Describe qué inicia este flujo (p. ej. un cliente escribe \"precio\")", m: "Escribe aquí la primera respuesta" },
+    fr: { b: "Partir de zéro", n: "Nouveau flux", t: "Décrivez ce qui déclenche ce flux (ex. un client écrit \"prix\")", m: "Écrivez ici la première réponse" },
+    de: { b: "Leer starten", n: "Neuer Ablauf", t: "Beschreiben Sie den Auslöser (z. B. Kunde schreibt \"Preis\")", m: "Erste Antwort hier schreiben" },
+    pt: { b: "Começar em branco", n: "Novo fluxo", t: "Descreva o que inicia este fluxo (ex.: cliente envia \"preço\")", m: "Escreva aqui a primeira resposta" } })[LANG] || {};
+  async function useBlank() {
+    const row = await A.rest("/rest/v1/flows", {
+      method: "POST",
+      body: JSON.stringify({ workspace_id: state.ws.id, name: BLANK.n, channel: "instagram", status: "draft", runs: 0,
+        nodes: [{ t: "trigger", text: BLANK.t }, { t: "message", text: BLANK.m }] })
+    });
+    const made = Array.isArray(row) ? row[0] : row;
+    state.flows.unshift(made);
+    state.templates = false; state.gq = ""; state.edit = made;
+    state.steps = JSON.parse(JSON.stringify(made.nodes || []));
+    state.guide = false; state.ready = false;
+    paint();
   }
 
   async function useTemplate(id) {
