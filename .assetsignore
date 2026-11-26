@@ -19,3 +19,4 @@ node_modules
 *.sql
 *.mjs
 .env*
+*.pyc
