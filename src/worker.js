@@ -22,6 +22,14 @@ function limited(ip) {
   if (hits.size > 5000) hits.clear();
   return h.length > 12;
 }
+async function limitedEdge(ip) {
+  try {
+    const c = caches.default, key = new Request('https://rl.chatora.us.ci/' + encodeURIComponent(ip) + '/' + Math.floor(Date.now() / 600000));
+    const m = await c.match(key), n = (m ? Number(await m.text()) || 0 : 0) + 1;
+    await c.put(key, new Response(String(n), { headers: { 'cache-control': 'max-age=600' } }));
+    return n > 12;
+  } catch { return false; }
+}
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -36,12 +44,12 @@ export default {
         .split('chatora.ansygroup.com').join('chatora.us.ci');
       if (/\/pricing(\.html)?$/.test(url.pathname) && text.includes('</h1>')) {
         const p = url.pathname;
-        const msg = /^\/ar\//.test(p) ? 'تبحث عن إعداد جاهز؟ شاهد <a href="/services.html">خدمة الإعداد الكامل وأسعارها</a>.'
-          : /^\/es\//.test(p) ? '¿Prefieres que lo montemos por ti? Mira el <a href="/services.html">servicio llave en mano y sus precios</a>.'
-          : /^\/fr\//.test(p) ? 'Vous préférez qu\'on le configure pour vous ? Voir le <a href="/services.html">service clé en main et ses tarifs</a>.'
-          : /^\/de\//.test(p) ? 'Lieber fertig eingerichtet? Siehe den <a href="/services.html">Komplett-Service mit Preisen</a>.'
-          : /^\/pt\//.test(p) ? 'Prefere que configuremos por você? Veja o <a href="/services.html">serviço completo e os preços</a>.'
-          : 'Want it set up for you? See the <a href="/services.html">done-for-you service and its prices</a>.';
+        const msg = /^\/ar\//.test(p) ? 'تبحث عن إعداد جاهز؟ شاهد <a href="/services.html">خدمة الإعداد الكامل وأسعارها</a>. الأسعار (بالدولار): Starter 199$ مرة واحدة، Growth 349$ إعداد + 99$ شهرياً، Scale 599$ إعداد + 199$ شهرياً.'
+          : /^\/es\//.test(p) ? '¿Prefieres que lo montemos por ti? Mira el <a href="/services.html">servicio llave en mano y sus precios</a>. Precios (USD): Starter $199 pago único, Growth $349 de alta + $99/mes, Scale $599 de alta + $199/mes.'
+          : /^\/fr\//.test(p) ? 'Vous préférez qu\'on le configure pour vous ? Voir le <a href="/services.html">service clé en main et ses tarifs</a>. Tarifs (USD) : Starter 199 $ une fois, Growth 349 $ + 99 $/mois, Scale 599 $ + 199 $/mois.'
+          : /^\/de\//.test(p) ? 'Lieber fertig eingerichtet? Siehe den <a href="/services.html">Komplett-Service mit Preisen</a>. Preise (USD): Starter $199 einmalig, Growth $349 Setup + $99/Monat, Scale $599 Setup + $199/Monat.'
+          : /^\/pt\//.test(p) ? 'Prefere que configuremos por você? Veja o <a href="/services.html">serviço completo e os preços</a>. Preços (USD): Starter $199 único, Growth $349 de setup + $99/mês, Scale $599 de setup + $199/mês.'
+          : 'Want it set up for you? See the <a href="/services.html">done-for-you service and its prices</a>.'+' Done-for-you prices (USD): Starter $199 one-time, Growth $349 setup + $99/month, Scale $599 setup + $199/month.';
         text = text.replace('</h1>', '</h1><p class="lead">' + msg + '</p>');
       }
       const h = new Headers(res.headers);
@@ -51,7 +59,8 @@ export default {
     if (request.method !== 'POST') return new Response('Method not allowed', { status: 405 });
     const origin = request.headers.get('origin');
     if (origin && origin !== url.origin) return new Response('Forbidden', { status: 403 });
-    if (limited(request.headers.get('cf-connecting-ip') || 'x'))
+    const rip = request.headers.get('cf-connecting-ip') || 'x';
+    if (limited(rip) || await limitedEdge(rip))
       return Response.json({ reply: 'Too many messages for now. Please continue on WhatsApp.' }, { status: 429 });
     let body;
     try {
