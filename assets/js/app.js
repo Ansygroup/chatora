@@ -1707,6 +1707,9 @@
 
   function starterSteps(tpl, count) {
     const loc = templateCopy(tpl);
+    const tf = window.CHATORA_TEMPLATE_FLOWS && window.CHATORA_TEMPLATE_FLOWS[tpl.id];
+    const own = tf && (tf[LANG] || tf.en);
+    if (own && own.length) return JSON.parse(JSON.stringify(own));
     const steps = [{ t: "trigger", text: loc.t }];
     const fillers = [
       { t: "msg", text: T.tplDraftMessage.replace("{name}", loc.t) },
