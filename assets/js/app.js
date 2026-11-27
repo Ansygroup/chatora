@@ -1412,7 +1412,7 @@
   function renderSettings() {
     const sec = (id, title, open, html) => `<details class="set-sec" data-sec="${id}"${state.setOpen && state.setOpen[id] !== undefined ? (state.setOpen[id] ? " open" : "") : (open ? " open" : "")} style="margin:0 0 14px"><summary style="cursor:pointer;font-weight:700;font-size:1.05rem;padding:8px 2px">${esc(title)}</summary>${html}</details>`;
     if (!T.setCh) { T.setCh = AR ? "القنوات" : "Channels"; T.setAi = AR ? "الموقع والذكاء الاصطناعي" : "Website chat and AI"; T.setAcct = AR ? "الحساب والخطة" : "Account and plan"; }
-    return sec("ch", T.setCh, true, renderChannelsBlock() + renderMetaSettings()) + sec("ai", T.setAi, true, widgetCard() + knowledgeCard()) + sec("tpl", AR ? "قوالب ووضع العملاء" : "Templates and client mode", false, tplCard()) + sec("acct", T.setAcct, true,
+    return sec("ch", T.setCh, true, renderChannelsBlock() + renderMetaSettings()) + sec("ai", T.setAi, true, widgetCard() + knowledgeCard()) + sec("tpl", AR ? "قوالب ووضع العملاء" : "Templates and client mode", false, tplCard()) + sec("api", AR ? "المطوّرون و API" : "Developers and API", false, apiCard()) + sec("acct", T.setAcct, true,
       `<div class="dash-card"><h2>${esc(T.wsName)}</h2>` +
       `<form id="ws-form" class="dash-inline"><input id="ws-input" aria-label="${esc(T.wsName)}" value="${esc(state.ws.name)}" maxlength="60">` +
       `<button class="btn btn-primary btn-sm" type="submit">${esc(T.save)}</button></form>` +
@@ -1524,6 +1524,73 @@
       try {
         await A.rest("/rest/v1/widget_keys?id=eq." + encodeURIComponent(id), { method: "DELETE" });
         WK.keys = WK.keys.filter((x) => x.id !== id); WK.err = ""; paint();
+      } catch (e) { fail(e); }
+    }));
+  }
+  /* ---- Phase 2 item 12: API keys (scoped, hashed) ---- */
+  const AK = { loaded: false, loading: false, keys: [], err: "", fresh: "" };
+  const AKT = AR ? {
+    t: "مفاتيح API (للمطوّرين)", n: "اربط Chatora بأدواتك أو بمساعد ذكاء اصطناعي (MCP). كل مفتاح له صلاحيات محددة، ويظهر مرة واحدة فقط بعد إنشائه. مجاني، حتى 120 طلب كل 10 دقائق لكل مفتاح.",
+    nm: "اسم المفتاح", c: "إنشاء مفتاح", d: "حذف", cf: "تحذف المفتاح ده؟ أي تطبيق بيستخدمه هيتوقف.", lim: "حتى 5 مفاتيح.",
+    sc: { "contacts:read": "قراءة جهات الاتصال", "contacts:write": "إضافة جهات اتصال", "flows:read": "قراءة السيناريوهات", "conversations:read": "قراءة المحادثات" },
+    once: "انسخ المفتاح الآن، مش هيظهر تاني:", cp: "نسخ", cd: "تم النسخ", last: "آخر استخدام", never: "لم يُستخدم", docs: "التوثيق", spec: "OpenAPI", mcp: "رابط MCP"
+  } : {
+    t: "API keys (developers)", n: "Connect Chatora to your tools or an AI assistant (MCP). Each key has limited scopes and is shown only once, right after you create it. Free, up to 120 requests per 10 minutes per key.",
+    nm: "Key name", c: "Create key", d: "Delete", cf: "Delete this key? Any app using it will stop working.", lim: "Up to 5 keys.",
+    sc: { "contacts:read": "Read contacts", "contacts:write": "Create contacts", "flows:read": "Read flows", "conversations:read": "Read conversations" },
+    once: "Copy the key now. It will not be shown again:", cp: "Copy", cd: "Copied", last: "Last used", never: "never used", docs: "Docs", spec: "OpenAPI", mcp: "MCP endpoint"
+  };
+  function apiCard() {
+    const rows = AK.keys.map((k) => `<div class="dash-card" style="margin:10px 0;padding:12px"><b>${esc(k.name)}</b> <code>${esc(k.prefix)}…</code>` +
+      `<p class="dash-note" style="margin:6px 0">${esc((k.scopes || []).map((x) => AKT.sc[x] || x).join(" · "))} — ${esc(AKT.last)}: ${esc(k.last_used_at ? String(k.last_used_at).slice(0, 16).replace("T", " ") : AKT.never)}</p>` +
+      `<button type="button" class="btn btn-ghost btn-sm btn-danger" data-ak-del="${esc(k.id)}">${esc(AKT.d)}</button></div>`).join("");
+    const fresh = AK.fresh ? `<div class="dash-card" style="margin:10px 0;padding:12px"><p class="dash-note"><b>${esc(AKT.once)}</b></p><textarea readonly rows="2" id="ak-fresh" style="width:100%;font-family:monospace;font-size:12px">${esc(AK.fresh)}</textarea><button type="button" class="btn btn-primary btn-sm" id="ak-copy">${esc(AKT.cp)}</button></div>` : "";
+    const boxes = Object.keys(AKT.sc).map((x) => `<label style="display:block;margin:2px 0"><input type="checkbox" data-ak-scope="${x}"${x.endsWith(":read") ? " checked" : ""}> ${esc(AKT.sc[x])}</label>`).join("");
+    return `<div class="dash-card" id="ak-card"><h2>${esc(AKT.t)}</h2><p class="dash-note">${esc(AKT.n)}</p>${fresh}${rows}` +
+      `<input id="ak-name" maxlength="80" placeholder="${esc(AKT.nm)}" aria-label="${esc(AKT.nm)}" style="width:100%;margin-top:8px"><div style="margin:8px 0">${boxes}</div>` +
+      `<button type="button" class="btn btn-primary btn-sm" id="ak-create"${AK.keys.length >= 5 ? " disabled" : ""}>${esc(AKT.c)}</button> <span class="dash-note">${esc(AKT.lim)}</span>` +
+      `<p class="dash-note"><a href="/docs/api.html" target="_blank" rel="noopener">${esc(AKT.docs)}</a> · <a href="/api/v1/openapi.json" target="_blank" rel="noopener">${esc(AKT.spec)}</a> · ${esc(AKT.mcp)}: <code>https://chatora.us.ci/mcp</code></p>` +
+      `<p class="dash-note is-err" id="ak-msg" role="status">${esc(AK.err)}</p></div>`;
+  }
+  async function akLoad() {
+    if (AK.loaded || AK.loading) return;
+    AK.loading = true;
+    try { AK.keys = (await A.rest("/rest/v1/api_keys?select=id,name,prefix,scopes,last_used_at&order=created_at.asc")) || []; AK.err = ""; }
+    catch (e) { AK.err = String(e.message || e); }
+    AK.loading = false; AK.loaded = true;
+    if (state.view === "settings") paint();
+  }
+  function akWire(p) {
+    akLoad();
+    const fail = (e) => { AK.err = String(e.message || e); const m = $("#ak-msg", p); if (m) m.textContent = AK.err; };
+    const cb = $("#ak-create", p);
+    if (cb) cb.addEventListener("click", async () => {
+      try {
+        const scopes = $$("[data-ak-scope]", p).filter((x) => x.checked).map((x) => x.getAttribute("data-ak-scope"));
+        if (!scopes.length) return;
+        const raw = crypto.getRandomValues(new Uint8Array(20));
+        const key = "chk_live_" + Array.from(raw).map((b) => b.toString(16).padStart(2, "0")).join("");
+        const dig = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(key));
+        const hash = Array.from(new Uint8Array(dig)).map((b) => b.toString(16).padStart(2, "0")).join("");
+        const name = (($("#ak-name", p) || {}).value || "").trim().slice(0, 80) || "API key";
+        const row = await A.rest("/rest/v1/api_keys", { method: "POST", body: JSON.stringify({ workspace_id: state.ws.id, name: name, prefix: key.slice(0, 13), key_hash: hash, scopes: scopes }) });
+        const made = Array.isArray(row) ? row[0] : row;
+        AK.keys.push({ id: made.id, name: name, prefix: key.slice(0, 13), scopes: scopes, last_used_at: null });
+        AK.fresh = key; AK.err = ""; paint();
+      } catch (e) { fail(e); }
+    });
+    const cp = $("#ak-copy", p);
+    if (cp) cp.addEventListener("click", () => {
+      const ta = $("#ak-fresh", p); ta.select();
+      try { navigator.clipboard.writeText(ta.value); } catch (_) { document.execCommand("copy"); }
+      cp.textContent = AKT.cd;
+    });
+    $$("[data-ak-del]", p).forEach((b) => b.addEventListener("click", async () => {
+      if (!window.confirm(AKT.cf)) return;
+      const id = b.getAttribute("data-ak-del");
+      try {
+        await A.rest("/rest/v1/api_keys?id=eq." + encodeURIComponent(id), { method: "DELETE" });
+        AK.keys = AK.keys.filter((x) => x.id !== id); AK.err = ""; AK.fresh = ""; paint();
       } catch (e) { fail(e); }
     }));
   }
@@ -2265,6 +2332,7 @@
         } catch (err) { out.textContent = err.message; out.className = "dash-note is-err"; }
       });
       wkWire(p);
+      akWire(p);
       knWire(p);
       tplWire(p);
       chanWire(p);
