@@ -26,6 +26,16 @@
       'form button{border:0;background:#fff;color:#6d4aff;font-weight:600;padding:0 14px;cursor:pointer}' +
       '</style><div class="p"><div class="h"></div><div class="m"></div><form><input maxlength="400" placeholder="Type a message" aria-label="Message"><button>Send</button></form></div><button class="b" aria-label="Chat">\uD83D\uDCAC</button>';
     var panel = root.querySelector('.p'), msgs = root.querySelector('.m'), inp = root.querySelector('input');
+    var since = new Date().toISOString();
+    setInterval(function () {
+      fetch(base + '/api/widget/poll?key=' + key + '&visitor=' + vid + '&since=' + encodeURIComponent(since))
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) {
+          if (!j || !j.messages) return;
+          j.messages.forEach(function (m) { add(m.body, 'a'); hist.push({ role: 'assistant', content: m.body }); since = m.created_at; });
+        })
+        .catch(function () {});
+    }, 12000);
     root.querySelector('.h').textContent = cfg.workspace || 'Chat';
     function add(t, c) { var d = document.createElement('div'); d.className = 'g ' + c; d.textContent = t; msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight; return d; }
     add(cfg.greeting || 'Hi! How can we help?', 'a');
@@ -37,7 +47,10 @@
       var w = add('...', 'a');
       fetch(base + '/api/widget/chat', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key: key, visitor: vid, messages: hist.slice(-8) }) })
         .then(function (r) { return r.json(); })
-        .then(function (j) { var r = j && j.reply ? j.reply : 'Sorry, something went wrong.'; w.textContent = r; hist.push({ role: 'assistant', content: r }); })
+        .then(function (j) {
+          if (j && j.human) { w.remove(); return; }
+          var r = j && j.reply ? j.reply : 'Sorry, something went wrong.'; w.textContent = r; hist.push({ role: 'assistant', content: r });
+        })
         .catch(function () { w.textContent = 'Sorry, something went wrong.'; });
     };
     document.body.appendChild(host);
