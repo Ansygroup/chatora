@@ -23,7 +23,7 @@ CREATE INDEX IF NOT EXISTS flow_runs_ws_idx ON public.flow_runs (workspace_id);
 ALTER TABLE public.flow_runs ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS flow_runs_own ON public.flow_runs;
-CREATE POLICY flow_runs_own ON public.flow_runs FOR ALL TO authenticated
+CREATE POLICY flow_runs_own ON public.flow_runs FOR ALL TO anon, authenticated
   USING (workspace_id IN (SELECT id FROM public.workspaces WHERE owner = (auth.jwt() ->> 'sub')))
   WITH CHECK (workspace_id IN (SELECT id FROM public.workspaces WHERE owner = (auth.jwt() ->> 'sub')));
 
