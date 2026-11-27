@@ -548,6 +548,14 @@
       `<p class="dash-note">${esc(T.gStarter)}</p></div>`;
   }
 
+  const DUP = { en: ["Duplicate", "copy"], ar: ["نسخ", "نسخة"], es: ["Duplicar", "copia"], fr: ["Dupliquer", "copie"], de: ["Duplizieren", "Kopie"], pt: ["Duplicar", "cópia"] }[LANG] || ["Duplicate", "copy"];
+  async function duplicateFlow(id) {
+    const f = state.flows.filter((x) => x.id === id)[0];
+    if (!f) return;
+    const row = await A.rest("/rest/v1/flows", { method: "POST", body: JSON.stringify({ workspace_id: state.ws.id, name: (f.name + " (" + DUP[1] + ")").slice(0, 120), channel: f.channel, status: "draft", runs: 0, nodes: JSON.parse(JSON.stringify(f.nodes || [])) }) });
+    const made = Array.isArray(row) ? row[0] : row;
+    if (made) { state.flows.unshift(made); paint(); }
+  }
   function renderFlows() {
     if (state.edit) return renderEditor();
     if (state.templates) return renderGallery();
@@ -561,7 +569,7 @@
       return `<article class="flow-card"><header><span class="flow-ch" style="--c:${chColor(f.channel)}">${esc(chLabel(f.channel))}</span>` +
         `<span class="flow-status is-${st}">${esc(T[st])}</span></header><h3>${esc(f.name)}</h3>` +
         `<p class="flow-meta">${num(f.runs)} ${esc(T.runs)}${steps ? ` · ${num(steps)} ${esc(T.steps)}` : ""} · ${esc(when(f.updated_at))}</p>` +
-        `<div class="flow-foot"><button type="button" class="btn btn-ghost btn-sm" data-edit="${esc(f.id)}">${esc(T.edit)}</button></div></article>`;
+        `<div class="flow-foot"><button type="button" class="btn btn-ghost btn-sm" data-edit="${esc(f.id)}">${esc(T.edit)}</button> <button type="button" class="btn btn-ghost btn-sm" data-dup="${esc(f.id)}">${esc(DUP[0])}</button></div></article>`;
     }).join("");
 
     return `<div class="dash-head"><span></span><button type="button" class="btn btn-primary btn-sm" data-new-flow>+ ${esc(T.newFlow)}</button></div>` +
@@ -1449,6 +1457,7 @@
         }).join("") || `<p class="dash-empty">${esc(T.gNone)}</p>`;
         $$("[data-guse]", grid).forEach((b) => b.addEventListener("click", () => useTemplate(b.getAttribute("data-guse")).catch((e) => alert(e.message))));
       });
+      $$("[data-dup]", p).forEach((b) => b.addEventListener("click", () => duplicateFlow(b.getAttribute("data-dup")).catch((e) => alert(e.message))));
       $$("[data-edit]", p).forEach((b) => b.addEventListener("click", () => openEditor(b.getAttribute("data-edit"))));
       bindEditor(p);
     }
