@@ -794,6 +794,10 @@ export default {
     if (url.pathname.indexOf('/l/') === 0) return shortLinkGo(request, url);
     if (url.pathname === '/api/broadcast/send') return broadcastSend(request, url);
     if (url.pathname.indexOf('/api/tg/hook/') === 0) return tgHook(request, url, env);
+    if (url.pathname === '/favicon.ico') return Response.redirect(url.origin + '/assets/img/favicon.svg', 301);
+    if (url.pathname === '/og.png') return Response.redirect(url.origin + '/assets/img/og.jpg', 301);
+    if (url.pathname === '/quiz.html') return Response.redirect(url.origin + '/pricing.html#p11-quiz', 301);
+    if (url.pathname === '/manifest.json' || url.pathname === '/site.webmanifest') return new Response(JSON.stringify({name:'Chatora',short_name:'Chatora',start_url:'/',display:'standalone',background_color:'#06060c',theme_color:'#06060c',icons:[{src:'/assets/img/favicon.svg',sizes:'any',type:'image/svg+xml'}]}), {headers:{'content-type':'application/manifest+json','cache-control':'public, max-age=3600'}});
     if (url.pathname !== '/api/chat') {
       const res = await env.ASSETS.fetch(request);
       const ct = res.headers.get('content-type') || '';
@@ -833,7 +837,9 @@ export default {
           : 'Want it set up for you? See the <a href="/services.html">done-for-you service and its prices</a>.'+' Done-for-you prices (USD): Spark $49, Starter $99, Growth $199 setup + $29/month, Scale $349 setup + $79/month.';
         text = text.replace('</h1>', '</h1><p class="lead">' + msg + '</p>');
       }
-      if (text.includes('</head>')) text = text.replace('</head>', '<style id="p12x">.consent{left:12px!important;right:auto!important;margin:0!important;max-width:300px;padding:10px 12px!important;border-radius:12px!important;gap:8px 10px!important;bottom:12px!important}.consent-text{font-size:12.5px!important;flex:1 1 100%!important;line-height:1.4!important}.consent-actions{gap:6px!important}.consent-actions .btn{padding:6px 12px!important;font-size:12.5px!important;min-height:0!important}@media(max-width:520px){.consent{max-width:calc(100% - 150px)!important}.consent-actions{width:auto!important}}</style></head>');
+      if (/^\/(ar|de|es|fr|pt)\//.test(url.pathname)) text = text.split('href="sector-templates.html"').join('href="/sector-templates.html"');
+      if (/^\/ar\//.test(url.pathname)) text = text.replace(/[إا]نست(جرام|غرام)/g, 'إنستغرام');
+      if (text.includes('</head>')) text = text.replace('</head>', '<style id="p12x">.consent{left:12px!important;right:auto!important;margin:0!important;max-width:300px;padding:10px 12px!important;border-radius:12px!important;gap:8px 10px!important;bottom:12px!important}.consent-text{font-size:12.5px!important;flex:1 1 100%!important;line-height:1.4!important}.consent-actions{gap:6px!important}.consent-actions .btn{padding:6px 12px!important;font-size:12.5px!important;min-height:0!important}@media(max-width:700px){.cmp-wrap,.table-wrap,table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}}@media(max-width:520px){.consent{max-width:calc(100% - 150px)!important}.consent-actions{width:auto!important}}</style></head>');
       const h = new Headers(res.headers);
       h.delete('content-length'); h.delete('etag'); h.delete('content-encoding');
       return new Response(text, { status: res.status, headers: h });
