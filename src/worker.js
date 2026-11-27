@@ -318,11 +318,28 @@ function aCond(cond, c) {
   }
   return null;
 }
+// Phase 2 item 7: outbound webhook step. Owner-pasted https URL only.
+function hookUrlOk(u) {
+  let x;
+  try { x = new URL(String(u || '')); } catch { return false; }
+  if (x.protocol !== 'https:' || x.port || x.username || x.password || String(u).length > 300) return false;
+  const h = x.hostname.toLowerCase();
+  if (!/^[a-z0-9.-]+$/.test(h) || h.indexOf('.') < 1) return false;
+  if (/^\d+(\.\d+)*$/.test(h) || /\.(local|internal|localhost|lan|home|corp|arpa)$/.test(h) || h === 'localhost') return false;
+  return true;
+}
+async function fireHooks(r, contact, flowName) {
+  for (const h of (r.hooks || []).slice(0, 3)) {
+    try {
+      await fetch(h.url, { method: 'POST', redirect: 'follow', signal: AbortSignal.timeout(5000), headers: { 'content-type': 'application/json', 'user-agent': 'Chatora-Webhook/1' }, body: JSON.stringify(Object.assign({ event: 'flow.webhook', flow: flowName || '', at: new Date().toISOString() }, h.payload)) });
+    } catch (e) { r.notes.push('webhook failed'); }
+  }
+}
 // Walks flow nodes from startIdx. Pure: collects telegram sends (out.tg) and DB
 // effects (out.effects); the caller performs them. Stops at a delay (pending),
 // a false condition (done), or the end (done).
 function walkFlow(nodes, startIdx, contact) {
-  const out = { status: 'done', nextIdx: (nodes || []).length, runAt: null, effects: [], tg: [], notes: [], chatId: '' };
+  const out = { status: 'done', nextIdx: (nodes || []).length, runAt: null, effects: [], tg: [], hooks: [], notes: [], chatId: '' };
   const c = { name: contact.name || '', handle: contact.handle || '', channel: contact.channel || '', tags: Array.isArray(contact.tags) ? contact.tags.slice() : [], fields: Object.assign({}, contact.fields || {}) };
   out.chatId = String(c.handle).replace(/^tg:/, '');
   out.finalTags = c.tags;
@@ -346,6 +363,10 @@ function walkFlow(nodes, startIdx, contact) {
       if (c.channel === 'telegram' && /^-?\d{1,20}$/.test(out.chatId)) out.tg.push(body);
       else if (c.channel === 'web') out.effects.push({ type: 'web_msg', contact_id: contact.id, workspace_id: contact.workspace_id, body: body });
       else out.notes.push('buy skipped: ' + c.channel);
+    } else if (s.t === 'webhook') {
+      const url = String(s.url || '').trim();
+      if (!hookUrlOk(url)) { out.notes.push('webhook skipped: bad url'); continue; }
+      out.hooks.push({ url: url, payload: { contact: { name: c.name, handle: c.handle, channel: c.channel, tags: c.tags.slice(0, 20), fields: c.fields } } });
     } else if (s.t === 'tag') {
       const tag = String(s.text || '').trim().slice(0, 40);
       if (tag && c.tags.map((x) => String(x).toLowerCase()).indexOf(tag.toLowerCase()) === -1) {
@@ -421,6 +442,7 @@ async function automationEvent(request, url) {
     if (!run) continue;
     fired++;
     const r = walkFlow(f.nodes, 1, contact);
+    await fireHooks(r, contact, f.name);
     if (tgTok) for (const text of r.tg) await tgCall(tgTok, 'sendMessage', { chat_id: Number(r.chatId), text: text });
     for (const e of r.effects) {
       if (e.type !== 'web_msg') continue;
@@ -459,6 +481,7 @@ async function inboundRun(env, scope, ref, visitor, update, text, onMatch) {
   for (const run of m.runs.slice(0, 3)) {
     try {
       const r = walkFlow(run.nodes || [], 1, contact);
+      await fireHooks(r, contact, run.name);
       if (m.tg_token) for (const t of r.tg) await tgCall(m.tg_token, 'sendMessage', { chat_id: Number(r.chatId), text: t });
       for (const e of r.effects) if (e.type === 'web_msg') replies.push(e.body);
       await sbRpc('automation_finish', { p_key: key, p_run_id: run.run_id, p_status: r.status, p_next_step: r.nextIdx, p_run_at: r.runAt, p_note: ('inbound; ' + r.notes.join('; ')).slice(0, 190), p_effects: r.effects });
@@ -487,6 +510,7 @@ async function automationTick(env) {
     try {
       const contact = Object.assign({ id: it.contact_id, workspace_id: it.workspace_id }, it.contact || {});
       const r = walkFlow(it.nodes || [], it.next_step || 1, contact);
+      await fireHooks(r, contact, it.name);
       if (it.tg_token) for (const text of r.tg) await tgCall(it.tg_token, 'sendMessage', { chat_id: Number(r.chatId), text: text });
       await rpc('automation_finish', { p_key: key, p_run_id: it.run_id, p_status: r.status, p_next_step: r.nextIdx, p_run_at: r.runAt, p_note: (it.note + '; ' + r.notes.join('; ')).slice(0, 190), p_effects: r.effects });
     } catch (e) {
