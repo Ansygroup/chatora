@@ -391,7 +391,7 @@ function walkFlow(nodes, startIdx, contact) {
   return out;
 }
 
-async function automationEvent(request, url) {
+async function automationEvent(request, url, env) {
   const origin = request.headers.get('origin');
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: wcors(origin) });
   if (request.method !== 'POST') return wjson({ error: 'method' }, 405, origin);
@@ -448,6 +448,7 @@ async function automationEvent(request, url) {
     fired++;
     const r = walkFlow(f.nodes, 1, contact);
     await fireHooks(r, contact, f.name);
+    await trackLinks(env, r, contact, f.id, f.nodes);
     if (tgTok) for (const text of r.tg) await tgCall(tgTok, 'sendMessage', { chat_id: Number(r.chatId), text: text });
     for (const e of r.effects) {
       if (e.type !== 'web_msg') continue;
@@ -552,6 +553,44 @@ async function inboundStop(env, scope, ref, visitor) {
   try { return await sbRpc('inbound_unsub', { p_key: key, p_scope: scope, p_ref: ref, p_visitor: visitor }); } catch (e) { console.log('inbound_unsub', String(e)); return null; }
 }
 
+/* ---- Phase 2 item 9: link tracking (short links with click counts) ---- */
+const LINK_RE = /https:\/\/[^\s<>"']{4,300}/g;
+async function trackLinks(env, r, contact, flowId, nodes) {
+  const n0 = Array.isArray(nodes) ? nodes[0] : null;
+  const key = env && env.AUTOMATION_SECRET;
+  if (!n0 || n0.track !== true || !key || !/^[0-9a-f-]{36}$/.test(String(flowId || '')) || !contact.workspace_id) return;
+  const cache = {};
+  let made = 0;
+  const rewrite = async (text) => {
+    const urls = String(text).match(LINK_RE) || [];
+    let out = String(text);
+    for (const raw of urls) {
+      const u = raw.replace(/[.,;:!?)\]]+$/, '');
+      if (/^https:\/\/(buy|donate)\.stripe\.com\//.test(u) || u.indexOf('https://chatora.us.ci/l/') === 0 || !hookUrlOk(u)) continue;
+      if (!cache[u]) {
+        if (made >= 5) continue;
+        made++;
+        try { cache[u] = await sbRpc('short_link_make', { p_key: key, p_ws: contact.workspace_id, p_flow: flowId, p_url: u }); } catch (e) { console.log('short_link_make', String(e)); cache[u] = ''; }
+      }
+      if (cache[u] && /^[a-z0-9]{6,12}$/.test(cache[u])) out = out.split(u).join('https://chatora.us.ci/l/' + cache[u]);
+    }
+    return out;
+  };
+  for (let i = 0; i < r.tg.length; i++) r.tg[i] = await rewrite(r.tg[i]);
+  for (const e of r.effects) if (e.type === 'web_msg') e.body = await rewrite(e.body);
+}
+async function shortLinkGo(request, url) {
+  const code = url.pathname.slice(3);
+  const rip = request.headers.get('cf-connecting-ip') || 'x';
+  if (!/^[a-z0-9]{6,12}$/.test(code) || (request.method !== 'GET' && request.method !== 'HEAD')) return new Response('Not found', { status: 404 });
+  if (wlimited('sl' + rip, 120, 600000)) return new Response('Too many requests', { status: 429 });
+  let target = null;
+  try { target = request.method === 'HEAD' ? null : await sbRpc('short_link_hit', { p_code: code }); } catch (e) { console.log('short_link_hit', String(e)); }
+  if (request.method === 'HEAD') return new Response(null, { status: 200 });
+  if (!target || !hookUrlOk(target)) return new Response('Not found', { status: 404 });
+  return new Response(null, { status: 302, headers: { location: target, 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' } });
+}
+
 /* ---- Phase 2 item 4b: inbound keyword and /start matching ---- */
 async function inboundRun(env, scope, ref, visitor, update, text, onMatch) {
   const key = env && env.AUTOMATION_SECRET;
@@ -567,6 +606,7 @@ async function inboundRun(env, scope, ref, visitor, update, text, onMatch) {
     try {
       const r = walkFlow(run.nodes || [], 1, contact);
       await fireHooks(r, contact, run.name);
+      await trackLinks(env, r, contact, run.flow_id, run.nodes);
       if (m.tg_token) for (const t of r.tg) await tgCall(m.tg_token, 'sendMessage', { chat_id: Number(r.chatId), text: t });
       for (const e of r.effects) if (e.type === 'web_msg') replies.push(e.body);
       await sbRpc('automation_finish', { p_key: key, p_run_id: run.run_id, p_status: r.status, p_next_step: r.nextIdx, p_run_at: r.runAt, p_note: ('inbound; ' + r.notes.join('; ')).slice(0, 190), p_effects: r.effects });
@@ -596,6 +636,7 @@ async function automationTick(env) {
       const contact = Object.assign({ id: it.contact_id, workspace_id: it.workspace_id }, it.contact || {});
       const r = walkFlow(it.nodes || [], it.next_step || 1, contact);
       await fireHooks(r, contact, it.name);
+      await trackLinks(env, r, contact, it.flow_id, it.nodes);
       if (it.tg_token) for (const text of r.tg) await tgCall(it.tg_token, 'sendMessage', { chat_id: Number(r.chatId), text: text });
       await rpc('automation_finish', { p_key: key, p_run_id: it.run_id, p_status: r.status, p_next_step: r.nextIdx, p_run_at: r.runAt, p_note: (it.note + '; ' + r.notes.join('; ')).slice(0, 190), p_effects: r.effects });
     } catch (e) {
@@ -611,7 +652,8 @@ export default {
     const url = new URL(request.url);
     if (url.pathname === '/api/widget/config' || url.pathname === '/api/widget/chat' || url.pathname === '/api/widget/poll') return widget(request, env, url);
     if (url.pathname === '/api/channels/telegram/connect' || url.pathname === '/api/channels/telegram/action' || url.pathname === '/api/channels/telegram/send') return tgAdmin(request, url);
-    if (url.pathname === '/api/automation/event') return automationEvent(request, url);
+    if (url.pathname === '/api/automation/event') return automationEvent(request, url, env);
+    if (url.pathname.indexOf('/l/') === 0) return shortLinkGo(request, url);
     if (url.pathname === '/api/broadcast/send') return broadcastSend(request, url);
     if (url.pathname.indexOf('/api/tg/hook/') === 0) return tgHook(request, url, env);
     if (url.pathname !== '/api/chat') {
