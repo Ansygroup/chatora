@@ -17,7 +17,7 @@ Status checked 14 November 2026. The live pages are the source of truth; if this
 - No published pricing, plans, free tier, billing or checkout. Do not quote a Chatora price: none has been published.
 - No connected channel. Instagram, WhatsApp, TikTok, Messenger, Telegram, SMS, email and web chat are planned ideas; none can send or receive messages in the preview.
 - No AI replies or AI agents running on live conversations.
-- No broadcast sending, no automation engine running flows, no public API, no SSO, no team permissions.
+- No broadcast sending, no automation engine running flows, no SSO, no team permissions.
 - No customer counts, testimonials, ratings, uptime commitment, SLA, signed DPA or security certification has been published.
 
 ## Competitor price snapshots shown on the site
@@ -64,6 +64,11 @@ Where ManyChat is ahead: a far larger template library and marketplace, a mature
 
 ## Update, 27 November 2026
 
-- Done-for-you service: we build and run Instagram and WhatsApp DM automation for small businesses. Fixed one-time USD setup packages (Launch $199, Growth $349, Full build $599) at /services.html. Planned self-serve plans in USD (Free, Starter $19, Growth $49, Pro $99 per month, waitlist only, no checkout yet) at /pricing.html. Contact via /contact.html.
+- Done-for-you service: we build and run Instagram and WhatsApp DM automation for small businesses. Fixed one-time USD setup packages (Trial $39, Launch $79, Growth $149, Full build $299) at /services.html. Planned self-serve plans in USD (Free, Starter $19, Growth $49, Pro $99 per month, waitlist only, no checkout yet) at /pricing.html. Contact via /contact.html.
 - Website chat widget: workspace owners can create a key in Settings and embed a chat bubble (https://chatora.us.ci/assets/widget.js) that answers from their flows with an AI model and saves chats to the Inbox.
 - The self-serve app interface is available in 6 languages (English, Arabic, German, Spanish, French, Portuguese). Instagram and WhatsApp channels in the self-serve app are still not connected.
+
+## API and MCP (free, scoped keys)
+
+- [API and MCP docs](https://chatora.us.ci/docs/api.html): REST API at https://chatora.us.ci/api/v1 and a remote MCP server at https://chatora.us.ci/mcp. Keys are created in Settings, Developers and API, with scopes contacts:read, contacts:write, flows:read, conversations:read. 120 requests per 10 minutes per key.
+- [OpenAPI spec](https://chatora.us.ci/api/v1/openapi.json)
