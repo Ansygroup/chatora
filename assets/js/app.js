@@ -1403,7 +1403,7 @@
   function renderSettings() {
     const sec = (id, title, open, html) => `<details class="set-sec" data-sec="${id}"${state.setOpen && state.setOpen[id] !== undefined ? (state.setOpen[id] ? " open" : "") : (open ? " open" : "")} style="margin:0 0 14px"><summary style="cursor:pointer;font-weight:700;font-size:1.05rem;padding:8px 2px">${esc(title)}</summary>${html}</details>`;
     if (!T.setCh) { T.setCh = AR ? "القنوات" : "Channels"; T.setAi = AR ? "الموقع والذكاء الاصطناعي" : "Website chat and AI"; T.setAcct = AR ? "الحساب والخطة" : "Account and plan"; }
-    return sec("ch", T.setCh, true, renderChannelsBlock() + renderMetaSettings()) + sec("ai", T.setAi, true, widgetCard() + knowledgeCard()) + sec("acct", T.setAcct, true,
+    return sec("ch", T.setCh, true, renderChannelsBlock() + renderMetaSettings()) + sec("ai", T.setAi, true, widgetCard() + knowledgeCard()) + sec("tpl", AR ? "قوالب ووضع العملاء" : "Templates and client mode", false, tplCard()) + sec("acct", T.setAcct, true,
       `<div class="dash-card"><h2>${esc(T.wsName)}</h2>` +
       `<form id="ws-form" class="dash-inline"><input id="ws-input" aria-label="${esc(T.wsName)}" value="${esc(state.ws.name)}" maxlength="60">` +
       `<button class="btn btn-primary btn-sm" type="submit">${esc(T.save)}</button></form>` +
@@ -1543,6 +1543,84 @@
     catch (e) { KN.err = String(e.message || e); }
     KN.loading = false; KN.loaded = true;
     if (state.view === "settings") paint();
+  }
+
+  /* ---- Phase 2 item 10: clone a setup as a template (client mode) ---- */
+  const TPL = { msg: "", err: false, busy: false };
+  const TPT = AR ? {
+    t: "نسخ الإعداد كقالب (وضع العملاء)", n: "صدّر سيناريوهاتك وقاعدة المعرفة كملف JSON، ثم الصقه في حساب عميل ليتكوّن له إعداد جاهز. جهات الاتصال والمحادثات والرسائل الجماعية والمفاتيح ما بتتنقلش.",
+    ex: "تصدير القالب", im: "استيراد قالب", ph: "الصق ملف القالب هنا", pick: "أو اختر ملف", ap: "تطبيق القالب",
+    bad: "ملف القالب مش صالح.", big: "القالب كبير (الحد 200KB و50 سيناريو).", done: "تم: {f} سيناريو (مسودات) و{k} عنصر معرفة. روابط الويب هوك اتشالت. راجع كل سيناريو قبل التفعيل (خصوصاً روابط الشراء).", fail: "فشل الاستيراد."
+  } : {
+    t: "Clone a setup as a template (client mode)", n: "Export your flows and knowledge box as a JSON file, then paste it into a client's account to give them a ready setup. Contacts, conversations, broadcasts and keys are never copied.",
+    ex: "Export template", im: "Import a template", ph: "Paste the template JSON here", pick: "or choose a file", ap: "Apply template",
+    bad: "That template file is not valid.", big: "Template is too big (limit 200KB and 50 flows).", done: "Done: {f} flows (as drafts) and {k} knowledge items. Webhook steps were removed. Review each flow before going live, especially Buy links.", fail: "Import failed."
+  };
+  function tplClean(raw) {
+    let o; try { o = typeof raw === "string" ? JSON.parse(raw) : raw; } catch (e) { return null; }
+    if (!o || o.chatora_template !== 1 || !Array.isArray(o.flows)) return null;
+    const flows = o.flows.slice(0, 50).map((f) => {
+      const nodes = (Array.isArray(f && f.nodes) ? f.nodes : []).slice(0, 40).map((n, i) => {
+        if (!n || STEP_KINDS.indexOf(n.t) === -1 || n.t === "webhook") return null;
+        const out = { t: n.t };
+        if (n.t === "delay") { out.v = Math.max(1, Math.min(999, parseInt(n.v, 10) || 5)); if (n.u === "h" || n.u === "d") out.u = n.u; return out; }
+        out.text = tidy(n.text, 1000);
+        if (n.t === "buy") { out.url = String(n.url || "").trim(); if (!BUY_RE.test(out.url)) return null; out.text = tidy(n.text, 60); }
+        if (i === 0 && n.t === "trigger") { const fo = tidy(n.folder, 30).trim(); if (fo) out.folder = fo; }
+        return out;
+      }).filter(Boolean);
+      if (!nodes.length || nodes[0].t !== "trigger") return null;
+      return { name: tidy(f && f.name, 70).trim() || "Imported flow", channel: CH[f.channel] ? f.channel : "web", nodes };
+    }).filter(Boolean);
+    const knowledge = (Array.isArray(o.knowledge) ? o.knowledge : []).slice(0, 30).map((k) => ({ title: tidy(k && k.title, 120), body: tidy(k && k.body, 2000).trim() })).filter((k) => k.body);
+    if (!flows.length && !knowledge.length) return null;
+    return { flows, knowledge };
+  }
+  function tplCard() {
+    return `<div class="dash-card" id="tpl-card"><h2>${esc(TPT.t)}</h2><p class="dash-note">${esc(TPT.n)}</p>` +
+      `<button type="button" class="btn btn-ghost btn-sm" id="tpl-export">${esc(TPT.ex)}</button>` +
+      `<h3 style="margin:14px 0 6px;font-size:1rem">${esc(TPT.im)}</h3>` +
+      `<textarea id="tpl-text" rows="4" maxlength="204800" placeholder="${esc(TPT.ph)}" aria-label="${esc(TPT.ph)}" style="width:100%"></textarea>` +
+      `<div style="margin-top:6px"><label class="dash-note">${esc(TPT.pick)} <input type="file" id="tpl-file" accept=".json,application/json"></label></div>` +
+      `<button type="button" class="btn btn-primary btn-sm" id="tpl-apply" style="margin-top:8px"${TPL.busy ? " disabled" : ""}>${esc(TPT.ap)}</button>` +
+      `<p class="dash-note${TPL.err ? " is-err" : ""}" id="tpl-msg" role="status">${esc(TPL.msg)}</p></div>`;
+  }
+  function tplWire(p) {
+    const msg = (m, err) => { TPL.msg = m; TPL.err = !!err; const e = $("#tpl-msg", p); if (e) { e.textContent = m; e.classList.toggle("is-err", !!err); } };
+    const ex = $("#tpl-export", p);
+    if (ex) ex.addEventListener("click", async () => {
+      await knLoad();
+      const out = { chatora_template: 1, name: state.ws.name, flows: state.flows.map((f) => ({ name: f.name, channel: f.channel, nodes: (f.nodes || []).filter((n) => n && n.t !== "webhook").map((n, i) => { const c = Object.assign({}, n); if (i === 0) delete c.track; return c; }) })), knowledge: KN.items.map((k) => ({ title: k.title, body: k.body })) };
+      const blob = new Blob([JSON.stringify(out, null, 1)], { type: "application/json" });
+      const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "chatora-template.json"; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    });
+    const file = $("#tpl-file", p);
+    if (file) file.addEventListener("change", () => {
+      const f = file.files && file.files[0]; if (!f) return;
+      if (f.size > 204800) { msg(TPT.big, true); return; }
+      const rd = new FileReader(); rd.onload = () => { const t = $("#tpl-text", p); if (t) t.value = String(rd.result || ""); }; rd.readAsText(f);
+    });
+    const ap = $("#tpl-apply", p);
+    if (ap) ap.addEventListener("click", async () => {
+      const raw = ($("#tpl-text", p).value || "").trim();
+      if (raw.length > 204800) { msg(TPT.big, true); return; }
+      const t = tplClean(raw);
+      if (!t) { msg(TPT.bad, true); return; }
+      if (!window.confirm((AR ? "هيتضاف " : "This adds ") + t.flows.length + (AR ? " سيناريو (مسودات) و" : " draft flows and ") + t.knowledge.length + (AR ? " عنصر معرفة. متأكد؟" : " knowledge items. Continue?"))) return;
+      TPL.busy = true; ap.disabled = true;
+      try {
+        await knLoad();
+        let fn = 0, kn = 0;
+        if (t.flows.length) { const res = await A.rest("/rest/v1/flows", { method: "POST", body: JSON.stringify(t.flows.map((f) => ({ workspace_id: state.ws.id, name: f.name, channel: f.channel, status: "draft", runs: 0, nodes: f.nodes }))) }); fn = Array.isArray(res) ? res.length : 1; }
+        const room = Math.max(0, 30 - KN.items.length);
+        const ks = t.knowledge.slice(0, room);
+        if (ks.length) { const res = await A.rest("/rest/v1/knowledge_items", { method: "POST", body: JSON.stringify(ks.map((k) => ({ workspace_id: state.ws.id, title: k.title, body: k.body }))) }); kn = Array.isArray(res) ? res.length : 1; KN.items = KN.items.concat(Array.isArray(res) ? res : [res]); }
+        await loadAll();
+        TPL.msg = TPT.done.replace("{f}", fn).replace("{k}", kn); TPL.err = false;
+      } catch (e) { TPL.msg = TPT.fail; TPL.err = true; }
+      TPL.busy = false; paint();
+    });
   }
   function knWire(p) {
     knLoad();
@@ -2179,6 +2257,7 @@
       });
       wkWire(p);
       knWire(p);
+      tplWire(p);
       chanWire(p);
       const ex = $("#export", p);
       if (ex) ex.addEventListener("click", exportData);
