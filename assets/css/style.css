@@ -1629,5 +1629,5 @@ html[dir="rtl"] .cform select{background-position:16px 50%,11px 50%}
 .consent-text a{color:inherit;text-decoration:underline}
 .consent-actions{display:flex;gap:8px;flex:0 0 auto}
 .consent-choice{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin:14px 0 0}
-@media (max-width:520px){.consent-actions{width:100%}.consent-actions .btn{flex:1}}
+@media (max-width:520px){.consent{right:96px}.consent-actions{width:100%}.consent-actions .btn{flex:1}}
 @media print{.consent{display:none}}
