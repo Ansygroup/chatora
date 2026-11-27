@@ -80,7 +80,7 @@ async function aiAnswer(env, cfg, msgs) {
     const c = r.choices && r.choices[0] && r.choices[0].message && r.choices[0].message.content;
     return typeof c === 'string' ? c : '';
   };
-  const models = [['@cf/google/gemma-3-12b-it', 300], ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', 300], ['@cf/zai-org/glm-4.7-flash', 1500]];
+  const models = [['@cf/meta/llama-3.1-8b-instruct-fast', 300], ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', 300], ['@cf/zai-org/glm-4.7-flash', 1500]];
   let reply = '';
   for (const [model, max] of models) {
     try {
@@ -835,16 +835,6 @@ export default {
         .split('No billing or checkout is enabled in the current preview. This is not a published free subscription plan.').join('The current preview has no billing or checkout; it is not a published free subscription plan. Done-for-you packages are sold separately on the services page.')
         .split('No subscription plan published').join('Done-for-you packages from $39')
         .split('Live channel integrations, AI replies and paid plans are not available in the current preview.').join('Live channel integrations and AI replies are not available in the current preview; done-for-you setup is sold separately on the services page.');
-      if (false && /\/pricing(\.html)?$/.test(url.pathname) && text.includes('</h1>')) {
-        const p = url.pathname;
-        const msg = /^\/ar\//.test(p) ? 'تبحث عن إعداد جاهز؟ شاهد <a href="/services.html">خدمة الإعداد الكامل وأسعارها</a>. الأسعار (بالدولار): Spark 49$، Starter 99$، Growth 199$ + 29$ شهرياً، Scale 349$ + 79$ شهرياً.'
-          : /^\/es\//.test(p) ? '¿Prefieres que lo montemos por ti? Mira el <a href="/services.html">servicio llave en mano y sus precios</a>. Precios (USD): Spark $49, Starter $99, Growth $199 + $29/mes, Scale $349 + $79/mes.'
-          : /^\/fr\//.test(p) ? 'Vous préférez qu\'on le configure pour vous ? Voir le <a href="/services.html">service clé en main et ses tarifs</a>. Tarifs (USD) : Spark 49 $, Starter 99 $, Growth 199 $ + 29 $/mois, Scale 349 $ + 79 $/mois.'
-          : /^\/de\//.test(p) ? 'Lieber fertig eingerichtet? Siehe den <a href="/services.html">Komplett-Service mit Preisen</a>. Preise (USD): Spark $49, Starter $99, Growth $199 + $29/Monat, Scale $349 + $79/Monat.'
-          : /^\/pt\//.test(p) ? 'Prefere que configuremos por você? Veja o <a href="/services.html">serviço completo e os preços</a>. Preços (USD): Spark $49, Starter $99, Growth $199 + $29/mês, Scale $349 + $79/mês.'
-          : 'Want it set up for you? See the <a href="/services.html">done-for-you service and its prices</a>.'+' Done-for-you prices (USD): Spark $49, Starter $99, Growth $199 setup + $29/month, Scale $349 setup + $79/month.';
-        text = text.replace('</h1>', '</h1><p class="lead">' + msg + '</p>');
-      }
       if (/^\/(ar|de|es|fr|pt)\//.test(url.pathname)) text = text.split('href="sector-templates.html"').join('href="/sector-templates.html"');
       { const sm = /^\/(ar|de|es|fr|pt)\//.exec(url.pathname); text = sweepFix(text, sm ? sm[1] : 'en'); }
       { const cm = /^(?:\/(ar|de|es|fr|pt))?\/compare(?:\.html)?\/?$/.exec(url.pathname); if (cm) { const lg = cm[1] || 'en'; const a = text.indexOf('<main id="main">'), b = text.indexOf('</main>'); if (a > -1 && b > a) text = text.slice(0, a) + CMP.main[lg] + text.slice(b + 7); text = text.replace(/<title>[^<]*<\/title>/, '<title>' + CMP.title[lg] + ' | Chatora</title>').replace(/<meta content="[^"]*" name="description"\/>/, '<meta content="' + CMP.title[lg] + '" name="description"/>'); } }
@@ -878,6 +868,8 @@ export default {
     const fallback = ar
       ? 'عذراً، الخدمة غير متاحة الآن. استخدم نموذج التواصل وسنرد عليك بالبريد.'
       : 'Sorry, I am unavailable right now. Please use the contact form and we will reply by email.';
+    const ck = msgs.length === 1 ? new Request('https://cache.chatora.us.ci/chat/' + encodeURIComponent(msgs[0].content.trim().toLowerCase().replace(/\s+/g, ' ').slice(0, 200))) : null;
+    if (ck) { try { const ch = await caches.default.match(ck); if (ch) return ch; } catch {} }
     const pick = (r) => {
       if (!r) return '';
       if (typeof r.response === 'string' && r.response.trim()) return r.response;
@@ -885,7 +877,7 @@ export default {
       return typeof c === 'string' ? c : '';
     };
     const models = [
-      ['@cf/google/gemma-3-12b-it', 300],
+      ['@cf/meta/llama-3.1-8b-instruct-fast', 300],
       ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', 300],
       ['@cf/zai-org/glm-4.7-flash', 1500],
     ];
@@ -895,7 +887,9 @@ export default {
         const text = pick(r).trim();
         if (text) {
           if (leaks(text)) return Response.json({ reply: ar ? 'لا أستطيع مشاركة ذلك. كيف أساعدك في أتمتة رسائلك؟' : 'I cannot share that. How can I help with your DM automation?' });
-          return Response.json({ reply: text.slice(0, 800) });
+          const res = Response.json({ reply: text.slice(0, 800) });
+          if (ck) { try { res.headers.set('cache-control', 'public, max-age=86400'); await caches.default.put(ck, res.clone()); } catch {} }
+          return res;
         }
       } catch (e) { console.log(model, String(e)); }
     }
