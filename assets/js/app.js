@@ -549,7 +549,7 @@
 
   function renderOverview() {
     if (!state.contacts.length && !state.flows.length && !state.convs.length) {
-      return `<div class="dash-card dash-empty-card"><h2>${esc(T.emptyWs)}</h2>` +
+      return onboarding() + `<div class="dash-card dash-empty-card"><h2>${esc(T.emptyWs)}</h2>` +
         `<button type="button" class="btn btn-primary btn-sm" data-new-flow>+ ${esc(T.newFlow)}</button></div>`;
     }
     const live = state.flows.filter((f) => f.status === "live").length;
