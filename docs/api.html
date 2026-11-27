@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chatora API and MCP | Chatora</title>
+<meta name="description" content="Free REST API and remote MCP server for your Chatora workspace. Scoped API keys, OpenAPI spec, 120 requests per 10 minutes per key.">
+<link rel="canonical" href="https://chatora.us.ci/docs/api.html">
+<style>body{font-family:system-ui,sans-serif;background:#06060c;color:#e8e8f0;margin:0;line-height:1.6}main{max-width:820px;margin:auto;padding:32px 20px}a{color:#9d8cff}h1{font-size:32px}h2{margin-top:32px;font-size:22px}pre{background:#10101a;border:1px solid #2a2a3a;border-radius:10px;padding:14px;overflow:auto;font-size:13px}code{background:#10101a;padding:1px 5px;border-radius:5px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #2a2a3a;padding:8px;text-align:left;font-size:14px}</style></head>
+<body><main>
+<p><a href="/">Chatora</a> / Docs</p>
+<h1>Chatora API and MCP</h1>
+<p>A free REST API and a remote MCP server for your own workspace. You can read contacts, flows and conversations, and create contacts. Nothing here sends a message to anyone.</p>
+<h2>1. Create a key</h2>
+<p>Sign in, open <b>Settings, Developers and API</b>, pick the scopes and create a key. The key looks like <code>chk_live_</code> plus 40 hex characters. It is shown once. Chatora stores only a hash of it, so a lost key cannot be recovered: delete it and make a new one. Up to 5 keys per workspace.</p>
+<table><tr><th>Scope</th><th>Allows</th></tr>
+<tr><td><code>contacts:read</code></td><td>List contacts</td></tr>
+<tr><td><code>contacts:write</code></td><td>Create a contact (free plan limit: 100 contacts). Does not start a conversation.</td></tr>
+<tr><td><code>flows:read</code></td><td>List flows (name, channel, status, step count)</td></tr>
+<tr><td><code>conversations:read</code></td><td>List conversations and read their messages</td></tr></table>
+<h2>2. REST API</h2>
+<p>Base URL <code>https://chatora.us.ci/api/v1</code>. Send the key as a Bearer token. A key without the needed scope gets 401. Limit: 120 requests per 10 minutes per key (429 after that). The OpenAPI 3 spec is at <a href="/api/v1/openapi.json">/api/v1/openapi.json</a>.</p>
+<pre>curl https://chatora.us.ci/api/v1/contacts?limit=20 \
+  -H "Authorization: Bearer chk_live_YOUR_KEY"
+
+curl -X POST https://chatora.us.ci/api/v1/contacts \
+  -H "Authorization: Bearer chk_live_YOUR_KEY" -H "Content-Type: application/json" \
+  -d '{"name":"Sara","handle":"@sara","channel":"instagram","tags":["lead"],"fields":{"city":"Cairo"}}'</pre>
+<table><tr><th>Method and path</th><th>Scope</th></tr>
+<tr><td>GET /contacts (limit, offset, q)</td><td>contacts:read</td></tr>
+<tr><td>POST /contacts</td><td>contacts:write</td></tr>
+<tr><td>GET /flows</td><td>flows:read</td></tr>
+<tr><td>GET /conversations (limit, status)</td><td>conversations:read</td></tr>
+<tr><td>GET /conversations/{id}/messages (limit)</td><td>conversations:read</td></tr></table>
+<p>Errors use <code>{"error":{"code":"...","message":"..."}}</code>.</p>
+<h2>3. MCP (remote)</h2>
+<p>Endpoint <code>https://chatora.us.ci/mcp</code> (Streamable HTTP, stateless, JSON responses, POST only). Authenticate with the same Bearer key. Tools: <code>list_contacts</code>, <code>create_contact</code>, <code>list_flows</code>, <code>list_conversations</code>, <code>get_conversation_messages</code>. Each tool needs the matching scope.</p>
+<pre>{
+  "mcpServers": {
+    "chatora": {
+      "url": "https://chatora.us.ci/mcp",
+      "headers": { "Authorization": "Bearer chk_live_YOUR_KEY" }
+    }
+  }
+}</pre>
+<h2>Privacy</h2>
+<p>A key can only reach the workspace that created it. Conversation messages contain your customers' text, so give <code>conversations:read</code> only to tools you trust. Delete a key in Settings to stop it at once.</p>
+</main></body></html>
