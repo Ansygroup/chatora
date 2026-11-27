@@ -5,6 +5,7 @@
   "compatibility_date": "2026-11-01",
   "triggers": { "crons": ["*/5 * * * *"] },
   "ai": { "binding": "AI" },
+  "send_email": [{ "name": "EMAIL", "destination_address": "livepm8@gmail.com" }],
   "assets": {
     "directory": ".",
     "binding": "ASSETS",
