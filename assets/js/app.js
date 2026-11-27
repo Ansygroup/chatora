@@ -545,8 +545,11 @@
       A.rest("/rest/v1/flows?select=id,name,channel,status,runs,nodes,updated_at&order=status.asc,runs.desc"),
       loadContacts(),
       A.rest("/rest/v1/conversations?select=id,contact_id,channel,status,unread,last_at,contacts(name,handle)&order=last_at.desc&limit=50"),
-      A.rest("/rest/v1/broadcasts?select=id,name,channel,body,audience,sent,created_at&order=created_at.desc&limit=20")
+      A.rest("/rest/v1/broadcasts?select=id,name,channel,body,audience,sent,created_at&order=created_at.desc&limit=20"),
+      A.rest("/rest/v1/short_links?select=flow_id,clicks&limit=1000").catch(() => [])
     ]);
+    state.clicks = {};
+    (res[4] || []).forEach((l) => { state.clicks[l.flow_id] = (state.clicks[l.flow_id] || 0) + (l.clicks || 0); });
     state.flows = res[0] || [];
     state.contacts = res[1] || [];
     state.convs = res[2] || [];
@@ -798,19 +801,25 @@
 
     const tpl = "";
 
-    const cards = state.flows.map((f) => {
+    if (!T.fTrack) { T.fTrack = AR ? "تتبّع الروابط (كل رابط https في الرسائل يتحوّل لرابط قصير ونعد النقرات)" : "Track links (https links in messages become short links and clicks are counted)"; T.fFolder = AR ? "المجلد" : "Folder"; T.fFolderPh = AR ? "مثلاً: مبيعات" : "e.g. Sales"; T.fAll = AR ? "الكل" : "All"; T.fClicks = AR ? "نقرة" : "clicks"; T.fCtr = AR ? "نسبة النقر" : "CTR"; }
+    const folderOf = (f) => String((f.nodes && f.nodes[0] && f.nodes[0].folder) || "").slice(0, 30);
+    const folders = Array.from(new Set(state.flows.map(folderOf).filter(Boolean))).sort();
+    if (state.folder && folders.indexOf(state.folder) === -1) state.folder = "";
+    const chips = folders.length ? `<div class="flow-folders" role="group" style="display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px">` +
+      [""].concat(folders).map((n) => `<button type="button" class="btn btn-sm ${(state.folder || "") === n ? "btn-primary" : "btn-ghost"}" data-folder="${esc(n)}" aria-pressed="${(state.folder || "") === n ? "true" : "false"}">${esc(n || T.fAll)}</button>`).join("") + `</div>` : "";
+    const cards = state.flows.filter((f) => !state.folder || folderOf(f) === state.folder).map((f) => {
       /* Values from the database are whitelisted before they reach markup. */
       const st = ["live", "paused", "draft"].indexOf(f.status) !== -1 ? f.status : "draft";
       const steps = (f.nodes || []).length;
       return `<article class="flow-card"><header><span class="flow-ch" style="--c:${chColor(f.channel)}">${esc(chLabel(f.channel))}</span>` +
         `<span class="flow-status is-${st}">${esc(T[st])}</span></header><h3>${esc(f.name)}</h3>` +
-        `<p class="flow-meta">${num(f.runs)} ${esc(T.runs)}${steps ? ` · ${num(steps)} ${esc(T.steps)}` : ""} · ${esc(when(f.updated_at))}</p>` +
+        `<p class="flow-meta">${num(f.runs)} ${esc(T.runs)}${(f.nodes && f.nodes[0] && f.nodes[0].track === true) || (state.clicks && state.clicks[f.id]) ? ` · ${num((state.clicks && state.clicks[f.id]) || 0)} ${esc(T.fClicks)}${f.runs > 0 ? " · " + esc(T.fCtr) + " " + Math.min(100, Math.round((((state.clicks && state.clicks[f.id]) || 0) / f.runs) * 100)) + "%" : ""}` : ""}${folderOf(f) ? ` · 📁 ${esc(folderOf(f))}` : ""}${steps ? ` · ${num(steps)} ${esc(T.steps)}` : ""} · ${esc(when(f.updated_at))}</p>` +
         `<div class="flow-foot"><button type="button" class="btn btn-ghost btn-sm" data-edit="${esc(f.id)}">${esc(T.edit)}</button> <button type="button" class="btn btn-ghost btn-sm" data-dup="${esc(f.id)}">${esc(DUP[0])}</button></div></article>`;
     }).join("");
 
     return `<div class="dash-head"><span></span><button type="button" class="btn btn-primary btn-sm" data-new-flow>+ ${esc(T.newFlow)}</button></div>` +
       `<p class="dash-note flow-pending" role="status">${esc(T.flowPending)}</p>` +
-      tpl + `<div class="flow-grid">${cards || `<p class="dash-empty">${esc(T.noData)}</p>`}</div>`;
+      tpl + chips + `<div class="flow-grid">${cards || `<p class="dash-empty">${esc(T.noData)}</p>`}</div>`;
   }
 
   function renderEditor() {
@@ -845,7 +854,9 @@
       `<button type="button" class="btn btn-primary btn-sm" id="ed-save">${esc(T.save)}</button></div></div>` +
       guideHtml() + `<div class="dash-card"><h2>${esc(T.flowName)}</h2>` +
       `<input id="ed-name" class="ed-name" value="${esc(f.name)}" maxlength="70" aria-label="${esc(T.flowName)}">` +
-      `<p class="dash-note">${esc(chLabel(f.channel))} · ${esc(T[["live", "paused", "draft"].includes(f.status) ? f.status : "draft"] || "")}</p></div>` +
+      `<p class="dash-note">${esc(chLabel(f.channel))} · ${esc(T[["live", "paused", "draft"].includes(f.status) ? f.status : "draft"] || "")}</p>` +
+      (state.steps[0] && state.steps[0].t === "trigger" ? `<label style="display:block;margin-top:10px">${esc(T.fFolder)} <input id="ed-folder" maxlength="30" value="${esc(state.steps[0].folder || "")}" placeholder="${esc(T.fFolderPh)}"></label>` +
+        `<label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="checkbox" id="ed-track"${state.steps[0].track === true ? " checked" : ""}> <span>${esc(T.fTrack)}</span></label>` : "") + `</div>` +
       `<div class="dash-card"><h2>${esc(T.steps)}</h2>` +
       `<ol class="dsteps">${rows || `<li class="dash-empty">${esc(T.noSteps)}</li>`}</ol>` +
       `<div class="dstep-add"><span>${esc(T.addStep)}</span>${adds}</div>` +
@@ -1390,7 +1401,9 @@
   }
 
   function renderSettings() {
-    return renderChannelsBlock() + renderMetaSettings() +
+    const sec = (id, title, open, html) => `<details class="set-sec" data-sec="${id}"${state.setOpen && state.setOpen[id] !== undefined ? (state.setOpen[id] ? " open" : "") : (open ? " open" : "")} style="margin:0 0 14px"><summary style="cursor:pointer;font-weight:700;font-size:1.05rem;padding:8px 2px">${esc(title)}</summary>${html}</details>`;
+    if (!T.setCh) { T.setCh = AR ? "القنوات" : "Channels"; T.setAi = AR ? "الموقع والذكاء الاصطناعي" : "Website chat and AI"; T.setAcct = AR ? "الحساب والخطة" : "Account and plan"; }
+    return sec("ch", T.setCh, true, renderChannelsBlock() + renderMetaSettings()) + sec("ai", T.setAi, true, widgetCard() + knowledgeCard()) + sec("acct", T.setAcct, true,
       `<div class="dash-card"><h2>${esc(T.wsName)}</h2>` +
       `<form id="ws-form" class="dash-inline"><input id="ws-input" aria-label="${esc(T.wsName)}" value="${esc(state.ws.name)}" maxlength="60">` +
       `<button class="btn btn-primary btn-sm" type="submit">${esc(T.save)}</button></form>` +
@@ -1399,8 +1412,6 @@
       `<form id="pw-form" class="dash-inline"><input id="pw-input" type="password" autocomplete="new-password" minlength="8" aria-label="${esc(T.pwNew)}" placeholder="${esc(T.pwNew)}">` +
       `<button class="btn btn-ghost btn-sm" type="submit">${esc(T.pwSave)}</button></form>` +
       `<p class="dash-note" id="pw-msg"></p></div>` +
-      widgetCard() +
-      knowledgeCard() +
       `<div class="dash-card"><h2>${esc(T.plan)}</h2><p class="dash-plan-row"><b>${esc(T.planFree)}</b> — <span>${esc(T.dataIsolation)}</span></p></div>` +
       `<div class="dash-card"><h2>${esc(T.account)}</h2><p>${esc((A.user() && A.user().email) || "")}</p>` +
       `<p class="dash-note">${esc(T.exportTitle)} — <button type="button" class="link-btn" id="export">${esc(T.exportBtn)}</button></p></div>` +
@@ -1412,7 +1423,7 @@
           `<button class="btn btn-ghost btn-sm btn-danger" type="submit">${esc(T.delBtn)}</button></form>`
         : `<p class="dash-note">${esc(T.delGoogleNote)}</p>` +
           `<button class="btn btn-ghost btn-sm btn-danger" type="button" id="del-google">${esc(T.delGoogle)}</button>`) +
-      `<p class="dash-note" id="del-msg" role="status"></p></div>`;
+      `<p class="dash-note" id="del-msg" role="status"></p></div>`);
   }
 
   function signInProvider() {
@@ -1862,6 +1873,7 @@
     }
 
     if (state.view === "flows") {
+      $$("[data-folder]", p).forEach((b) => b.addEventListener("click", () => { state.folder = b.getAttribute("data-folder") || ""; paint(); }));
       const tc = $("#tpl-cancel", p);
       if (tc) tc.addEventListener("click", () => { state.templates = false; paint(); });
       { const gb = $("#g-blank", p); if (gb) gb.addEventListener("click", () => useBlank().catch((e) => alert(e.message))); }
@@ -2033,6 +2045,7 @@
     }
 
     if (state.view === "settings") {
+      $$("details.set-sec", p).forEach((d) => d.addEventListener("toggle", () => { state.setOpen = state.setOpen || {}; state.setOpen[d.getAttribute("data-sec")] = d.open; }));
       const meta = window.CHATORA_META_ONBOARDING;
       const metaRetry = $("#meta-retry", p);
       if (metaRetry) metaRetry.addEventListener("click", () => {
@@ -2495,6 +2508,9 @@
       state.steps.push(kind === "delay" ? { t: "delay", v: 10 } : kind === "buy" ? { t: "buy", text: "", url: "" } : kind === "webhook" ? { t: "webhook", url: "" } : { t: kind, text: "" });
       paint();
     }));
+    const edFolder = $("#ed-folder", p), edTrack = $("#ed-track", p);
+    if (edFolder) edFolder.addEventListener("input", () => { const v = tidy(edFolder.value, 30).trim(); if (v) state.steps[0].folder = v; else delete state.steps[0].folder; });
+    if (edTrack) edTrack.addEventListener("change", () => { if (edTrack.checked) state.steps[0].track = true; else delete state.steps[0].track; });
     $("#ed-save", p).addEventListener("click", async () => {
       const name = tidy($("#ed-name").value, 70).trim() || state.edit.name;
       const stEl = $("#ed-status");
