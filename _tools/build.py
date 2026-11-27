@@ -9,7 +9,7 @@ from xml.sax.saxutils import escape
 from seo_fit import fit_description, fit_title
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BASE = "https://chatora.ansygroup.com"
+BASE = "https://chatora.us.ci"
 BUILD_DATE = date.today().isoformat()
 
 PAGES = [
