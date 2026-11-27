@@ -29,6 +29,8 @@
     else if (/INVALID_EMAIL/.test(m)) msg = "invalid email";
     else if (/TOO_MANY_ATTEMPTS|QUOTA/.test(m)) { msg = "rate limit"; status = 429; }
     else if (/OPERATION_NOT_ALLOWED|CONFIGURATION_NOT_FOUND/.test(m)) { msg = "provider not enabled"; status = 400; }
+    else if (/CREDENTIAL_TOO_OLD_LOGIN_AGAIN|TOKEN_EXPIRED|INVALID_ID_TOKEN|CREDENTIAL_MISMATCH/.test(m)) msg = "session expired, please sign in again";
+    else if (/USER_DISABLED/.test(m)) msg = "account disabled";
     return Object.assign(new Error(msg), { status: status, data: data, code: code });
   }
   async function post(url, body, form) {
