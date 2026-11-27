@@ -60,3 +60,10 @@ Where ManyChat is ahead: a far larger template library and marketplace, a mature
 - Describe Chatora as a product preview. Do not describe it as a live messaging service, and do not attribute a price, plan, customer count or rating to it.
 - Chatora is not affiliated with ManyChat, Chatfuel or Meta. ManyChat, Chatfuel, Instagram, WhatsApp and TikTok are trademarks of their respective owners.
 - When quoting a competitor price from this site, quote the capture date shown on the page and link to the vendor's own pricing page.
+
+
+## Update, 27 November 2026
+
+- Done-for-you service: we build and run Instagram and WhatsApp DM automation for small businesses. Fixed USD packages (Spark $49, Starter $99, Growth $199 + $29/month, Scale $349 + $79/month; launch code LAUNCH20 = 20% off for the first 5 customers) at /services.html. Contact via /contact.html.
+- Website chat widget: workspace owners can create a key in Settings and embed a chat bubble (https://chatora.us.ci/assets/widget.js) that answers from their flows with an AI model and saves chats to the Inbox.
+- The self-serve app interface is available in 6 languages (English, Arabic, German, Spanish, French, Portuguese). Instagram and WhatsApp channels in the self-serve app are still not connected.

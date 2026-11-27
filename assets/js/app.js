@@ -21,7 +21,7 @@
       overview: "Overview", inbox: "Inbox", flows: "Flows", contacts: "Contacts", broadcast: "Broadcast", settings: "Settings",
       metaTitle: "Meta messaging channels", metaSummary: "Connect official WhatsApp Cloud API or linked-Page Instagram Messaging. Tokens are stored encrypted on the server; no message is sent by connecting.",
       channelInstagram: "Instagram", channelWhatsapp: "WhatsApp", channelTiktok: "TikTok", channelMessenger: "Messenger", channelTelegram: "Telegram", channelSms: "SMS", channelEmail: "Email", channelWeb: "Web chat",
-      of: "/ {n}", pickConversation: "Pick a conversation from the list", csvFileHint: "CSV file up to 2 MB", dataIsolation: "Your data is fully isolated (RLS)",
+      of: "/ {n}", pickConversation: "Pick a conversation from the list", csvFileHint: "CSV file up to 2 MB", dataIsolation: "Your data is fully isolated",
       tplDraftMessage: "Draft message for “{name}” — edit this text before use. Nothing is sent from this preview.",
       tplDraftFollowup: "Draft follow-up — review timing, consent and channel rules before any real use.",
       tplDraftCondition: "Placeholder condition — configure for this workflow.", tplSuggestedTag: "Suggested tag: {cat}",
@@ -49,7 +49,7 @@
       retry: "Try again", signout: "Sign out", build: "Open the builder",
       kContacts: "Active contacts", kFlows: "Live flows", kOpen: "Open conversations", kRuns: "Flow runs this month",
       runsBy: "Runs by flow", channels: "Contacts by channel", recent: "Latest conversations",
-      noData: "Nothing here yet.", emptyInbox: "No conversations match this filter.", inboxEmpty: "No conversations yet. Connect a messaging channel to receive messages.",
+      noData: "Nothing here yet.", emptyInbox: "No conversations match this filter.", inboxEmpty: "No conversations yet. Add the website widget or connect a messaging channel to receive messages.",
       channelPending: "Connect an official messaging channel before replying or starting conversations. No outgoing message has been sent.",
       sendNeedsMeta: "Connect this WhatsApp or Instagram channel in Settings before replying.",
       sendFeatureOff: "Replies are not enabled in this workspace yet. No message was sent.",
@@ -58,6 +58,7 @@
       sendError: "Could not send the reply. Check the connection and try again.", sendTooLong: "Message is too long. Maximum 1,000 UTF-8 bytes.",
       sendStatusSending: "Sending", sendStatusSent: "Sent", sendStatusDelivered: "Delivered", sendStatusRead: "Read", sendStatusFailed: "Failed", sendStatusUnknown: "Status unknown",
       flowPending: "Flows stay as drafts until a real messaging channel and automation are connected.",
+      guideTitle: "Two steps to a ready flow", guide1: "Replace the [bracketed] parts with your own details (offer, link, price)", guide2: "Press Save", guideReadyTitle: "Your flow draft is saved", guideReadyText: "Next step: connect WhatsApp or Instagram so it can reply to real messages. Self-connect is coming soon, so our team sets it up for you (the next page has the link). Until then this stays a draft.", connectCta: "Connect WhatsApp / Instagram", tryOptional: "Try it first (optional)",
       send: "Send", typeMsg: "Write a reply…", aiPaused: "Waiting for a channel connection", humanMode: "Assigned to a person",
       takeOver: "Take over", giveBack: "Hand back to AI", close: "Close", reopen: "Reopen",
       newFlow: "New flow", pickTemplate: "Start from a template", cancel: "Cancel",
@@ -80,8 +81,9 @@
       delTitle: "Delete account", delNote: "Permanently deletes your account, workspace, contacts, conversations and flow drafts. This cannot be undone.",
       delPass: "Current password", delBtn: "Delete my account", delConfirm: "Delete your account and all workspace data permanently?",
       delWrong: "That password is not correct.", delFailed: "The account could not be deleted. Nothing was removed — try again later.",
+      delGoogle: "Continue with Google", delGoogleNote: "This account uses Google sign-in. Confirm with the same Google account to delete it.", delWrongAcct: "That Google account does not match this login. Try again with the Google account you signed up with.",
       metaDisconnect: "Disconnect", metaDisconnectConfirm: "Disconnect this channel? Chatora deletes the stored access token and stops receiving its messages.",
-      pwShort: "At least 8 characters.", exportTitle: "Your data", exportBtn: "Download a JSON copy",
+      pwShort: "At least 10 characters, with letters and numbers.", exportTitle: "Your data", exportBtn: "Download a JSON copy",
       emptyWs: "Empty workspace — no demo records are added. Import real contacts or create your first flow.",
       newContact: "New contact", editContact: "Edit contact", contactName: "Name", tagsPh: "vip, reorder", cMore: "Load more", cShowing: "Showing {n} of {total}",
       cExport: "Export CSV", cExported: "CSV downloaded: {n} contacts.", cExportEmpty: "No contacts match this search.",
@@ -127,7 +129,7 @@
       overview: "نظرة عامة", inbox: "الإنبوكس", flows: "السيناريوهات", contacts: "جهات الاتصال", broadcast: "بثّ جماعي", settings: "الإعدادات",
       metaTitle: "قنوات مراسلة Meta", metaSummary: "اربط WhatsApp Cloud API الرسمي أو رسائل إنستجرام المرتبطة بصفحة فيسبوك. التوكن بيتخزن مشفّر على السيرفر؛ الربط لا يرسل أي رسالة.",
       channelInstagram: "إنستجرام", channelWhatsapp: "واتساب", channelTiktok: "تيك توك", channelMessenger: "ماسنجر", channelTelegram: "تيليجرام", channelSms: "SMS", channelEmail: "بريد إلكتروني", channelWeb: "شات الموقع",
-      of: "من {n}", pickConversation: "اختار محادثة من القائمة", csvFileHint: "ملف CSV لحد 2 ميجابايت", dataIsolation: "بياناتك معزولة بالكامل (RLS)",
+      of: "من {n}", pickConversation: "اختار محادثة من القائمة", csvFileHint: "ملف CSV لحد 2 ميجابايت", dataIsolation: "بياناتك معزولة بالكامل",
       tplDraftMessage: "مسودة رسالة لقالب «{name}» — عدّل النص قبل الاستخدام. لا تُرسل أي رسالة من هذه المعاينة.",
       tplDraftFollowup: "متابعة مبدئية — راجع التوقيت والموافقة وسياسة القناة قبل أي استخدام فعلي.",
       tplDraftCondition: "شرط مؤقت — اضبطه بما يناسب مسار العمل.", tplSuggestedTag: "وسم مقترح: {cat}",
@@ -155,7 +157,7 @@
       retry: "جرّب تاني", signout: "تسجيل الخروج", build: "افتح المحرر",
       kContacts: "جهات اتصال نشطة", kFlows: "سيناريوهات شغّالة", kOpen: "محادثات مفتوحة", kRuns: "تشغيلات الشهر",
       runsBy: "التشغيلات حسب السيناريو", channels: "جهات الاتصال حسب القناة", recent: "آخر المحادثات",
-      noData: "لسه مفيش حاجة هنا.", emptyInbox: "مفيش محادثات مطابقة للفلتر ده.", inboxEmpty: "مفيش محادثات لسه. اربط قناة مراسلة عشان تستقبل رسائل.",
+      noData: "لسه مفيش حاجة هنا.", emptyInbox: "مفيش محادثات مطابقة للفلتر ده.", inboxEmpty: "مفيش محادثات لسه. ضيف ودجت الموقع أو اربط قناة مراسلة عشان تستقبل رسائل.",
       channelPending: "اربط قناة مراسلة رسمية قبل الرد أو بدء المحادثات. لم يتم إرسال أي رسالة من مساحة العمل دي.",
       sendNeedsMeta: "اربط قناة واتساب أو إنستجرام دي من الإعدادات قبل الرد.",
       sendFeatureOff: "الردود متوقفة في مساحة العمل دي. ما اتبعتش أي رسالة.",
@@ -164,6 +166,7 @@
       sendError: "ماقدرناش نبعت الرد. راجع الاتصال وحاول تاني.", sendTooLong: "الرسالة طويلة. الحد الأقصى 1000 بايت UTF-8.",
       sendStatusSending: "جارٍ الإرسال", sendStatusSent: "أُرسلت", sendStatusDelivered: "تم التسليم", sendStatusRead: "مقروءة", sendStatusFailed: "فشل", sendStatusUnknown: "الحالة غير معروفة",
       flowPending: "السيناريوهات تفضل مسودات لحد ربط قناة مراسلة وتشغيل أتمتة فعلية.",
+      guideTitle: "خطوتين وسيناريوك جاهز", guide1: "بدّل الأجزاء اللي بين [أقواس] ببياناتك (العرض، اللينك، السعر)", guide2: "اضغط حفظ", guideReadyTitle: "السيناريو اتحفظ وجاهز", guideReadyText: "الخطوة الجاية: اربط واتساب أو إنستجرام عشان يرد على رسايل حقيقية. الربط الذاتي قريب، فريقنا بيظبطهالك دلوقتي (اللينك في الصفحة الجاية). وطول ما مفيش ربط بيفضل مسودة.", connectCta: "اربط واتساب / إنستجرام", tryOptional: "جرّبه الأول (اختياري)",
       send: "إرسال", typeMsg: "اكتب رد…", aiPaused: "في انتظار ربط القناة", humanMode: "محوّلة لموظف",
       takeOver: "خد المحادثة", giveBack: "رجّعها للذكاء الاصطناعي", close: "اقفل", reopen: "افتحها تاني",
       newFlow: "سيناريو جديد", pickTemplate: "ابدأ من قالب", cancel: "إلغاء",
@@ -186,8 +189,9 @@
       delTitle: "حذف الحساب", delNote: "بيحذف حسابك ومساحة العمل وجهات الاتصال والمحادثات ومسودات السيناريوهات نهائيًا. مفيش رجوع بعد كده.",
       delPass: "كلمة السر الحالية", delBtn: "احذف حسابي", delConfirm: "تحذف حسابك وكل بيانات مساحة العمل نهائيًا؟",
       delWrong: "كلمة السر مش صحيحة.", delFailed: "ماقدرناش نحذف الحساب. مفيش حاجة اتحذفت — حاول تاني بعدين.",
+      delGoogle: "المتابعة بحساب جوجل", delGoogleNote: "الحساب ده بيستخدم تسجيل الدخول بجوجل. أكّد بنفس حساب جوجل عشان تحذفه.", delWrongAcct: "حساب جوجل ده مش هو حساب الدخول. جرّب بحساب جوجل اللي سجّلت بيه.",
       metaDisconnect: "افصل القناة", metaDisconnectConfirm: "تفصل القناة دي؟ شاتورا هيحذف رمز الوصول المحفوظ وهيوقف استقبال رسايلها.",
-      pwShort: "8 حروف على الأقل.", exportTitle: "بياناتك", exportBtn: "نزّل نسخة JSON",
+      pwShort: "10 حروف على الأقل مع أحرف وأرقام.", exportTitle: "بياناتك", exportBtn: "نزّل نسخة JSON",
       emptyWs: "مساحة عمل فاضية — مفيش سجلات تجريبية بتتضاف. استورد جهات اتصالك أو اعمل أول سيناريو.",
       newContact: "جهة اتصال جديدة", editContact: "تعديل جهة الاتصال", contactName: "الاسم", tagsPh: "vip, reorder", cMore: "عرض المزيد", cShowing: "معروض {n} من {total}",
       cExport: "تصدير CSV", cExported: "تم تنزيل {n} جهة اتصال بصيغة CSV.", cExportEmpty: "مفيش جهات اتصال مطابقة للبحث.",
@@ -273,7 +277,7 @@
 
   const state = {
     ws: null, flows: [], contacts: [], convs: [], conv: null, msgs: [],
-    view: "overview", templates: false, filter: "all", q: "", edit: null, steps: [], cedit: null,
+    view: "overview", templates: false, filter: "all", q: "", edit: null, steps: [], cedit: null, channels: [], chanView: null, gtrig: "all",
     broadcasts: [], bc: { name: "", channel: "all", tag: "", body: "" }, gq: "", gcat: "all", cLimit: 50,
     imp: { open: false, text: "", fileName: "", preview: null, status: "", statusError: false, busy: false },
     meta: { connections: null, loaded: false, loading: false, loadFailed: false, pending: "", message: "", messageError: false, pin: "", currency: "", igState: "", igPages: [], igPageId: "", sendDrafts: {} }
@@ -290,6 +294,225 @@
   const STEP_KINDS = ["trigger", "msg", "delay", "cond", "tag"];
   const chColor = (k) => (CH[k] || { color: "#7C5CFF" }).color;
 
+  /* ---------- channels (Phase 1: Telegram + Web chat; Meta gated) ---------- */
+  const CHS_EN = {
+    chTitle: "Channels", chSub: "Connect the places your customers message you.",
+    tgLine: "Your own Telegram bot, live in two clicks.",
+    webLine: "The chat bubble for your website. Paste one snippet, done.",
+    soon: "Coming soon", connect: "Connect", manage: "Manage", openDetail: "Open",
+    connected: "Connected", disabledSt: "Disabled", connErr: "Connection problem",
+    refresh: "Refresh", disable: "Disable", enable: "Enable", remove: "Remove", back2: "Back to channels",
+    removeWarn: "Remove this channel? Messages stop arriving and past chats stay in the inbox. This cannot be undone.",
+    tgTitle: "Connect Telegram",
+    tgHow1: "In Telegram, open @BotFather and send /newbot to create your bot.",
+    tgHow2: "Copy the token it gives you and paste it here.",
+    tgPh: "123456789:AAEx\u2026", tgGo: "Validate and connect", tgBusy: "Checking\u2026",
+    tgBad: "That token did not work. Check it and try again.",
+    tgFail: "Connection failed. Please try again.",
+    tgDone: "Telegram connected",
+    status: "Status", handle: "Handle", hookOk: "Webhook active",
+    popular: "Popular", trigAll: "All triggers", trig_comment: "Comments", trig_story: "Stories & mentions", trig_dm: "DM & keywords", trig_cart: "Cart & checkout", trig_other: "Other",
+    obChan: "Connect your first channel"
+  };
+  const CHS_AR = {
+    chTitle: "\u0627\u0644\u0642\u0646\u0648\u0627\u062a", chSub: "\u0627\u0631\u0628\u0637 \u0627\u0644\u0623\u0645\u0627\u0643\u0646 \u0627\u0644\u062a\u064a \u064a\u0631\u0627\u0633\u0644\u0643 \u0645\u0646\u0647\u0627 \u0639\u0645\u0644\u0627\u0624\u0643.",
+    tgLine: "\u0628\u0648\u062a \u062a\u064a\u0644\u064a\u062c\u0631\u0627\u0645 \u0627\u0644\u062e\u0627\u0635 \u0628\u0643 \u064a\u0639\u0645\u0644 \u0628\u062e\u0637\u0648\u062a\u064a\u0646.",
+    webLine: "\u0641\u0642\u0627\u0639\u0629 \u0627\u0644\u062f\u0631\u062f\u0634\u0629 \u0644\u0645\u0648\u0642\u0639\u0643. \u0627\u0644\u0635\u0642 \u0643\u0648\u062f\u064b\u0627 \u0648\u0627\u062d\u062f\u064b\u0627 \u0648\u0627\u0646\u062a\u0647\u0649.",
+    soon: "\u0642\u0631\u064a\u0628\u064b\u0627", connect: "\u0631\u0628\u0637", manage: "\u0625\u062f\u0627\u0631\u0629", openDetail: "\u0641\u062a\u062d",
+    connected: "\u0645\u062a\u0635\u0644", disabledSt: "\u0645\u0639\u0637\u0651\u0644", connErr: "\u0645\u0634\u0643\u0644\u0629 \u0641\u064a \u0627\u0644\u0627\u062a\u0635\u0627\u0644",
+    refresh: "\u062a\u062d\u062f\u064a\u062b", disable: "\u062a\u0639\u0637\u064a\u0644", enable: "\u062a\u0641\u0639\u064a\u0644", remove: "\u0625\u0632\u0627\u0644\u0629", back2: "\u0631\u062c\u0648\u0639 \u0644\u0644\u0642\u0646\u0648\u0627\u062a",
+    removeWarn: "\u0625\u0632\u0627\u0644\u0629 \u0647\u0630\u0647 \u0627\u0644\u0642\u0646\u0627\u0629\u061f \u0633\u062a\u062a\u0648\u0642\u0641 \u0627\u0644\u0631\u0633\u0627\u0626\u0644 \u0639\u0646 \u0627\u0644\u0648\u0635\u0648\u0644 \u0648\u064a\u0628\u0642\u0649 \u0633\u062c\u0644\u0647\u0627 \u0641\u064a \u0627\u0644\u0628\u0631\u064a\u062f. \u0644\u0627 \u064a\u0645\u0643\u0646 \u0627\u0644\u062a\u0631\u0627\u062c\u0639.",
+    tgTitle: "\u0631\u0628\u0637 \u062a\u064a\u0644\u064a\u062c\u0631\u0627\u0645",
+    tgHow1: "\u0641\u064a \u062a\u064a\u0644\u064a\u062c\u0631\u0627\u0645 \u0627\u0641\u062a\u062d @BotFather \u0648\u0623\u0631\u0633\u0644 /newbot \u0644\u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u0628\u0648\u062a.",
+    tgHow2: "\u0627\u0646\u0633\u062e \u0627\u0644\u062a\u0648\u0643\u0646 \u0648\u0627\u0644\u0635\u0642\u0647 \u0647\u0646\u0627.",
+    tgPh: "123456789:AAEx\u2026", tgGo: "\u062a\u062d\u0642\u0642 \u0648\u0627\u0631\u0628\u0637", tgBusy: "\u062c\u0627\u0631\u064d \u0627\u0644\u062a\u062d\u0642\u0642\u2026",
+    tgBad: "\u0627\u0644\u062a\u0648\u0643\u0646 \u063a\u064a\u0631 \u0635\u062d\u064a\u062d. \u062a\u0623\u0643\u062f \u0645\u0646\u0647 \u0648\u062d\u0627\u0648\u0644 \u0645\u062c\u062f\u062f\u064b\u0627.",
+    tgFail: "\u0641\u0634\u0644 \u0627\u0644\u0631\u0628\u0637. \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649.",
+    tgDone: "\u062a\u0645 \u0631\u0628\u0637 \u062a\u064a\u0644\u064a\u062c\u0631\u0627\u0645",
+    status: "\u0627\u0644\u062d\u0627\u0644\u0629", handle: "\u0627\u0644\u0645\u0639\u0631\u0651\u0641", hookOk: "\u0627\u0644\u0648\u064a\u0628 \u0647\u0648\u0643 \u064a\u0639\u0645\u0644",
+    popular: "\u0634\u0627\u0626\u0639", trigAll: "\u0643\u0644 \u0627\u0644\u0645\u0634\u063a\u0644\u0627\u062a", trig_comment: "\u0627\u0644\u062a\u0639\u0644\u064a\u0642\u0627\u062a", trig_story: "\u0627\u0644\u0642\u0635\u0635 \u0648\u0627\u0644\u0625\u0634\u0627\u0631\u0627\u062a", trig_dm: "\u0627\u0644\u0631\u0633\u0627\u0626\u0644 \u0648\u0627\u0644\u0643\u0644\u0645\u0627\u062a", trig_cart: "\u0627\u0644\u0633\u0644\u0629 \u0648\u0627\u0644\u062f\u0641\u0639", trig_other: "\u0623\u062e\u0631\u0649",
+    obChan: "\u0627\u0631\u0628\u0637 \u0623\u0648\u0644 \u0642\u0646\u0627\u0629"
+  };
+  const CHS = Object.assign({}, CHS_EN, ({ ar: CHS_AR })[LANG] || {});
+  const TK_EN = {
+    fieldsTitle: "Custom fields", fieldKeyPh: "Key (e.g. city)", fieldValPh: "Value",
+    addField: "Add field",
+    tokensHint: "Tokens: {name} · {handle} · {tags} · {field:key}",
+    unit: "Unit", uMin: "minutes", uHour: "hours", uDay: "days",
+    seqTitle: "Sequence", seqPick: "Choose a live flow", enroll: "Enroll", stopSeq: "Stop", enrolledOk: "Enrolled. The first step runs now.", stoppedOk: "Stopped.",
+    tgNoConn: "Connect Telegram in Settings, Channels, to reply here.",
+    trigEvents: "Contact events: event:tag-applied vip · event:tag-removed vip · event:field-changed city · event:schedule field:renewal_at. Live flows fire on these; messages send on Telegram and web chat."
+  };
+  const TK_AR = {
+    fieldsTitle: "حقول مخصصة", fieldKeyPh: "المفتاح (مثال: المدينة)", fieldValPh: "القيمة",
+    addField: "إضافة حقل",
+    tokensHint: "متغيرات: {name} · {handle} · {tags} · {field:key}",
+    unit: "الوحدة", uMin: "دقائق", uHour: "ساعات", uDay: "أيام",
+    seqTitle: "سلسلة رسائل", seqPick: "اختر سيناريو مباشر", enroll: "اشترك", stopSeq: "أوقف", enrolledOk: "تم الاشتراك. أول خطوة تعمل الآن.", stoppedOk: "تم الإيقاف.",
+    tgNoConn: "اربط تيليجرام من الإعدادات، القنوات، لتتمكن من الرد هنا.",
+    trigEvents: "أحداث جهات الاتصال: event:tag-applied vip · event:tag-removed vip · event:field-changed city · event:schedule field:renewal_at. تعمل السيناريوهات المباشرة مع هذه الأحداث؛ تُرسل الرسائل عبر تيليجرام والدردشة."
+  };
+  const TK = Object.assign({}, TK_EN, ({ ar: TK_AR })[LANG] || {});
+  const tgConn = () => (state.channels || []).filter((c) => c.provider === "telegram")[0] || null;
+  function chanStatusChip(c) {
+    if (!c) return "";
+    const st = c.status === "connected" ? ["is-on", CHS.connected] : c.status === "disconnected" ? ["is-off", CHS.disabledSt] : ["is-err", CHS.connErr];
+    return `<span class="chan-status ${st[0]}">${esc(st[1])}</span>`;
+  }
+  function renderChannelsBlock() {
+    if (state.chanView) return renderChannelDetail();
+    const tg = tgConn();
+    const tgCard = `<section class="chan-card" aria-label="Telegram"><div class="chan-head"><span class="chan-name">Telegram</span><span class="chan-mark is-tg" aria-hidden="true">\u2708</span></div>` +
+      `<p class="chan-line">${esc(CHS.tgLine)}</p><div class="chan-foot">${chanStatusChip(tg)}` +
+      (tg ? `<button type="button" class="btn btn-ghost btn-sm" id="ch-open">${esc(CHS.manage)}</button>`
+          : `<button type="button" class="btn btn-primary btn-sm" id="ch-tg-connect">${esc(CHS.connect)}</button>`) + `</div></section>`;
+    const webCard = `<section class="chan-card" aria-label="${esc(chLabel("web"))}"><div class="chan-head"><span class="chan-name">${esc(chLabel("web"))}</span><span class="chan-mark is-web" aria-hidden="true">\u25c9</span></div>` +
+      `<p class="chan-line">${esc(CHS.webLine)}</p><div class="chan-foot"><button type="button" class="btn btn-ghost btn-sm" id="ch-web-manage">${esc(CHS.manage)}</button></div></section>`;
+    const gated = [["whatsapp", "is-wa", "W"], ["instagram", "is-ig", "\u25ce"], ["messenger", "is-ms", "M"]].map(([k, cls, mark]) =>
+      `<section class="chan-card" aria-label="${esc(chLabel(k))}"><div class="chan-head"><span class="chan-name">${esc(chLabel(k))}</span><span class="chan-mark ${cls}" aria-hidden="true">${mark}</span></div>` +
+      `<div class="chan-foot"><span class="chan-badge">${esc(CHS.soon)}</span></div></section>`).join("");
+    return `<div class="dash-card"><h2>${esc(CHS.chTitle)}</h2><p class="dash-note">${esc(CHS.chSub)}</p>` +
+      `<div class="chan-grid">${tgCard}${webCard}${gated}</div></div>`;
+  }
+  function renderChannelDetail() {
+    const c = tgConn();
+    if (!c) { state.chanView = null; return renderChannelsBlock(); }
+    return `<div class="dash-card"><h2>Telegram</h2>` +
+      `<div class="chan-kv"><span>${esc(CHS.status)}</span><b>${chanStatusChip(c)}</b>` +
+      `<span>${esc(CHS.handle)}</span><b>${esc(c.display_name || "\u2014")}</b>` +
+      `<span>Webhook</span><b>${c.status === "connected" ? esc(CHS.hookOk) : "\u2014"}</b></div>` +
+      `<div class="dash-inline" style="flex-wrap:wrap">` +
+      `<button type="button" class="btn btn-ghost btn-sm" id="ch-refresh">${esc(CHS.refresh)}</button>` +
+      `<button type="button" class="btn btn-ghost btn-sm" id="ch-toggle">${esc(c.status === "disconnected" ? CHS.enable : CHS.disable)}</button>` +
+      `<button type="button" class="btn btn-ghost btn-sm btn-danger" id="ch-remove">${esc(CHS.remove)}</button>` +
+      `<button type="button" class="link-btn" id="ch-back">${esc(CHS.back2)}</button></div>` +
+      `<p class="dash-note" id="ch-msg" role="status"></p></div>`;
+  }
+  async function loadChannels() {
+    try { state.channels = (await A.rest("/rest/v1/channel_connections?select=id,provider,display_name,status,created_at&order=created_at.asc")) || []; }
+    catch (e) { state.channels = []; }
+  }
+  async function tgApi(path, body) {
+    const s = await A.ensure();
+    if (!s || !s.access_token) throw new Error("no_session");
+    const r = await fetch(path, { method: "POST", headers: { "content-type": "application/json", authorization: "Bearer " + s.access_token }, body: JSON.stringify(body || {}) });
+    const j = await r.json().catch(() => null);
+    if (!r.ok || !j) throw Object.assign(new Error((j && j.error) || "failed"), { code: (j && j.error) || "failed" });
+    return j;
+  }
+  function closeTgModal() { const m = document.getElementById("tgmodal"); if (m) m.remove(); }
+  function openTgModal() {
+    closeTgModal();
+    const wrap = document.createElement("div");
+    wrap.innerHTML = `<div class="tmodal" id="tgmodal" role="dialog" aria-modal="true" aria-label="${esc(CHS.tgTitle)}">` +
+      `<div class="tmodal-card"><header style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)"><b>${esc(CHS.tgTitle)}</b>` +
+      `<button type="button" class="icon-btn" id="tgmodal-x" aria-label="${esc(CHS.tgCancel || "Close")}">\u2715</button></header>` +
+      `<div class="tmodal-body" style="padding:16px"><ol class="tg-steps"><li>${esc(CHS.tgHow1)}</li><li>${esc(CHS.tgHow2)}</li></ol>` +
+      `<form id="tg-form"><input id="tg-token" class="dstep-in" style="width:100%" dir="ltr" autocomplete="off" spellcheck="false" placeholder="${esc(CHS.tgPh)}" aria-label="Bot token">` +
+      `<div class="dash-inline" style="margin-top:12px"><button type="submit" class="btn btn-primary btn-sm" id="tg-go">${esc(CHS.tgGo)}</button>` +
+      `<span class="dash-note" id="tg-msg" role="status"></span></div></form></div></div></div>`;
+    document.body.appendChild(wrap.firstChild);
+    const m = document.getElementById("tgmodal");
+    m.addEventListener("click", (e) => { if (e.target.id === "tgmodal") closeTgModal(); });
+    document.getElementById("tgmodal-x").addEventListener("click", closeTgModal);
+    const inp = document.getElementById("tg-token");
+    if (inp) inp.focus();
+    document.getElementById("tg-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById("tg-msg"), go = document.getElementById("tg-go");
+      const token = inp.value.trim();
+      go.disabled = true; msg.textContent = CHS.tgBusy; msg.className = "dash-note";
+      try {
+        const r = await tgApi("/api/channels/telegram/connect", { token: token, workspace: state.ws.id });
+        closeTgModal();
+        await loadChannels();
+        state.chanView = r.id;
+        paint();
+        const ok = document.createElement("div");
+        ok.className = "toast";
+        ok.textContent = CHS.tgDone + (r.handle ? " \u00b7 " + r.handle : "");
+        document.body.appendChild(ok);
+        setTimeout(() => ok.remove(), 2600);
+      } catch (err) {
+        msg.textContent = (err && (err.code === "invalid token" || err.code === "bad token")) ? CHS.tgBad : CHS.tgFail;
+        msg.className = "dash-note is-err";
+        go.disabled = false;
+      }
+    });
+  }
+  function chanWire(p) {
+    const open = $("#ch-tg-connect", p);
+    if (open) open.addEventListener("click", openTgModal);
+    const od = $("#ch-open", p);
+    if (od) od.addEventListener("click", () => { const c = tgConn(); state.chanView = c ? c.id : null; paint(); });
+    const wm = $("#ch-web-manage", p);
+    if (wm) wm.addEventListener("click", () => { const el = document.getElementById("wk-card"); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); });
+    const back = $("#ch-back", p);
+    if (back) back.addEventListener("click", () => { state.chanView = null; paint(); });
+    const msg = () => $("#ch-msg", p);
+    const rf = $("#ch-refresh", p);
+    if (rf) rf.addEventListener("click", async () => {
+      const c = tgConn(); if (!c) return;
+      rf.disabled = true; const m = msg(); if (m) m.textContent = CHS.tgBusy;
+      try { await tgApi("/api/channels/telegram/action", { id: c.id, action: "refresh" }); await loadChannels(); paint(); }
+      catch (e) { if (m) { m.textContent = CHS.tgFail; m.className = "dash-note is-err"; } rf.disabled = false; }
+    });
+    const tg = $("#ch-toggle", p);
+    if (tg) tg.addEventListener("click", async () => {
+      const c = tgConn(); if (!c) return;
+      const next = c.status === "disconnected" ? "connected" : "disconnected";
+      tg.disabled = true;
+      try {
+        await A.rest("/rest/v1/channel_connections?id=eq." + encodeURIComponent(c.id), { method: "PATCH", body: JSON.stringify({ status: next, updated_at: new Date().toISOString() }) });
+        await loadChannels(); paint();
+      } catch (e) { const m = msg(); if (m) { m.textContent = CHS.tgFail; m.className = "dash-note is-err"; } tg.disabled = false; }
+    });
+    const rm = $("#ch-remove", p);
+    if (rm) rm.addEventListener("click", async () => {
+      const c = tgConn(); if (!c) return;
+      if (!window.confirm(CHS.removeWarn)) return;
+      rm.disabled = true;
+      try {
+        await tgApi("/api/channels/telegram/action", { id: c.id, action: "remove" });
+        state.chanView = null;
+        await loadChannels(); paint();
+      } catch (e) { const m = msg(); if (m) { m.textContent = CHS.tgFail; m.className = "dash-note is-err"; } rm.disabled = false; }
+    });
+  }
+
+  /* ---------- template trigger kinds + popularity ---------- */
+  const TRIG_KINDS = ["all", "comment", "story", "dm", "cart", "other"];
+  const POPULAR_TPLS = { "comment-to-dm-starter": 1, "reel-virality-guard": 1, "story-mention-thank-you": 1, "dm-price-answer": 1, "follower-only-drop": 1, "abandoned-dm-recovery": 1 };
+  function tplTrig(id) {
+    const f = (window.CHATORA_TEMPLATE_FLOWS || {})[id];
+    const t = f && f.en && f.en[0] ? String(f.en[0].text || "") : "";
+    if (/comment/i.test(t)) return "comment";
+    if (/story|mention/i.test(t)) return "story";
+    if (/cart|checkout|abandon/i.test(t)) return "cart";
+    if (/\bDM\b|direct message|keyword/i.test(t)) return "dm";
+    return "other";
+  }
+  function galleryCards(rows) {
+    return rows.map((x) => {
+      const loc = templateCopy(x);
+      return `<article class="gtpl"><header><span class="pill" style="--c:${chColor(x.ch)}">${esc(chLabel(x.ch))}</span>` +
+        (POPULAR_TPLS[x.id] ? `<span class="gtpl-pop">${esc(CHS.popular)}</span>` : "") +
+        `<span class="gtpl-steps">${num(x.steps)} ${esc(T.gSteps)}</span></header>` +
+        `<h3>${esc(loc.t)}</h3><p>${esc(loc.d)}</p>` +
+        `<button type="button" class="btn btn-ghost btn-sm" data-guse="${esc(x.id)}">${esc(T.gUse)}</button></article>`;
+    }).join("");
+  }
+  function galleryFiltered() {
+    const all = window.CHATORA_TEMPLATES || [];
+    const q = state.gq.toLowerCase();
+    return all.filter((x) => {
+      const loc = templateCopy(x);
+      return (state.gcat === "all" || x.cat === state.gcat) &&
+        (state.gtrig === "all" || tplTrig(x.id) === state.gtrig) &&
+        (!q || (loc.t + " " + loc.d + " " + x.id).toLowerCase().indexOf(q) !== -1);
+    }).sort((a, b) => ((POPULAR_TPLS[b.id] || 0) - (POPULAR_TPLS[a.id] || 0)));
+  }
+
   /* ---------- bootstrap ---------- */
   async function ensureWorkspace(user) {
     const rows = await A.rest("/rest/v1/workspaces?select=id,name,plan,owner&limit=1");
@@ -304,7 +527,7 @@
     const all = [], size = 1000;
     let offset = 0;
     while (true) {
-      const rows = await A.rest("/rest/v1/contacts?select=id,name,handle,channel,tags,last_seen&order=last_seen.desc,id.asc&limit=" + size + "&offset=" + offset);
+      const rows = await A.rest("/rest/v1/contacts?select=id,name,handle,channel,tags,fields,last_seen&order=last_seen.desc,id.asc&limit=" + size + "&offset=" + offset);
       const page = rows || [];
       all.push.apply(all, page);
       if (page.length < size) break;
@@ -324,6 +547,8 @@
     state.contacts = res[1] || [];
     state.convs = res[2] || [];
     state.broadcasts = res[3] || [];
+    await loadChannels();
+    wkLoad();
   }
 
   /* ---------- views ---------- */
@@ -343,7 +568,7 @@
 
   function renderOverview() {
     if (!state.contacts.length && !state.flows.length && !state.convs.length) {
-      return `<div class="dash-card dash-empty-card"><h2>${esc(T.emptyWs)}</h2>` +
+      return onboarding() + `<div class="dash-card dash-empty-card"><h2>${esc(T.emptyWs)}</h2>` +
         `<button type="button" class="btn btn-primary btn-sm" data-new-flow>+ ${esc(T.newFlow)}</button></div>`;
     }
     const live = state.flows.filter((f) => f.status === "live").length;
@@ -371,7 +596,8 @@
     const steps = [
       { done: !/·\s*workspace$/.test(state.ws.name), txt: T.ob1, view: "settings" },
       { done: state.flows.some((f) => (f.nodes || []).length >= 2), txt: T.ob2, view: "flows" },
-      { done: state.contacts.length > 0, txt: T.ob3, view: "contacts" }
+      { done: state.contacts.length > 0, txt: T.ob3, view: "contacts" },
+      { done: !!tgConn() || WK.keys.length > 0, txt: CHS.obChan, view: "settings" }
     ];
     const done = steps.filter((s) => s.done).length;
     if (done === steps.length) {
@@ -390,6 +616,10 @@
       `<button type="button" class="link-btn onb-hide" id="ob-hide">${esc(T.obHide)}</button></div>`;
   }
 
+  const BIDI = /[\u202A-\u202E\u2066-\u2069\u200E\u200F\u061C\u200B-\u200D\uFEFF]/g;
+  const tidy = (s, n) => String(s == null ? "" : s).replace(BIDI, "").slice(0, n);
+  const VIEWS = ["overview", "inbox", "flows", "contacts", "broadcast", "settings"];
+  function strongPw(v) { return v.length >= 10 && /\d/.test(v) && /[^\d\s]/.test(v); }
   function setView(v) {
     state.view = v;
     state.edit = null;
@@ -459,6 +689,7 @@
 
   function renderReplyArea(c, closed) {
     if (closed) return `<div class="thread-closed">${esc(T.fClosed)}</div>`;
+    if (String(c.channel) === "web" || String(c.channel) === "telegram") return renderWebReplyArea(c);
     const provider = metaProviderForChannel(c.channel);
     if (!provider) return `<p class="dash-note channel-pending" role="status">${esc(T.channelPending)}</p>`;
     if (!state.meta.loaded) return `<p class="dash-note channel-pending" role="status">${esc(T.metaLoad)}</p>`;
@@ -495,6 +726,16 @@
       `</form>`;
   }
 
+  function renderWebReplyArea(c) {
+    const draft = replyDraftFor(c.id);
+    return `<form class="thread-form" id="meta-reply-form" autocomplete="off">` +
+      `<textarea id="meta-reply-input" rows="2" maxlength="1000" dir="auto" aria-label="${esc(T.typeMsg)}" placeholder="${esc(T.typeMsg)}"${draft.busy ? " disabled" : ""}>${esc(draft.text)}</textarea>` +
+      `<p class="dash-note tokens-hint">${esc(TK.tokensHint)}</p>` +
+      `<button type="submit" class="btn btn-primary btn-sm" id="meta-reply-submit"${draft.busy || !draft.text.trim() ? " disabled" : ""}>${esc(draft.busy ? T.sendBusy : T.send)}</button>` +
+      `<p class="dash-note meta-send-status${draft.noticeError ? " is-err" : (draft.notice === T.sendSuccess ? " is-ok" : "")}" id="meta-send-status" role="status" aria-live="polite">${esc(draft.notice)}</p>` +
+      `</form>`;
+  }
+
   function renderThread() {
     const c = state.conv;
     const name = (c.contacts && c.contacts.name) || "—";
@@ -518,30 +759,29 @@
   const catLabel = (c) => (c === "all" ? T.gAll : c === "all channels" ? T.bcAll8 : T["gCat" + c[0].toUpperCase() + c.slice(1)] || c);
 
   function renderGallery() {
-    const all = window.CHATORA_TEMPLATES || [];
-    const q = state.gq.toLowerCase();
-    const rows = all.filter((x) => {
-      const loc = templateCopy(x);
-      return (state.gcat === "all" || x.cat === state.gcat) &&
-        (!q || (loc.t + " " + loc.d + " " + x.id).toLowerCase().indexOf(q) !== -1);
-    });
+    const rows = galleryFiltered();
     const chips = CATS.map((c) =>
       `<button type="button" class="dchip${state.gcat === c ? " is-on" : ""}" data-gcat="${c}">${esc(catLabel(c))}</button>`).join("");
-    const cards = rows.map((x) => {
-      const loc = templateCopy(x);
-      return `<article class="gtpl"><header><span class="pill" style="--c:${chColor(x.ch)}">${esc(chLabel(x.ch))}</span>` +
-        `<span class="gtpl-steps">${num(x.steps)} ${esc(T.gSteps)}</span></header>` +
-        `<h3>${esc(loc.t)}</h3><p>${esc(loc.d)}</p>` +
-        `<button type="button" class="btn btn-ghost btn-sm" data-guse="${esc(x.id)}">${esc(T.gUse)}</button></article>`;
-    }).join("");
+    const tchips = TRIG_KINDS.map((k) =>
+      `<button type="button" class="dchip${state.gtrig === k ? " is-on" : ""}" data-gtrig="${k}">${esc(k === "all" ? CHS.trigAll : CHS["trig_" + k])}</button>`).join("");
+    const cards = galleryCards(rows);
     return `<div class="dash-head"><button type="button" class="btn btn-ghost btn-sm" id="g-back">← ${esc(T.back)}</button>` +
-      `<input id="g-search" class="dash-search" type="search" aria-label="${esc(T.gSearch)}" placeholder="${esc(T.gSearch)}" value="${esc(state.gq)}"></div>` +
+      `<input id="g-search" class="dash-search" type="search" aria-label="${esc(T.gSearch)}" placeholder="${esc(T.gSearch)}" value="${esc(state.gq)}"><button type="button" class="btn btn-primary btn-sm" id="g-blank">${esc(BLANK.b)}</button></div>` +
       `<div class="dash-card"><h2>${esc(T.gTitle)}</h2><p class="dash-note">${esc(T.gNote)}</p>` +
       `<div class="dchips">${chips}</div>` +
+      `<div class="dchips" style="margin-top:6px">${tchips}</div>` +
       `<div class="gtpl-grid">${cards || `<p class="dash-empty">${esc(T.gNone)}</p>`}</div>` +
       `<p class="dash-note">${esc(T.gStarter)}</p></div>`;
   }
 
+  const DUP = { en: ["Duplicate", "copy"], ar: ["نسخ", "نسخة"], es: ["Duplicar", "copia"], fr: ["Dupliquer", "copie"], de: ["Duplizieren", "Kopie"], pt: ["Duplicar", "cópia"] }[LANG] || ["Duplicate", "copy"];
+  async function duplicateFlow(id) {
+    const f = state.flows.filter((x) => x.id === id)[0];
+    if (!f) return;
+    const row = await A.rest("/rest/v1/flows", { method: "POST", body: JSON.stringify({ workspace_id: state.ws.id, name: (f.name + " (" + DUP[1] + ")").slice(0, 120), channel: f.channel, status: "draft", runs: 0, nodes: JSON.parse(JSON.stringify(f.nodes || [])) }) });
+    const made = Array.isArray(row) ? row[0] : row;
+    if (made) { state.flows.unshift(made); paint(); }
+  }
   function renderFlows() {
     if (state.edit) return renderEditor();
     if (state.templates) return renderGallery();
@@ -555,7 +795,7 @@
       return `<article class="flow-card"><header><span class="flow-ch" style="--c:${chColor(f.channel)}">${esc(chLabel(f.channel))}</span>` +
         `<span class="flow-status is-${st}">${esc(T[st])}</span></header><h3>${esc(f.name)}</h3>` +
         `<p class="flow-meta">${num(f.runs)} ${esc(T.runs)}${steps ? ` · ${num(steps)} ${esc(T.steps)}` : ""} · ${esc(when(f.updated_at))}</p>` +
-        `<div class="flow-foot"><button type="button" class="btn btn-ghost btn-sm" data-edit="${esc(f.id)}">${esc(T.edit)}</button></div></article>`;
+        `<div class="flow-foot"><button type="button" class="btn btn-ghost btn-sm" data-edit="${esc(f.id)}">${esc(T.edit)}</button> <button type="button" class="btn btn-ghost btn-sm" data-dup="${esc(f.id)}">${esc(DUP[0])}</button></div></article>`;
     }).join("");
 
     return `<div class="dash-head"><span></span><button type="button" class="btn btn-primary btn-sm" data-new-flow>+ ${esc(T.newFlow)}</button></div>` +
@@ -569,7 +809,7 @@
       const first = i === 0;
       const kind = STEP_KINDS.indexOf(s.t) !== -1 ? s.t : "msg";
       const body = s.t === "msg" ? `<textarea class="dstep-in" rows="2" data-i="${i}" data-k="text" placeholder="${esc(T.sMsgPh)}">${esc(s.text || "")}</textarea>`
-        : s.t === "delay" ? `<input class="dstep-in" data-i="${i}" data-k="v" type="number" min="1" max="1440" value="${esc(s.v || 5)}" aria-label="${esc(T.sDelayPh)}" placeholder="${esc(T.sDelayPh)}">`
+        : s.t === "delay" ? `<input class="dstep-in" data-i="${i}" data-k="v" type="number" min="1" max="999" value="${esc(s.v || 5)}" aria-label="${esc(T.sDelayPh)}" placeholder="${esc(T.sDelayPh)}"><select class="dstep-in dstep-unit" data-i="${i}" data-k="u" aria-label="${esc(TK.unit)}">` + [["m", TK.uMin], ["h", TK.uHour], ["d", TK.uDay]].map((u) => `<option value="${u[0]}"${(s.u || "m") === u[0] ? " selected" : ""}>${esc(u[1])}</option>`).join("") + `</select>`
           : `<input class="dstep-in" data-i="${i}" data-k="text" value="${esc(s.text || "")}" aria-label="${esc(s.t === "tag" ? T.sTagPh : T.sCondPh)}" placeholder="${esc(s.t === "tag" ? T.sTagPh : T.sCondPh)}">`;
       return `<li class="dstep is-${kind}"><span class="dstep-n">${i + 1}</span>` +
         `<span class="dstep-type">${esc(T["s" + kind[0].toUpperCase() + kind.slice(1)])}</span>` +
@@ -586,14 +826,16 @@
 
     return `<div class="dash-head"><button type="button" class="btn btn-ghost btn-sm" id="ed-back">← ${esc(T.back)}</button>` +
       `<div class="ed-actions"><span class="dash-ok" id="ed-ok"></span>` +
+      `<select id="ed-status" class="ed-status" aria-label="${esc(T.status || 'Status')}">` + ["draft", "live", "paused"].map((s) => `<option value="${s}"${f.status === s ? " selected" : ""}>${esc(T[s] || s)}</option>`).join("") + `</select>` +
       `<button type="button" class="btn btn-ghost btn-sm" id="ed-test">${esc(T.testRun)}</button>` +
       `<button type="button" class="btn btn-primary btn-sm" id="ed-save">${esc(T.save)}</button></div></div>` +
-      `<div class="dash-card"><h2>${esc(T.flowName)}</h2>` +
+      guideHtml() + `<div class="dash-card"><h2>${esc(T.flowName)}</h2>` +
       `<input id="ed-name" class="ed-name" value="${esc(f.name)}" maxlength="70" aria-label="${esc(T.flowName)}">` +
       `<p class="dash-note">${esc(chLabel(f.channel))} · ${esc(T[["live", "paused", "draft"].includes(f.status) ? f.status : "draft"] || "")}</p></div>` +
       `<div class="dash-card"><h2>${esc(T.steps)}</h2>` +
       `<ol class="dsteps">${rows || `<li class="dash-empty">${esc(T.noSteps)}</li>`}</ol>` +
-      `<div class="dstep-add"><span>${esc(T.addStep)}</span>${adds}</div></div>` +
+      `<div class="dstep-add"><span>${esc(T.addStep)}</span>${adds}</div>` +
+      (state.steps[0] && state.steps[0].t === "trigger" ? `<p class="dash-note trig-hint">${esc(TK.trigEvents)}</p>` : "") + `</div>` +
       `<div class="dash-card is-danger"><button type="button" class="btn btn-ghost btn-sm" id="ed-del">${esc(T.deleteFlow)}</button></div>`;
   }
 
@@ -638,6 +880,13 @@
       `<label>${esc(T.handle)}<input id="cf-handle" value="${esc(ed.handle || "")}" maxlength="60"></label>` +
       `<label>${esc(T.channel)}<select id="cf-ch">${opts}</select></label>` +
       `<label>${esc(T.tags)}<input id="cf-tags" value="${esc((ed.tags || []).join(", "))}" placeholder="${esc(T.tagsPh)}" maxlength="120"></label>` +
+      `<div class="cfields"><span class="cfields-label">${esc(TK.fieldsTitle)}</span><div class="cfields-list" id="cf-fields">` +
+      Object.keys(ed.fields || {}).map((k) => `<div class="cfield-row"><code class="cfield-key">${esc(k)}</code><span class="cfield-val" dir="auto">${esc(String(ed.fields[k]))}</span><button type="button" class="row-btn is-del" data-cfdel="${esc(k)}" aria-label="×">×</button></div>`).join("") +
+      `</div><div class="cfield-new"><input id="cf-fkey" value="" placeholder="${esc(TK.fieldKeyPh)}" maxlength="30"><input id="cf-fval" value="" placeholder="${esc(TK.fieldValPh)}" maxlength="120">` +
+      `<button type="button" class="btn btn-ghost btn-sm" id="cf-fadd">${esc(TK.addField)}</button></div></div>` +
+      (ed.id ? `<div class="cfields"><span class="cfields-label">${esc(TK.seqTitle)}</span><div class="cfield-new"><select id="cf-seq"><option value="">${esc(TK.seqPick)}</option>` +
+        state.flows.filter((f) => f.status === "live").map((f) => `<option value="${esc(f.id)}">${esc(f.name)}</option>`).join("") +
+        `</select><button type="button" class="btn btn-ghost btn-sm" id="cf-enroll">${esc(TK.enroll)}</button><button type="button" class="btn btn-ghost btn-sm" id="cf-unenroll">${esc(TK.stopSeq)}</button></div><p class="dash-note" id="cf-seq-msg" role="status"></p></div>` : "") +
       `</div><div class="dash-inline cform-acts">` +
       `<button type="button" class="btn btn-primary btn-sm" id="cf-save">${esc(T.save)}</button>` +
       `<button type="button" class="btn btn-ghost btn-sm" id="cf-cancel">${esc(T.cancel)}</button></div></div>` : "";
@@ -656,7 +905,53 @@
 
   function contactMatches(q) {
     q = (q || "").toLowerCase();
-    return state.contacts.filter((c) => !q || (c.name + " " + (c.handle || "") + " " + (c.tags || []).join(" ")).toLowerCase().indexOf(q) !== -1);
+    return state.contacts.filter((c) => !q || (c.name + " " + (c.handle || "") + " " + (c.tags || []).join(" ") + " " + Object.keys(c.fields || {}).map((k) => k + " " + String(c.fields[k])).join(" ")).toLowerCase().indexOf(q) !== -1);
+  }
+
+  function contactFor(conversation) {
+    return state.contacts.filter((c) => c.id === (conversation && conversation.contact_id))[0] || null;
+  }
+
+  function sampleContact() { return state.contacts[0] || null; }
+
+  // Replaces {name}, {handle}, {tags} and {field:key} with live contact data.
+  function applyTokens(text, contact) {
+    const c = contact || {};
+    const fields = (c.fields && typeof c.fields === "object") ? c.fields : {};
+    return String(text || "").replace(/\{\s*(name|handle|tags)\s*\}|\{\s*field\s*:\s*([\w.\-]{1,30})\s*\}/gi, (m, simple, key) => {
+      if (simple) {
+        const k = simple.toLowerCase();
+        if (k === "name") return c.name || "";
+        if (k === "handle") return c.handle || "";
+        if (k === "tags") return (c.tags || []).join(", ");
+      }
+      if (key) {
+        const hit = Object.keys(fields).filter((k2) => k2.toLowerCase() === key.toLowerCase())[0];
+        return hit != null ? String(fields[hit]) : "";
+      }
+      return m;
+    });
+  }
+
+  // Trigger conditions: "tag:X" checks a tag, "field:k" a non-empty field, "field:k=v" an exact value.
+  // Returns true/false, or null when the syntax is not a contact condition.
+  function contactMatchesCond(cond, contact) {
+    const text = String(cond || "").trim();
+    const c = contact || {};
+    const tagM = /^tag\s*:\s*(.{1,40})$/i.exec(text);
+    if (tagM) {
+      const want = tagM[1].trim().toLowerCase();
+      return (c.tags || []).some((t) => String(t).toLowerCase() === want);
+    }
+    const fM = /^field\s*:\s*([\w.\-]{1,30})\s*(?:=\s*(.{1,60}))?$/i.exec(text);
+    if (fM) {
+      const fields = (c.fields && typeof c.fields === "object") ? c.fields : {};
+      const hit = Object.keys(fields).filter((k) => k.toLowerCase() === fM[1].toLowerCase())[0];
+      const val = hit != null ? String(fields[hit]) : "";
+      if (fM[2] == null) return hit != null && val !== "";
+      return val.toLowerCase() === fM[2].trim().toLowerCase();
+    }
+    return null;
   }
 
   function contactRows(q) {
@@ -1029,6 +1324,11 @@
   }
 
   function renderMetaSettings() {
+    /* Meta channels are not live yet: show a calm note instead of a setup error. Re-enables itself once a Meta App ID is configured. */
+    if (!/^\d{5,32}$/.test(String((window.CHATORA_CONFIG || {}).META_APP_ID || ""))) {
+      const ar = (document.documentElement.lang || "").indexOf("ar") === 0;
+      return `<div class="dash-card meta-setup-card"><h2>${ar ? "قنوات واتساب وإنستجرام" : "WhatsApp and Instagram channels"}</h2><p class="dash-note">${ar ? "قريبًا: ربط القنوات الرسمية. حاليًا فريقنا بيجهّز لك القنوات، كلّمنا على واتساب لو عايز تبدأ." : "Coming soon: connecting official channels yourself. For now our team sets channels up for you. Message us on WhatsApp to get started."}</p></div>`;
+    }
     const meta = window.CHATORA_META_ONBOARDING;
     const waReady = !!(meta && meta.isConfigured("whatsapp") && state.meta.loaded && !state.meta.loadFailed);
     const igReady = !!(meta && meta.isConfigured("instagram") && state.meta.loaded && !state.meta.loadFailed);
@@ -1071,7 +1371,7 @@
   }
 
   function renderSettings() {
-    return renderMetaSettings() +
+    return renderChannelsBlock() + renderMetaSettings() +
       `<div class="dash-card"><h2>${esc(T.wsName)}</h2>` +
       `<form id="ws-form" class="dash-inline"><input id="ws-input" aria-label="${esc(T.wsName)}" value="${esc(state.ws.name)}" maxlength="60">` +
       `<button class="btn btn-primary btn-sm" type="submit">${esc(T.save)}</button></form>` +
@@ -1080,19 +1380,113 @@
       `<form id="pw-form" class="dash-inline"><input id="pw-input" type="password" autocomplete="new-password" minlength="8" aria-label="${esc(T.pwNew)}" placeholder="${esc(T.pwNew)}">` +
       `<button class="btn btn-ghost btn-sm" type="submit">${esc(T.pwSave)}</button></form>` +
       `<p class="dash-note" id="pw-msg"></p></div>` +
+      widgetCard() +
       `<div class="dash-card"><h2>${esc(T.plan)}</h2><p class="dash-plan-row"><b>${esc(T.planFree)}</b> — <span>${esc(T.dataIsolation)}</span></p></div>` +
       `<div class="dash-card"><h2>${esc(T.account)}</h2><p>${esc((A.user() && A.user().email) || "")}</p>` +
       `<p class="dash-note">${esc(T.exportTitle)} — <button type="button" class="link-btn" id="export">${esc(T.exportBtn)}</button></p></div>` +
       `<div class="dash-card"><h2>${esc(T.session)}</h2>` +
       `<button type="button" class="btn btn-ghost btn-sm" id="signout2">${esc(T.signoutLong)}</button></div>` +
       `<div class="dash-card dash-danger"><h2>${esc(T.delTitle)}</h2><p class="dash-note">${esc(T.delNote)}</p>` +
-      `<form id="del-form" class="dash-inline"><input id="del-pass" type="password" autocomplete="current-password" required aria-label="${esc(T.delPass)}" placeholder="${esc(T.delPass)}">` +
-      `<button class="btn btn-ghost btn-sm btn-danger" type="submit">${esc(T.delBtn)}</button></form>` +
+      (signInProvider() === "password"
+        ? `<form id="del-form" class="dash-inline"><input id="del-pass" type="password" autocomplete="current-password" required aria-label="${esc(T.delPass)}" placeholder="${esc(T.delPass)}">` +
+          `<button class="btn btn-ghost btn-sm btn-danger" type="submit">${esc(T.delBtn)}</button></form>`
+        : `<p class="dash-note">${esc(T.delGoogleNote)}</p>` +
+          `<button class="btn btn-ghost btn-sm btn-danger" type="button" id="del-google">${esc(T.delGoogle)}</button>`) +
       `<p class="dash-note" id="del-msg" role="status"></p></div>`;
+  }
+
+  function signInProvider() {
+    const s = A.session && A.session();
+    const t = s && s.access_token;
+    if (!t) return "password";
+    try {
+      const p = JSON.parse(atob(t.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+      return (p.firebase && p.firebase.sign_in_provider) || "password";
+    } catch (e) { return "password"; }
+  }
+
+  async function deleteWorkspaceAndAccount(fresh, uid) {
+    const cfg = window.CHATORA_CONFIG || {};
+    const del = await fetch(cfg.SUPABASE_URL + "/rest/v1/workspaces?owner=eq." + encodeURIComponent(uid), {
+      method: "DELETE", headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: "Bearer " + fresh }
+    });
+    if (!del.ok) throw new Error("delete_failed");
+    const fk = encodeURIComponent(cfg.FIREBASE_API_KEY || "");
+    const fin = await fetch("https://identitytoolkit.googleapis.com/v1/accounts:delete?key=" + fk, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ idToken: fresh })
+    });
+    if (!fin.ok) throw new Error("delete_failed");
   }
 
   const RENDER = { overview: renderOverview, inbox: renderInbox, flows: renderFlows, contacts: renderContacts, broadcast: renderBroadcast, settings: renderSettings };
 
+  const WK = { loaded: false, loading: false, keys: [], err: "" };
+  const WKT = ({
+    en: { t: "Website chat widget", n: "Add an AI chat bubble to any website. Paste the snippet before </body>. It answers from your flows when they cover the question; otherwise it says the team will follow up. Each chat is saved in your Inbox.", c: "Create key", d: "Delete", s: "Save", g: "Greeting", o: "Allowed website (optional, e.g. https://example.com)", on: "Active", cp: "Copy snippet", cd: "Copied", lim: "Limit: 5 keys.", cf: "Delete this key? The widget stops working." },
+    ar: { t: "ودجت الدردشة للموقع", n: "أضف فقاعة دردشة بالذكاء الاصطناعي لأي موقع. الصق الكود قبل </body>. بيرد من سيناريوهاتك لو السؤال متغطي فيها، ولو لأ بيقول إن الفريق هيتابع. كل محادثة بتتحفظ في الإنبوكس.", c: "إنشاء مفتاح", d: "حذف", s: "حفظ", g: "رسالة الترحيب", o: "الموقع المسموح (اختياري، مثل https://example.com)", on: "مفعّل", cp: "نسخ الكود", cd: "تم النسخ", lim: "الحد: 5 مفاتيح.", cf: "حذف هذا المفتاح؟ سيتوقف الودجت." }
+  })[LANG] || null;
+  const WKE = WKT || null;
+  function wkT() { return Object.assign({}, WKX_EN, WKT || {}); }
+  const WKX_EN = { t: "Website chat widget", n: "Add an AI chat bubble to any website. Paste the snippet before </body>. It answers from your flows and saves each chat in your Inbox.", c: "Create key", d: "Delete", s: "Save", g: "Greeting", o: "Allowed website (optional, e.g. https://example.com)", on: "Active", cp: "Copy snippet", cd: "Copied", lim: "Limit: 5 keys.", cf: "Delete this key? The widget stops working." };
+  function widgetCard() {
+    const W = wkT();
+    const snip = (k) => '<script src="https://chatora.us.ci/assets/widget.js" data-key="' + k + '" defer></' + 'script>';
+    const rows = WK.keys.map((k) => `<div class="dash-card" style="margin:10px 0;padding:12px"><textarea readonly rows="2" style="width:100%;font-family:monospace;font-size:12px" data-wk-snip="${esc(k.id)}">${esc(snip(k.key))}</textarea>` +
+      `<div class="dash-inline" style="margin-top:8px;flex-wrap:wrap"><input data-wk-greet="${esc(k.id)}" maxlength="300" value="${esc(k.greeting)}" aria-label="${esc(W.g)}" placeholder="${esc(W.g)}">` +
+      `<input data-wk-origin="${esc(k.id)}" maxlength="200" value="${esc(k.allowed_origin || "")}" aria-label="${esc(W.o)}" placeholder="${esc(W.o)}">` +
+      `<label><input type="checkbox" data-wk-active="${esc(k.id)}"${k.active ? " checked" : ""}> ${esc(W.on)}</label>` +
+      `<button type="button" class="btn btn-primary btn-sm" data-wk-save="${esc(k.id)}">${esc(W.s)}</button>` +
+      `<button type="button" class="btn btn-ghost btn-sm" data-wk-copy="${esc(k.id)}">${esc(W.cp)}</button>` +
+      `<button type="button" class="btn btn-ghost btn-sm btn-danger" data-wk-del="${esc(k.id)}">${esc(W.d)}</button></div></div>`).join("");
+    return `<div class="dash-card" id="wk-card"><h2>${esc(W.t)}</h2><p class="dash-note">${esc(W.n)}</p>${rows}` +
+      `<button type="button" class="btn btn-ghost btn-sm" id="wk-create"${WK.keys.length >= 5 ? " disabled" : ""}>${esc(W.c)}</button> <span class="dash-note">${esc(W.lim)}</span>` +
+      `<p class="dash-note is-err" id="wk-msg" role="status">${esc(WK.err)}</p></div>`;
+  }
+  async function wkLoad() {
+    if (WK.loaded || WK.loading) return;
+    WK.loading = true;
+    try { WK.keys = (await A.rest("/rest/v1/widget_keys?select=id,key,name,greeting,allowed_origin,active&order=created_at.asc")) || []; WK.err = ""; }
+    catch (e) { WK.err = String(e.message || e); }
+    WK.loading = false; WK.loaded = true;
+    if (state.view === "settings") paint();
+  }
+  function wkWire(p) {
+    wkLoad();
+    const W = wkT();
+    const fail = (e) => { WK.err = String(e.message || e); const m = $("#wk-msg", p); if (m) m.textContent = WK.err; };
+    const cb = $("#wk-create", p);
+    if (cb) cb.addEventListener("click", async () => {
+      try {
+        const row = await A.rest("/rest/v1/widget_keys", { method: "POST", body: JSON.stringify({ workspace_id: state.ws.id }) });
+        const made = Array.isArray(row) ? row[0] : row;
+        WK.keys.push(made); WK.err = ""; paint();
+      } catch (e) { fail(e); }
+    });
+    $$("[data-wk-save]", p).forEach((b) => b.addEventListener("click", async () => {
+      const id = b.getAttribute("data-wk-save");
+      const q = (a) => p.querySelector("[" + a + '="' + id + '"]');
+      const body = { greeting: q("data-wk-greet").value.trim() || "Hi! How can we help?", allowed_origin: q("data-wk-origin").value.trim() || null, active: q("data-wk-active").checked };
+      try {
+        await A.rest("/rest/v1/widget_keys?id=eq." + encodeURIComponent(id), { method: "PATCH", body: JSON.stringify(body) });
+        const k = WK.keys.find((x) => x.id === id); if (k) Object.assign(k, body);
+        WK.err = ""; paint();
+      } catch (e) { fail(e); }
+    }));
+    $$("[data-wk-copy]", p).forEach((b) => b.addEventListener("click", () => {
+      const ta = p.querySelector('[data-wk-snip="' + b.getAttribute("data-wk-copy") + '"]');
+      ta.select();
+      try { navigator.clipboard.writeText(ta.value); } catch (_) { document.execCommand("copy"); }
+      b.textContent = W.cd;
+    }));
+    $$("[data-wk-del]", p).forEach((b) => b.addEventListener("click", async () => {
+      if (!window.confirm(W.cf)) return;
+      const id = b.getAttribute("data-wk-del");
+      try {
+        await A.rest("/rest/v1/widget_keys?id=eq." + encodeURIComponent(id), { method: "DELETE" });
+        WK.keys = WK.keys.filter((x) => x.id !== id); WK.err = ""; paint();
+      } catch (e) { fail(e); }
+    }));
+  }
   function paint() {
     const panel = $("#panel-" + state.view);
     if (!panel) return;
@@ -1195,6 +1589,8 @@
     const conversation = state.conv;
     if (!conversation) return;
     const draft = replyDraftFor(conversation.id);
+    if (String(conversation.channel) === "web") return submitWebReply(conversation, draft);
+    if (String(conversation.channel) === "telegram") return submitTgReply(conversation, draft);
     const input = $("#meta-reply-input");
     const text = String((input && input.value) || draft.text || "").trim();
     if (!text || draft.busy || draft.locked) return;
@@ -1298,6 +1694,58 @@
     }
   }
 
+  async function submitWebReply(conversation, draft) {
+    const input = $("#meta-reply-input");
+    const text = String((input && input.value) || draft.text || "").trim();
+    if (!text || draft.busy) return;
+    if (new TextEncoder().encode(text).byteLength > 1000) {
+      draft.text = text; draft.notice = T.sendTooLong; draft.noticeError = true; paint(); return;
+    }
+    draft.busy = true; draft.notice = ""; draft.noticeError = false;
+    try {
+      await A.rest("/rest/v1/messages", { method: "POST", body: JSON.stringify({ conversation_id: conversation.id, direction: "out", author: "human", body: applyTokens(text, contactFor(conversation)).slice(0, 1200) }) });
+      await A.rest("/rest/v1/conversations?id=eq." + conversation.id, { method: "PATCH", body: JSON.stringify({ last_at: new Date().toISOString(), status: conversation.status === "ai" ? "human" : conversation.status }) });
+      if (conversation.status === "ai") conversation.status = "human";
+      draft.text = ""; draft.notice = T.sendSuccess; draft.noticeError = false;
+      await refreshThreadMessages(conversation.id);
+    } catch (e) {
+      draft.notice = T.sendError; draft.noticeError = true;
+    } finally {
+      draft.busy = false;
+      if (state.view === "inbox" && state.conv && state.conv.id === conversation.id) paint();
+    }
+  }
+
+  async function submitTgReply(conversation, draft) {
+    const input = $("#meta-reply-input");
+    const raw = String((input && input.value) || draft.text || "").trim();
+    if (!raw || draft.busy) return;
+    if (new TextEncoder().encode(raw).byteLength > 1000) {
+      draft.text = raw; draft.notice = T.sendTooLong; draft.noticeError = true; paint(); return;
+    }
+    const contact = contactFor(conversation);
+    const chatId = String((contact && contact.handle) || "").replace(/^tg:/, "").trim();
+    if (!/^-?\d{1,20}$/.test(chatId)) {
+      draft.notice = T.sendError; draft.noticeError = true; paint(); return;
+    }
+    const text = applyTokens(raw, contact);
+    draft.busy = true; draft.notice = ""; draft.noticeError = false; paint();
+    try {
+      await tgApi("/api/channels/telegram/send", { workspace: state.ws.id, chat: chatId, text: text });
+      await A.rest("/rest/v1/messages", { method: "POST", body: JSON.stringify({ conversation_id: conversation.id, direction: "out", author: "human", body: text.slice(0, 1200) }) });
+      await A.rest("/rest/v1/conversations?id=eq." + conversation.id, { method: "PATCH", body: JSON.stringify({ last_at: new Date().toISOString(), status: conversation.status === "ai" ? "human" : conversation.status }) });
+      if (conversation.status === "ai") conversation.status = "human";
+      draft.text = ""; draft.notice = T.sendSuccess; draft.noticeError = false;
+      await refreshThreadMessages(conversation.id);
+    } catch (e) {
+      draft.notice = e && e.code === "not connected" ? TK.tgNoConn : T.sendError;
+      draft.noticeError = true;
+    } finally {
+      draft.busy = false;
+      if (state.view === "inbox" && state.conv && state.conv.id === conversation.id) paint();
+    }
+  }
+
   /* ---------- interactions ---------- */
   function bindPanel() {
     const p = $("#panel-" + state.view);
@@ -1340,11 +1788,14 @@
       if (tc) tc.addEventListener("click", () => setStatus("closed"));
       const tr = $("#toggle-reopen");
       if (tr) tr.addEventListener("click", () => setStatus("ai"));
+      const tm = $("#toggle-mode");
+      if (tm) tm.addEventListener("click", () => setStatus(state.conv.status === "human" ? "ai" : "human"));
     }
 
     if (state.view === "flows") {
       const tc = $("#tpl-cancel", p);
       if (tc) tc.addEventListener("click", () => { state.templates = false; paint(); });
+      { const gb = $("#g-blank", p); if (gb) gb.addEventListener("click", () => useBlank().catch((e) => alert(e.message))); }
       $$("[data-guse]", p).forEach((b) => b.addEventListener("click", () => useTemplate(b.getAttribute("data-guse")).catch((e) => alert(e.message))));
       $$("[data-gcat]", p).forEach((b) => b.addEventListener("click", () => { state.gcat = b.getAttribute("data-gcat"); paint(); }));
       const gb = $("#g-back", p);
@@ -1353,22 +1804,11 @@
       if (gs) gs.addEventListener("input", () => {
         state.gq = gs.value;
         const grid = $(".gtpl-grid", p);
-        const all = window.CHATORA_TEMPLATES || [];
-        const q = state.gq.toLowerCase();
-        const rows = all.filter((x) => {
-          const loc = templateCopy(x);
-          return (state.gcat === "all" || x.cat === state.gcat) &&
-            (!q || (loc.t + " " + loc.d + " " + x.id).toLowerCase().indexOf(q) !== -1);
-        });
-        grid.innerHTML = rows.map((x) => {
-          const loc = templateCopy(x);
-          return `<article class="gtpl"><header><span class="pill" style="--c:${chColor(x.ch)}">${esc(chLabel(x.ch))}</span>` +
-            `<span class="gtpl-steps">${num(x.steps)} ${esc(T.gSteps)}</span></header>` +
-            `<h3>${esc(loc.t)}</h3><p>${esc(loc.d)}</p>` +
-            `<button type="button" class="btn btn-ghost btn-sm" data-guse="${esc(x.id)}">${esc(T.gUse)}</button></article>`;
-        }).join("") || `<p class="dash-empty">${esc(T.gNone)}</p>`;
+        grid.innerHTML = galleryCards(galleryFiltered()) || `<p class="dash-empty">${esc(T.gNone)}</p>`;
         $$("[data-guse]", grid).forEach((b) => b.addEventListener("click", () => useTemplate(b.getAttribute("data-guse")).catch((e) => alert(e.message))));
       });
+      $$("[data-gtrig]", p).forEach((b) => b.addEventListener("click", () => { state.gtrig = b.getAttribute("data-gtrig"); paint(); }));
+      $$("[data-dup]", p).forEach((b) => b.addEventListener("click", () => duplicateFlow(b.getAttribute("data-dup")).catch((e) => alert(e.message))));
       $$("[data-edit]", p).forEach((b) => b.addEventListener("click", () => openEditor(b.getAttribute("data-edit"))));
       bindEditor(p);
     }
@@ -1395,7 +1835,7 @@
         if (b.hasAttribute("data-msg")) startChat(b.getAttribute("data-msg"));
         else if (b.hasAttribute("data-cedit")) {
           const c = state.contacts.filter((x) => x.id === b.getAttribute("data-cedit"))[0];
-          state.cedit = { id: c.id, name: c.name, handle: c.handle || "", channel: c.channel, tags: c.tags || [] };
+          state.cedit = { id: c.id, name: c.name, handle: c.handle || "", channel: c.channel, tags: c.tags || [], fields: Object.assign({}, c.fields || {}) };
           paint();
         } else deleteContact(b.getAttribute("data-cdel"));
       });
@@ -1448,10 +1888,39 @@
       const nw = $("#c-new", p);
       if (nw) nw.addEventListener("click", () => {
         state.imp.open = false;
-        state.cedit = { id: null, name: "", handle: "", channel: "instagram", tags: [] };
+        state.cedit = { id: null, name: "", handle: "", channel: "instagram", tags: [], fields: {} };
         paint();
         const f = $("#cf-name"); if (f) f.focus();
       });
+      [["#cf-enroll", "enroll", "enrolledOk"], ["#cf-unenroll", "unenroll", "stoppedOk"]].forEach((cfg) => {
+        const b = $(cfg[0], p);
+        if (!b) return;
+        b.addEventListener("click", async () => {
+          const sel = $("#cf-seq", p), msg = $("#cf-seq-msg", p);
+          if (!sel || !sel.value || !state.cedit || !state.cedit.id) return;
+          try {
+            await tgApi("/api/automation/event", { workspace: state.ws.id, contact_id: state.cedit.id, kind: cfg[1], key: sel.value });
+            if (msg) msg.textContent = TK[cfg[2]];
+          } catch (e) { if (msg) msg.textContent = T.sendError; }
+        });
+      });
+      const fadd = $("#cf-fadd", p);
+      if (fadd) fadd.addEventListener("click", () => {
+        syncCeditFromDom();
+        const kEl = $("#cf-fkey", p), vEl = $("#cf-fval", p);
+        const k = tidy(kEl && kEl.value, 30).trim();
+        if (!k) { if (kEl) kEl.focus(); return; }
+        const f = state.cedit.fields || (state.cedit.fields = {});
+        const existing = Object.keys(f).filter((k2) => k2.toLowerCase() === k.toLowerCase())[0];
+        if (existing == null && Object.keys(f).length >= 20) return;
+        f[existing != null ? existing : k] = tidy(vEl && vEl.value, 120).trim();
+        paint();
+      });
+      $$("[data-cfdel]", p).forEach((b) => b.addEventListener("click", () => {
+        syncCeditFromDom();
+        if (state.cedit && state.cedit.fields) delete state.cedit.fields[b.getAttribute("data-cfdel")];
+        paint();
+      }));
       const sv = $("#cf-save", p);
       if (sv) sv.addEventListener("click", saveContact);
       const cn = $("#cf-cancel", p);
@@ -1599,17 +2068,62 @@
       if (pf) pf.addEventListener("submit", async (e) => {
         e.preventDefault();
         const el = $("#pw-input"), out = $("#pw-msg");
-        if (el.value.length < 8) { out.textContent = T.pwShort; out.className = "dash-note is-err"; return; }
+        if (!strongPw(el.value)) { out.textContent = T.pwShort; out.className = "dash-note is-err"; return; }
         try {
           await A.updateUser({ password: el.value });
           el.value = "";
           out.textContent = T.pwOk; out.className = "dash-note is-ok";
         } catch (err) { out.textContent = err.message; out.className = "dash-note is-err"; }
       });
+      wkWire(p);
+      chanWire(p);
       const ex = $("#export", p);
       if (ex) ex.addEventListener("click", exportData);
       const s2 = $("#signout2", p);
       if (s2) s2.addEventListener("click", () => A.signOut());
+      const dg = $("#del-google", p);
+      if (dg) dg.addEventListener("click", async () => {
+        const out = $("#del-msg", p);
+        if (!window.confirm(T.delConfirm)) return;
+        dg.disabled = true; out.textContent = ""; out.className = "dash-note";
+        try {
+          const cfg = window.CHATORA_CONFIG || {};
+          const me = A.session && A.session();
+          const uid = me && me.user && me.user.id, mail = String((me && me.user && me.user.email) || "").toLowerCase();
+          await new Promise((res, rej) => {
+            if (window.google && window.google.accounts && window.google.accounts.oauth2) return res();
+            const sc = document.createElement("script");
+            sc.src = "https://accounts.google.com/gsi/client"; sc.async = true;
+            sc.onload = () => res(); sc.onerror = () => rej(new Error("network"));
+            document.head.appendChild(sc);
+          });
+          const gt = await new Promise((res, rej) => {
+            const client = window.google.accounts.oauth2.initTokenClient({
+              client_id: cfg.GOOGLE_CLIENT_ID,
+              scope: "openid email profile",
+              callback: (r) => (r && r.access_token ? res(r.access_token) : rej(new Error("cancelled"))),
+              error_callback: () => rej(new Error("cancelled"))
+            });
+            client.requestAccessToken({ prompt: "select_account" });
+          });
+          const IT = "https://identitytoolkit.googleapis.com/v1/";
+          const fk = encodeURIComponent(cfg.FIREBASE_API_KEY || "");
+          const gi = await fetch(IT + "accounts:signInWithIdp?key=" + fk, {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ postBody: "access_token=" + encodeURIComponent(gt) + "&providerId=google.com", requestUri: location.origin, returnSecureToken: true })
+          });
+          if (!gi.ok) throw new Error("delete_failed");
+          const gd = await gi.json();
+          if (String(gd.email || "").toLowerCase() !== mail) throw new Error("wrong_account");
+          await deleteWorkspaceAndAccount(gd.idToken, uid);
+          await A.signOut();
+        } catch (err) {
+          const em = err && err.message;
+          out.textContent = em === "cancelled" ? "" : (em === "wrong_account" ? T.delWrongAcct : T.delFailed);
+          out.className = em === "cancelled" ? "dash-note" : "dash-note is-err";
+          dg.disabled = false;
+        }
+      });
       const df = $("#del-form", p);
       if (df) df.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -1618,7 +2132,25 @@
         btn.disabled = true;
         out.textContent = ""; out.className = "dash-note";
         try {
-          await A.rest("/functions/v1/account-delete", { method: "POST", body: JSON.stringify({ confirm: "DELETE", password: el.value }) });
+          const cfg = window.CHATORA_CONFIG || {};
+          const me = A.session && A.session();
+          const uid = me && me.user && me.user.id, mail = me && me.user && me.user.email;
+          const IT = "https://identitytoolkit.googleapis.com/v1/";
+          const fk = encodeURIComponent(cfg.FIREBASE_API_KEY || "");
+          const re = await fetch(IT + "accounts:signInWithPassword?key=" + fk, {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: mail, password: el.value, returnSecureToken: true })
+          });
+          if (!re.ok) { const bad = new Error("wrong_password"); bad.data = { error: "wrong_password" }; throw bad; }
+          const fresh = (await re.json()).idToken;
+          const del = await fetch(cfg.SUPABASE_URL + "/rest/v1/workspaces?owner=eq." + encodeURIComponent(uid), {
+            method: "DELETE", headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: "Bearer " + fresh }
+          });
+          if (!del.ok) throw new Error("delete_failed");
+          const fin = await fetch(IT + "accounts:delete?key=" + fk, {
+            method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ idToken: fresh })
+          });
+          if (!fin.ok) throw new Error("delete_failed");
           await A.signOut();
         } catch (err) {
           const code = err && err.data && err.data.error;
@@ -1645,20 +2177,48 @@
     }
   }
 
+  // Fires contact-event triggers (tag applied/removed, field changed) for live flows.
+  function fireContactEvents(contactId, before, after) {
+    const evs = [];
+    const bt = (before.tags || []).map((t) => String(t).toLowerCase());
+    const at = (after.tags || []).map((t) => String(t).toLowerCase());
+    (after.tags || []).forEach((t, i) => { if (bt.indexOf(at[i]) === -1) evs.push({ kind: "tag-applied", key: String(t) }); });
+    (before.tags || []).forEach((t) => { if (at.indexOf(String(t).toLowerCase()) === -1) evs.push({ kind: "tag-removed", key: String(t) }); });
+    const bf = before.fields || {}, af = after.fields || {};
+    Object.keys(af).forEach((k) => { if (String(bf[k]) !== String(af[k])) evs.push({ kind: "field-changed", key: k }); });
+    Object.keys(bf).forEach((k) => { if (!(k in af)) evs.push({ kind: "field-changed", key: k }); });
+    evs.slice(0, 10).forEach((e) => {
+      tgApi("/api/automation/event", { workspace: state.ws.id, contact_id: contactId, kind: e.kind, key: e.key }).catch(() => {});
+    });
+  }
+
+  function syncCeditFromDom() {
+    const ed = state.cedit;
+    if (!ed) return;
+    const n = $("#cf-name"), h = $("#cf-handle"), ch = $("#cf-ch"), tg = $("#cf-tags");
+    if (n) ed.name = n.value;
+    if (h) ed.handle = h.value;
+    if (ch) ed.channel = ch.value;
+    if (tg) ed.tags = tg.value.split(",").map((x) => x.trim()).filter(Boolean).slice(0, 6);
+  }
+
   async function saveContact() {
-    const name = $("#cf-name").value.trim();
+    const before = state.cedit.id ? (state.contacts.filter((c) => c.id === state.cedit.id)[0] || {}) : {};
+    const name = tidy($("#cf-name").value, 80).trim();
     if (!name) { $("#cf-name").focus(); return; }
     const body = {
       name,
-      handle: $("#cf-handle").value.trim() || null,
+      handle: tidy($("#cf-handle").value, 80).trim() || null,
       channel: $("#cf-ch").value,
       tags: $("#cf-tags").value.split(",").map((t) => t.trim()).filter(Boolean).slice(0, 6),
+      fields: state.cedit.fields || {},
       last_seen: new Date().toISOString()
     };
     if (state.cedit.id) {
       const row = await A.rest("/rest/v1/contacts?id=eq." + state.cedit.id, { method: "PATCH", body: JSON.stringify(body) });
       const i = state.contacts.findIndex((c) => c.id === state.cedit.id);
       if (i > -1) state.contacts[i] = Object.assign({}, state.contacts[i], Array.isArray(row) ? row[0] : body);
+      fireContactEvents(state.cedit.id, before, body);
     } else {
       const row = await A.rest("/rest/v1/contacts", { method: "POST", body: JSON.stringify(Object.assign({ workspace_id: state.ws.id }, body)) });
       state.contacts.unshift(Array.isArray(row) ? row[0] : row);
@@ -1702,6 +2262,9 @@
 
   function starterSteps(tpl, count) {
     const loc = templateCopy(tpl);
+    const tf = window.CHATORA_TEMPLATE_FLOWS && window.CHATORA_TEMPLATE_FLOWS[tpl.id];
+    const own = tf && (tf[LANG] || tf.en);
+    if (own && own.length) return JSON.parse(JSON.stringify(own));
     const steps = [{ t: "trigger", text: loc.t }];
     const fillers = [
       { t: "msg", text: T.tplDraftMessage.replace("{name}", loc.t) },
@@ -1718,6 +2281,26 @@
     return steps;
   }
 
+  const BLANK = ({ en: { b: "Start blank", n: "New flow", t: "Describe what starts this flow (e.g. a customer sends \"price\")", m: "Write the first reply here" },
+    ar: { b: "ابدأ من الصفر", n: "سيناريو جديد", t: "اكتب ما الذي يبدأ السيناريو (مثلاً: العميل يرسل \"السعر\")", m: "اكتب الرد الأول هنا" },
+    es: { b: "Empezar en blanco", n: "Flujo nuevo", t: "Describe qué inicia este flujo (p. ej. un cliente escribe \"precio\")", m: "Escribe aquí la primera respuesta" },
+    fr: { b: "Partir de zéro", n: "Nouveau flux", t: "Décrivez ce qui déclenche ce flux (ex. un client écrit \"prix\")", m: "Écrivez ici la première réponse" },
+    de: { b: "Leer starten", n: "Neuer Ablauf", t: "Beschreiben Sie den Auslöser (z. B. Kunde schreibt \"Preis\")", m: "Erste Antwort hier schreiben" },
+    pt: { b: "Começar em branco", n: "Novo fluxo", t: "Descreva o que inicia este fluxo (ex.: cliente envia \"preço\")", m: "Escreva aqui a primeira resposta" } })[LANG] || {};
+  async function useBlank() {
+    const row = await A.rest("/rest/v1/flows", {
+      method: "POST",
+      body: JSON.stringify({ workspace_id: state.ws.id, name: BLANK.n, channel: "instagram", status: "draft", runs: 0,
+        nodes: [{ t: "trigger", text: BLANK.t }, { t: "message", text: BLANK.m }] })
+    });
+    const made = Array.isArray(row) ? row[0] : row;
+    state.flows.unshift(made);
+    state.templates = false; state.gq = ""; state.edit = made;
+    state.steps = JSON.parse(JSON.stringify(made.nodes || []));
+    state.guide = false; state.ready = false;
+    paint();
+  }
+
   async function useTemplate(id) {
     const tpl = (window.CHATORA_TEMPLATES || []).filter((x) => x.id === id)[0];
     if (!tpl) return;
@@ -1729,9 +2312,14 @@
         status: "draft", runs: 0, nodes: starterSteps(tpl, tpl.steps)
       })
     });
-    state.flows.unshift(Array.isArray(row) ? row[0] : row);
+    const made = Array.isArray(row) ? row[0] : row;
+    state.flows.unshift(made);
     state.templates = false;
     state.gq = "";
+    state.edit = made;
+    state.steps = JSON.parse(JSON.stringify(made.nodes || []));
+    state.guide = true;
+    state.ready = false;
     paint();
     const ok = document.createElement("div");
     ok.className = "toast";
@@ -1740,9 +2328,18 @@
     setTimeout(() => ok.remove(), 2600);
   }
 
+  function guideHtml() {
+    if (!state.guide) return "";
+    if (state.ready) return `<div class="dash-card"><h2>\u2713 ${esc(T.guideReadyTitle)}</h2><p class="dash-note">${esc(T.guideReadyText)}</p><div class="dash-inline"><button type="button" class="btn btn-primary btn-sm" id="ed-connect">${esc(T.connectCta)}</button><button type="button" class="btn btn-ghost btn-sm" id="ed-try">${esc(T.tryOptional)}</button></div></div>`;
+    const left = (state.steps || []).reduce((n, s) => n + ((String(s.text || "").match(/\[[^\]]+\]/g) || []).length), 0);
+    return `<div class="dash-card"><h2>${esc(T.guideTitle)}</h2><ol class="dash-note"><li>${esc(T.guide1)}${left ? " (" + left + ")" : ""}</li><li>${esc(T.guide2)}</li></ol></div>`;
+  }
+
   function openEditor(id) {
     const f = state.flows.filter((x) => x.id === id)[0];
     if (!f) return;
+    state.guide = false;
+    state.ready = false;
     state.edit = f;
     state.steps = JSON.parse(JSON.stringify(f.nodes || []));
     paint();
@@ -1750,11 +2347,15 @@
 
   function bindEditor(p) {
     if (!state.edit) return;
-    $("#ed-back", p).addEventListener("click", () => { state.edit = null; state.steps = []; paint(); });
+    $("#ed-back", p).addEventListener("click", () => { state.edit = null; state.steps = []; state.guide = false; state.ready = false; paint(); });
+    const goConnect = $("#ed-connect", p);
+    if (goConnect) goConnect.addEventListener("click", () => { state.edit = null; state.steps = []; state.guide = false; state.ready = false; setView("settings"); });
+    const tryIt = $("#ed-try", p);
+    if (tryIt) tryIt.addEventListener("click", () => { const t = $("#ed-test"); if (t) t.click(); });
     const nm = $("#ed-name", p);
     if (nm) nm.addEventListener("input", () => { state.edit.name = nm.value; });
 
-    $$(".step-in", p).forEach((el) => el.addEventListener("input", () => {
+    $$(".dstep-in, .step-in", p).forEach((el) => el.addEventListener("input", () => {
       const i = +el.getAttribute("data-i"), k = el.getAttribute("data-k");
       state.steps[i][k] = k === "v" ? Math.max(1, parseInt(el.value || "1", 10)) : el.value;
     }));
@@ -1774,13 +2375,18 @@
       paint();
     }));
     $("#ed-save", p).addEventListener("click", async () => {
-      const name = $("#ed-name").value.trim() || state.edit.name;
+      const name = tidy($("#ed-name").value, 70).trim() || state.edit.name;
+      const stEl = $("#ed-status");
+      const fstatus = stEl && ["draft", "live", "paused"].indexOf(stEl.value) !== -1 ? stEl.value : state.edit.status;
+      state.steps.forEach((s) => { if (typeof s.text === "string") s.text = tidy(s.text, 1000); });
       await A.rest("/rest/v1/flows?id=eq." + state.edit.id, {
         method: "PATCH",
-        body: JSON.stringify({ name, nodes: state.steps, updated_at: new Date().toISOString() })
+        body: JSON.stringify({ name, status: fstatus, nodes: state.steps, updated_at: new Date().toISOString() })
       });
       state.edit.name = name;
+      state.edit.status = fstatus;
       state.edit.nodes = state.steps;
+      if (state.guide) { state.ready = true; paint(); return; }
       const ok = $("#ed-ok");
       ok.textContent = T.savedFlow;
       setTimeout(() => { ok.textContent = ""; }, 2500);
@@ -1836,20 +2442,24 @@
       const s = state.steps[i++];
       if (s.t === "delay") {
         body.insertAdjacentHTML("beforeend",
-          `<div class="tmodal-sys">⏳ ${esc(T.testWait)} ${num(s.v || 0)} ${esc(T.testMin)}</div>`);
+          `<div class="tmodal-sys">⏳ ${esc(T.testWait)} ${num(s.v || 0)} ${esc(({ m: TK.uMin, h: TK.uHour, d: TK.uDay })[s.u || "m"])}</div>`);
       } else if (s.t === "trigger") {
         body.insertAdjacentHTML("beforeend", `<div class="tmodal-sys is-start">▸ ${esc(s.text || "")}</div>`);
       } else if (s.t === "cond") {
-        body.insertAdjacentHTML("beforeend", `<div class="tmodal-sys">❓ ${esc(s.text || "")}</div>`);
+        const verdict = contactMatchesCond(s.text, sampleContact());
+        const mark = verdict == null ? "" : verdict ? " ✓" : " ✗";
+        body.insertAdjacentHTML("beforeend", `<div class="tmodal-sys">❓ ${esc(s.text || "")}${mark}</div>`);
       } else if (s.t === "tag") {
-        body.insertAdjacentHTML("beforeend", `<div class="tmodal-sys">🏷️ ${esc(s.text || "")}</div>`);
+        const verdict = contactMatchesCond("tag:" + String(s.text || "").trim(), sampleContact());
+        const mark = verdict == null ? "" : verdict ? " ✓" : " ✗";
+        body.insertAdjacentHTML("beforeend", `<div class="tmodal-sys">🏷️ ${esc(s.text || "")}${mark}</div>`);
       } else if (s.t === "msg") {
         // A local visual preview only; no AI provider is called and no message is sent.
         body.insertAdjacentHTML("beforeend", `<div class="bub is-out is-typing" id="typing">${esc(T.testTyping)}</div>`);
         body.scrollTop = body.scrollHeight;
         setTimeout(() => {
           const t = $("#typing");
-          if (t) t.outerHTML = `<div class="bub is-out">${esc(s.text || "")}<span class="bub-meta">${esc(T.testRole)}</span></div>`;
+          if (t) t.outerHTML = `<div class="bub is-out">${esc(applyTokens(s.text || "", sampleContact()))}<span class="bub-meta">${esc(T.testRole)}</span></div>`;
           body.scrollTop = body.scrollHeight;
           setTimeout(tick, 420);
         }, 620);
@@ -1907,12 +2517,13 @@
     applyAppTranslations();
     const params = new URLSearchParams(location.search);
     const wantsTemplates = params.get("view") === "templates";
+    const wantView = VIEWS.indexOf(params.get("view") || "") >= 0 ? params.get("view") : "";
     const candidate = params.get("tpl") || "";
     const tplId = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(candidate) ? candidate : "";
-    const next = wantsTemplates ? "app.html?view=templates" + (tplId ? "&tpl=" + tplId : "") : "app.html";
+    const next = wantsTemplates ? "app.html?view=templates" + (tplId ? "&tpl=" + tplId : "") : wantView ? "app.html?view=" + wantView : "app.html";
     const s = await A.ensure();
     if (!s) { location.replace("login.html?next=" + encodeURIComponent(next)); return; }
-    if (wantsTemplates) { state.view = "flows"; state.templates = true; state.gq = tplId; }
+    if (wantsTemplates) { state.view = "flows"; state.templates = true; state.gq = tplId; } else if (wantView) state.view = wantView;
     try {
       state.ws = await ensureWorkspace(s.user || {});
       await loadAll();

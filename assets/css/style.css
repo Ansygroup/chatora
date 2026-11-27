@@ -1629,5 +1629,39 @@ html[dir="rtl"] .cform select{background-position:16px 50%,11px 50%}
 .consent-text a{color:inherit;text-decoration:underline}
 .consent-actions{display:flex;gap:8px;flex:0 0 auto}
 .consent-choice{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin:14px 0 0}
-@media (max-width:520px){.consent-actions{width:100%}.consent-actions .btn{flex:1}}
+@media (max-width:520px){.consent{right:96px}.consent-actions{width:100%}.consent-actions .btn{flex:1}}
 @media print{.consent{display:none}}
+
+/* ============ DASHBOARD · channels (Phase 1) ============ */
+.chan-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:6px}
+.chan-card{border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:8px;background:rgba(255,255,255,.02);min-height:120px}
+.chan-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.chan-name{font-weight:600;font-size:14px}
+.chan-mark{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:15px;color:#fff;background:var(--line)}
+.chan-mark.is-tg{background:linear-gradient(135deg,#5AA9E6,#2b7abf)}
+.chan-mark.is-web{background:linear-gradient(135deg,#A78BFA,#7C5CFF)}
+.chan-mark.is-wa{background:linear-gradient(135deg,#25D366,#128C7E)}
+.chan-mark.is-ig{background:linear-gradient(135deg,#FF5FA2,#C13584)}
+.chan-mark.is-ms{background:linear-gradient(135deg,#7C5CFF,#0084FF)}
+.chan-line{font-size:12.5px;color:var(--text-2);opacity:.75;margin:0}
+.chan-foot{display:flex;align-items:center;gap:8px;margin-top:auto}
+.chan-status{font-size:11.5px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);font-weight:600}
+.chan-status.is-on{color:#2CE5D6;border-color:rgba(44,229,214,.45)}
+.chan-status.is-off{color:var(--text-2);opacity:.7}
+.chan-status.is-err{color:#ff7a7a;border-color:rgba(255,122,122,.45)}
+.chan-badge{font-size:11.5px;padding:2px 8px;border-radius:999px;background:rgba(124,92,255,.16);color:#A78BFA;font-weight:600}
+.chan-kv{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;font-size:13px;margin:4px 0 12px;align-items:center}
+.chan-kv>span{color:var(--text-2);opacity:.75}
+.gtpl-pop{font-size:10.5px;padding:2px 7px;border-radius:999px;background:rgba(44,229,214,.14);color:#2CE5D6;font-weight:700;margin-inline-start:6px}
+.tg-steps{font-size:13px;color:var(--text-2);margin:0 0 12px;padding-inline-start:20px}
+.tg-steps li{margin-bottom:6px}
+
+/* Phase 2 item 1: contact custom fields + token hint */
+.cfields{display:flex;flex-direction:column;gap:6px;margin:2px 0}
+.cfields-label{font-size:12px;font-weight:600;color:var(--muted)}
+.cfield-row{display:flex;align-items:center;gap:8px;padding:4px 6px;border:1px solid var(--line);border-radius:8px}
+.cfield-key{font-size:12px;background:rgba(255,255,255,.06);padding:2px 6px;border-radius:6px;direction:ltr}
+.cfield-val{flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cfield-new{display:flex;gap:6px;flex-wrap:wrap}
+.cfield-new input{flex:1;min-width:110px}
+.tokens-hint{font-size:11px;margin:2px 0 4px;opacity:.7;direction:ltr;text-align:start}
