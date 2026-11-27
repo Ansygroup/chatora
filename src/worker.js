@@ -151,7 +151,7 @@ export default {
         .split('Product preview · no billing enabled').join('Done-for-you from $49 · self-serve preview')
         .split('No billing or checkout enabled').join('No subscription needed for the preview')
         .split('Billing and checkout are not enabled. Creating a workspace gives access to the current preview, not a paid or free subscription plan.').join('The self-serve preview has no subscription. Packages for done-for-you setup are on the services page.');
-      if (/\/pricing(\.html)?$/.test(url.pathname) && text.includes('</h1>')) {      if (/\/pricing(\.html)?$/.test(url.pathname) && text.includes('</h1>')) {
+      if (/\/pricing(\.html)?$/.test(url.pathname) && text.includes('</h1>')) {
         const p = url.pathname;
         const msg = /^\/ar\//.test(p) ? 'تبحث عن إعداد جاهز؟ شاهد <a href="/services.html">خدمة الإعداد الكامل وأسعارها</a>. الأسعار (بالدولار): Spark 49$، Starter 99$، Growth 199$ + 29$ شهرياً، Scale 349$ + 79$ شهرياً.'
           : /^\/es\//.test(p) ? '¿Prefieres que lo montemos por ti? Mira el <a href="/services.html">servicio llave en mano y sus precios</a>. Precios (USD): Spark $49, Starter $99, Growth $199 + $29/mes, Scale $349 + $79/mes.'
