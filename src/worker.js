@@ -151,10 +151,107 @@ async function widget(request, env, url) {
   try { await sbRpc('widget_log', { p_key: key, p_visitor: visitor, p_in: msgs[msgs.length - 1].content, p_out: reply }); } catch (e) { console.log('log', String(e)); }
   return wjson({ reply }, 200, origin);
 }
+
+const TGRE = /^\d{6,12}:[A-Za-z0-9_-]{30,80}$/;
+async function tgCall(token, method, params) {
+  try {
+    const r = await fetch('https://api.telegram.org/bot' + token + '/' + method, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(params || {}) });
+    const j = await r.json().catch(() => null);
+    return (r.ok && j && j.ok) ? (j.result === undefined ? true : j.result) : null;
+  } catch { return null; }
+}
+async function tgAdmin(request, url) {
+  const origin = request.headers.get('origin');
+  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: wcors(origin) });
+  if (request.method !== 'POST') return wjson({ error: 'method' }, 405, origin);
+  const auth = String(request.headers.get('authorization') || '');
+  if (!/^Bearer [A-Za-z0-9._~-]{100,2400}$/.test(auth)) return wjson({ error: 'auth' }, 401, origin);
+  const rip = request.headers.get('cf-connecting-ip') || 'x';
+  if (wlimited('tg' + rip, 30, 600000)) return wjson({ error: 'rate' }, 429, origin);
+  let body;
+  try {
+    const raw = await request.text();
+    if (raw.length > 4096) return wjson({ error: 'too large' }, 413, origin);
+    body = JSON.parse(raw);
+  } catch { return wjson({ error: 'bad json' }, 400, origin); }
+  const sb = (path, init) => fetch(WSB + path, Object.assign({}, init, {
+    headers: Object.assign({ apikey: WANON, authorization: auth, 'content-type': 'application/json', prefer: 'return=representation' }, (init && init.headers) || {})
+  }));
+  if (url.pathname === '/api/channels/telegram/connect') {
+    const token = String(body.token || '').trim();
+    const wsid = String(body.workspace || '');
+    if (!TGRE.test(token)) return wjson({ error: 'bad token' }, 400, origin);
+    if (!/^[0-9a-f-]{36}$/.test(wsid)) return wjson({ error: 'bad workspace' }, 400, origin);
+    const me = await tgCall(token, 'getMe');
+    if (!me || !me.id) return wjson({ error: 'invalid token' }, 400, origin);
+    const handle = '@' + (me.username || me.id);
+    let ins = await sb('/rest/v1/channel_connections', { method: 'POST', body: JSON.stringify({ workspace_id: wsid, provider: 'telegram', external_account_id: String(me.id), display_name: handle, status: 'connected', auth_token: token }) });
+    let made = null;
+    if (ins.ok) {
+      made = (await ins.json())[0];
+    } else if (ins.status === 409) {
+      const old = await sb('/rest/v1/channel_connections?workspace_id=eq.' + wsid + '&provider=eq.telegram&external_account_id=eq.' + me.id + '&select=id');
+      const rows = old.ok ? await old.json() : [];
+      if (rows && rows[0]) {
+        const up = await sb('/rest/v1/channel_connections?id=eq.' + rows[0].id, { method: 'PATCH', body: JSON.stringify({ status: 'connected', display_name: handle, auth_token: token, updated_at: new Date().toISOString() }) });
+        if (up.ok) made = (await up.json())[0];
+      }
+    }
+    if (!made) return wjson({ error: 'save failed' }, 502, origin);
+    const hook = await tgCall(token, 'setWebhook', { url: 'https://chatora.us.ci/api/tg/hook/' + made.id, drop_pending_updates: true, max_connections: 40 });
+    if (!hook) {
+      await sb('/rest/v1/channel_connections?id=eq.' + made.id, { method: 'PATCH', body: JSON.stringify({ status: 'error', updated_at: new Date().toISOString() }) });
+      return wjson({ error: 'webhook failed' }, 502, origin);
+    }
+    return wjson({ ok: true, id: made.id, handle: handle }, 200, origin);
+  }
+  const id = String(body.id || '');
+  if (!/^[0-9a-f-]{36}$/.test(id)) return wjson({ error: 'bad id' }, 400, origin);
+  const got = await sb('/rest/v1/channel_connections?id=eq.' + id + '&select=id,provider,auth_token,status');
+  if (!got.ok) return wjson({ error: 'lookup failed' }, 502, origin);
+  const conn = (await got.json())[0];
+  if (!conn || conn.provider !== 'telegram') return wjson({ error: 'not found' }, 404, origin);
+  if (body.action === 'remove') {
+    if (conn.auth_token) await tgCall(conn.auth_token, 'deleteWebhook', { drop_pending_updates: true });
+    const del = await sb('/rest/v1/channel_connections?id=eq.' + id, { method: 'DELETE' });
+    return wjson({ ok: del.ok }, del.ok ? 200 : 502, origin);
+  }
+  if (body.action === 'refresh') {
+    const me = conn.auth_token ? await tgCall(conn.auth_token, 'getMe') : null;
+    const patch = { status: me ? 'connected' : 'error', updated_at: new Date().toISOString() };
+    if (me) patch.display_name = '@' + (me.username || me.id);
+    await sb('/rest/v1/channel_connections?id=eq.' + id, { method: 'PATCH', body: JSON.stringify(patch) });
+    return wjson({ ok: !!me, status: patch.status }, 200, origin);
+  }
+  return wjson({ error: 'bad action' }, 400, origin);
+}
+async function tgHook(request, url) {
+  if (request.method !== 'POST') return wjson({ ok: true });
+  const id = url.pathname.slice('/api/tg/hook/'.length);
+  if (!/^[0-9a-f-]{36}$/.test(id)) return wjson({ ok: true });
+  let upd;
+  try {
+    const raw = await request.text();
+    if (raw.length > 16384) return wjson({ ok: true });
+    upd = JSON.parse(raw);
+  } catch { return wjson({ ok: true }); }
+  const msg = upd.message || upd.edited_message;
+  const text = msg ? (typeof msg.text === 'string' ? msg.text : (typeof msg.caption === 'string' ? msg.caption : '')) : '';
+  if (msg && msg.chat && text) {
+    const name = msg.from ? [msg.from.first_name, msg.from.last_name].filter(Boolean).join(' ') : '';
+    try {
+      await sbRpc('tg_log', { p_id: id, p_update: String(upd.update_id || ''), p_chat: String(msg.chat.id), p_name: name.slice(0, 80), p_text: text.slice(0, 4000) });
+    } catch (e) { console.log('tg_log', String(e)); }
+  }
+  return wjson({ ok: true });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname === '/api/widget/config' || url.pathname === '/api/widget/chat' || url.pathname === '/api/widget/poll') return widget(request, env, url);
+    if (url.pathname === '/api/channels/telegram/connect' || url.pathname === '/api/channels/telegram/action') return tgAdmin(request, url);
+    if (url.pathname.indexOf('/api/tg/hook/') === 0) return tgHook(request, url);
     if (url.pathname !== '/api/chat') {
       const res = await env.ASSETS.fetch(request);
       const ct = res.headers.get('content-type') || '';
