@@ -338,6 +338,8 @@
     fieldsTitle: "Custom fields", fieldKeyPh: "Key (e.g. city)", fieldValPh: "Value",
     addField: "Add field",
     tokensHint: "Tokens: {name} · {handle} · {tags} · {field:key}",
+    unit: "Unit", uMin: "minutes", uHour: "hours", uDay: "days",
+    seqTitle: "Sequence", seqPick: "Choose a live flow", enroll: "Enroll", stopSeq: "Stop", enrolledOk: "Enrolled. The first step runs now.", stoppedOk: "Stopped.",
     tgNoConn: "Connect Telegram in Settings, Channels, to reply here.",
     trigEvents: "Contact events: event:tag-applied vip · event:tag-removed vip · event:field-changed city · event:schedule field:renewal_at. Live flows fire on these; messages send on Telegram and web chat."
   };
@@ -345,6 +347,8 @@
     fieldsTitle: "حقول مخصصة", fieldKeyPh: "المفتاح (مثال: المدينة)", fieldValPh: "القيمة",
     addField: "إضافة حقل",
     tokensHint: "متغيرات: {name} · {handle} · {tags} · {field:key}",
+    unit: "الوحدة", uMin: "دقائق", uHour: "ساعات", uDay: "أيام",
+    seqTitle: "سلسلة رسائل", seqPick: "اختر سيناريو مباشر", enroll: "اشترك", stopSeq: "أوقف", enrolledOk: "تم الاشتراك. أول خطوة تعمل الآن.", stoppedOk: "تم الإيقاف.",
     tgNoConn: "اربط تيليجرام من الإعدادات، القنوات، لتتمكن من الرد هنا.",
     trigEvents: "أحداث جهات الاتصال: event:tag-applied vip · event:tag-removed vip · event:field-changed city · event:schedule field:renewal_at. تعمل السيناريوهات المباشرة مع هذه الأحداث؛ تُرسل الرسائل عبر تيليجرام والدردشة."
   };
@@ -805,7 +809,7 @@
       const first = i === 0;
       const kind = STEP_KINDS.indexOf(s.t) !== -1 ? s.t : "msg";
       const body = s.t === "msg" ? `<textarea class="dstep-in" rows="2" data-i="${i}" data-k="text" placeholder="${esc(T.sMsgPh)}">${esc(s.text || "")}</textarea>`
-        : s.t === "delay" ? `<input class="dstep-in" data-i="${i}" data-k="v" type="number" min="1" max="1440" value="${esc(s.v || 5)}" aria-label="${esc(T.sDelayPh)}" placeholder="${esc(T.sDelayPh)}">`
+        : s.t === "delay" ? `<input class="dstep-in" data-i="${i}" data-k="v" type="number" min="1" max="999" value="${esc(s.v || 5)}" aria-label="${esc(T.sDelayPh)}" placeholder="${esc(T.sDelayPh)}"><select class="dstep-in dstep-unit" data-i="${i}" data-k="u" aria-label="${esc(TK.unit)}">` + [["m", TK.uMin], ["h", TK.uHour], ["d", TK.uDay]].map((u) => `<option value="${u[0]}"${(s.u || "m") === u[0] ? " selected" : ""}>${esc(u[1])}</option>`).join("") + `</select>`
           : `<input class="dstep-in" data-i="${i}" data-k="text" value="${esc(s.text || "")}" aria-label="${esc(s.t === "tag" ? T.sTagPh : T.sCondPh)}" placeholder="${esc(s.t === "tag" ? T.sTagPh : T.sCondPh)}">`;
       return `<li class="dstep is-${kind}"><span class="dstep-n">${i + 1}</span>` +
         `<span class="dstep-type">${esc(T["s" + kind[0].toUpperCase() + kind.slice(1)])}</span>` +
@@ -880,6 +884,9 @@
       Object.keys(ed.fields || {}).map((k) => `<div class="cfield-row"><code class="cfield-key">${esc(k)}</code><span class="cfield-val" dir="auto">${esc(String(ed.fields[k]))}</span><button type="button" class="row-btn is-del" data-cfdel="${esc(k)}" aria-label="×">×</button></div>`).join("") +
       `</div><div class="cfield-new"><input id="cf-fkey" value="" placeholder="${esc(TK.fieldKeyPh)}" maxlength="30"><input id="cf-fval" value="" placeholder="${esc(TK.fieldValPh)}" maxlength="120">` +
       `<button type="button" class="btn btn-ghost btn-sm" id="cf-fadd">${esc(TK.addField)}</button></div></div>` +
+      (ed.id ? `<div class="cfields"><span class="cfields-label">${esc(TK.seqTitle)}</span><div class="cfield-new"><select id="cf-seq"><option value="">${esc(TK.seqPick)}</option>` +
+        state.flows.filter((f) => f.status === "live").map((f) => `<option value="${esc(f.id)}">${esc(f.name)}</option>`).join("") +
+        `</select><button type="button" class="btn btn-ghost btn-sm" id="cf-enroll">${esc(TK.enroll)}</button><button type="button" class="btn btn-ghost btn-sm" id="cf-unenroll">${esc(TK.stopSeq)}</button></div><p class="dash-note" id="cf-seq-msg" role="status"></p></div>` : "") +
       `</div><div class="dash-inline cform-acts">` +
       `<button type="button" class="btn btn-primary btn-sm" id="cf-save">${esc(T.save)}</button>` +
       `<button type="button" class="btn btn-ghost btn-sm" id="cf-cancel">${esc(T.cancel)}</button></div></div>` : "";
@@ -1885,6 +1892,18 @@
         paint();
         const f = $("#cf-name"); if (f) f.focus();
       });
+      [["#cf-enroll", "enroll", "enrolledOk"], ["#cf-unenroll", "unenroll", "stoppedOk"]].forEach((cfg) => {
+        const b = $(cfg[0], p);
+        if (!b) return;
+        b.addEventListener("click", async () => {
+          const sel = $("#cf-seq", p), msg = $("#cf-seq-msg", p);
+          if (!sel || !sel.value || !state.cedit || !state.cedit.id) return;
+          try {
+            await tgApi("/api/automation/event", { workspace: state.ws.id, contact_id: state.cedit.id, kind: cfg[1], key: sel.value });
+            if (msg) msg.textContent = TK[cfg[2]];
+          } catch (e) { if (msg) msg.textContent = T.sendError; }
+        });
+      });
       const fadd = $("#cf-fadd", p);
       if (fadd) fadd.addEventListener("click", () => {
         syncCeditFromDom();
@@ -2423,7 +2442,7 @@
       const s = state.steps[i++];
       if (s.t === "delay") {
         body.insertAdjacentHTML("beforeend",
-          `<div class="tmodal-sys">⏳ ${esc(T.testWait)} ${num(s.v || 0)} ${esc(T.testMin)}</div>`);
+          `<div class="tmodal-sys">⏳ ${esc(T.testWait)} ${num(s.v || 0)} ${esc(({ m: TK.uMin, h: TK.uHour, d: TK.uDay })[s.u || "m"])}</div>`);
       } else if (s.t === "trigger") {
         body.insertAdjacentHTML("beforeend", `<div class="tmodal-sys is-start">▸ ${esc(s.text || "")}</div>`);
       } else if (s.t === "cond") {
