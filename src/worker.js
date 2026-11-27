@@ -151,6 +151,12 @@ export default {
         .split('Product preview · no billing enabled').join('Done-for-you from $49 · self-serve preview')
         .split('No billing or checkout enabled').join('No subscription needed for the preview')
         .split('Billing and checkout are not enabled. Creating a workspace gives access to the current preview, not a paid or free subscription plan.').join('The self-serve preview has no subscription. Packages for done-for-you setup are on the services page.');
+      text = text
+        .split('Chatora — no paid plan published').join('Chatora — done-for-you packages from $49')
+        .split('No. They are dated vendor snapshots checked on 28 October 2026. Chatora has not published subscription pricing.').join('No. They are dated vendor snapshots checked on 28 October 2026. Chatora package prices are on the services page.')
+        .split('No billing or checkout is enabled in the current preview. This is not a published free subscription plan.').join('The current preview has no billing or checkout; it is not a published free subscription plan. Done-for-you packages are sold separately on the services page.')
+        .split('No subscription plan published').join('Done-for-you packages from $49')
+        .split('Live channel integrations, AI replies and paid plans are not available in the current preview.').join('Live channel integrations and AI replies are not available in the current preview; done-for-you setup is sold separately on the services page.');
       if (/\/pricing(\.html)?$/.test(url.pathname) && text.includes('</h1>')) {
         const p = url.pathname;
         const msg = /^\/ar\//.test(p) ? 'تبحث عن إعداد جاهز؟ شاهد <a href="/services.html">خدمة الإعداد الكامل وأسعارها</a>. الأسعار (بالدولار): Spark 49$، Starter 99$، Growth 199$ + 29$ شهرياً، Scale 349$ + 79$ شهرياً.'
