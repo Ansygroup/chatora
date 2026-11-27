@@ -277,7 +277,7 @@
 
   const state = {
     ws: null, flows: [], contacts: [], convs: [], conv: null, msgs: [],
-    view: "overview", templates: false, filter: "all", q: "", edit: null, steps: [], cedit: null,
+    view: "overview", templates: false, filter: "all", q: "", edit: null, steps: [], cedit: null, channels: [], chanView: null, gtrig: "all",
     broadcasts: [], bc: { name: "", channel: "all", tag: "", body: "" }, gq: "", gcat: "all", cLimit: 50,
     imp: { open: false, text: "", fileName: "", preview: null, status: "", statusError: false, busy: false },
     meta: { connections: null, loaded: false, loading: false, loadFailed: false, pending: "", message: "", messageError: false, pin: "", currency: "", igState: "", igPages: [], igPageId: "", sendDrafts: {} }
@@ -293,6 +293,206 @@
   const chLabel = (k) => T[CH_T[k]] || (CH[k] || { label: k }).label;
   const STEP_KINDS = ["trigger", "msg", "delay", "cond", "tag"];
   const chColor = (k) => (CH[k] || { color: "#7C5CFF" }).color;
+
+  /* ---------- channels (Phase 1: Telegram + Web chat; Meta gated) ---------- */
+  const CHS_EN = {
+    chTitle: "Channels", chSub: "Connect the places your customers message you.",
+    tgLine: "Your own Telegram bot, live in two clicks.",
+    webLine: "The chat bubble for your website. Paste one snippet, done.",
+    soon: "Coming soon", connect: "Connect", manage: "Manage", openDetail: "Open",
+    connected: "Connected", disabledSt: "Disabled", connErr: "Connection problem",
+    refresh: "Refresh", disable: "Disable", enable: "Enable", remove: "Remove", back2: "Back to channels",
+    removeWarn: "Remove this channel? Messages stop arriving and past chats stay in the inbox. This cannot be undone.",
+    tgTitle: "Connect Telegram",
+    tgHow1: "In Telegram, open @BotFather and send /newbot to create your bot.",
+    tgHow2: "Copy the token it gives you and paste it here.",
+    tgPh: "123456789:AAEx\u2026", tgGo: "Validate and connect", tgBusy: "Checking\u2026",
+    tgBad: "That token did not work. Check it and try again.",
+    tgFail: "Connection failed. Please try again.",
+    tgDone: "Telegram connected",
+    status: "Status", handle: "Handle", hookOk: "Webhook active",
+    popular: "Popular", trigAll: "All triggers", trig_comment: "Comments", trig_story: "Stories & mentions", trig_dm: "DM & keywords", trig_cart: "Cart & checkout", trig_other: "Other",
+    obChan: "Connect your first channel"
+  };
+  const CHS_AR = {
+    chTitle: "\u0627\u0644\u0642\u0646\u0648\u0627\u062a", chSub: "\u0627\u0631\u0628\u0637 \u0627\u0644\u0623\u0645\u0627\u0643\u0646 \u0627\u0644\u062a\u064a \u064a\u0631\u0627\u0633\u0644\u0643 \u0645\u0646\u0647\u0627 \u0639\u0645\u0644\u0627\u0624\u0643.",
+    tgLine: "\u0628\u0648\u062a \u062a\u064a\u0644\u064a\u062c\u0631\u0627\u0645 \u0627\u0644\u062e\u0627\u0635 \u0628\u0643 \u064a\u0639\u0645\u0644 \u0628\u062e\u0637\u0648\u062a\u064a\u0646.",
+    webLine: "\u0641\u0642\u0627\u0639\u0629 \u0627\u0644\u062f\u0631\u062f\u0634\u0629 \u0644\u0645\u0648\u0642\u0639\u0643. \u0627\u0644\u0635\u0642 \u0643\u0648\u062f\u064b\u0627 \u0648\u0627\u062d\u062f\u064b\u0627 \u0648\u0627\u0646\u062a\u0647\u0649.",
+    soon: "\u0642\u0631\u064a\u0628\u064b\u0627", connect: "\u0631\u0628\u0637", manage: "\u0625\u062f\u0627\u0631\u0629", openDetail: "\u0641\u062a\u062d",
+    connected: "\u0645\u062a\u0635\u0644", disabledSt: "\u0645\u0639\u0637\u0651\u0644", connErr: "\u0645\u0634\u0643\u0644\u0629 \u0641\u064a \u0627\u0644\u0627\u062a\u0635\u0627\u0644",
+    refresh: "\u062a\u062d\u062f\u064a\u062b", disable: "\u062a\u0639\u0637\u064a\u0644", enable: "\u062a\u0641\u0639\u064a\u0644", remove: "\u0625\u0632\u0627\u0644\u0629", back2: "\u0631\u062c\u0648\u0639 \u0644\u0644\u0642\u0646\u0648\u0627\u062a",
+    removeWarn: "\u0625\u0632\u0627\u0644\u0629 \u0647\u0630\u0647 \u0627\u0644\u0642\u0646\u0627\u0629\u061f \u0633\u062a\u062a\u0648\u0642\u0641 \u0627\u0644\u0631\u0633\u0627\u0626\u0644 \u0639\u0646 \u0627\u0644\u0648\u0635\u0648\u0644 \u0648\u064a\u0628\u0642\u0649 \u0633\u062c\u0644\u0647\u0627 \u0641\u064a \u0627\u0644\u0628\u0631\u064a\u062f. \u0644\u0627 \u064a\u0645\u0643\u0646 \u0627\u0644\u062a\u0631\u0627\u062c\u0639.",
+    tgTitle: "\u0631\u0628\u0637 \u062a\u064a\u0644\u064a\u062c\u0631\u0627\u0645",
+    tgHow1: "\u0641\u064a \u062a\u064a\u0644\u064a\u062c\u0631\u0627\u0645 \u0627\u0641\u062a\u062d @BotFather \u0648\u0623\u0631\u0633\u0644 /newbot \u0644\u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u0628\u0648\u062a.",
+    tgHow2: "\u0627\u0646\u0633\u062e \u0627\u0644\u062a\u0648\u0643\u0646 \u0648\u0627\u0644\u0635\u0642\u0647 \u0647\u0646\u0627.",
+    tgPh: "123456789:AAEx\u2026", tgGo: "\u062a\u062d\u0642\u0642 \u0648\u0627\u0631\u0628\u0637", tgBusy: "\u062c\u0627\u0631\u064d \u0627\u0644\u062a\u062d\u0642\u0642\u2026",
+    tgBad: "\u0627\u0644\u062a\u0648\u0643\u0646 \u063a\u064a\u0631 \u0635\u062d\u064a\u062d. \u062a\u0623\u0643\u062f \u0645\u0646\u0647 \u0648\u062d\u0627\u0648\u0644 \u0645\u062c\u062f\u062f\u064b\u0627.",
+    tgFail: "\u0641\u0634\u0644 \u0627\u0644\u0631\u0628\u0637. \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649.",
+    tgDone: "\u062a\u0645 \u0631\u0628\u0637 \u062a\u064a\u0644\u064a\u062c\u0631\u0627\u0645",
+    status: "\u0627\u0644\u062d\u0627\u0644\u0629", handle: "\u0627\u0644\u0645\u0639\u0631\u0651\u0641", hookOk: "\u0627\u0644\u0648\u064a\u0628 \u0647\u0648\u0643 \u064a\u0639\u0645\u0644",
+    popular: "\u0634\u0627\u0626\u0639", trigAll: "\u0643\u0644 \u0627\u0644\u0645\u0634\u063a\u0644\u0627\u062a", trig_comment: "\u0627\u0644\u062a\u0639\u0644\u064a\u0642\u0627\u062a", trig_story: "\u0627\u0644\u0642\u0635\u0635 \u0648\u0627\u0644\u0625\u0634\u0627\u0631\u0627\u062a", trig_dm: "\u0627\u0644\u0631\u0633\u0627\u0626\u0644 \u0648\u0627\u0644\u0643\u0644\u0645\u0627\u062a", trig_cart: "\u0627\u0644\u0633\u0644\u0629 \u0648\u0627\u0644\u062f\u0641\u0639", trig_other: "\u0623\u062e\u0631\u0649",
+    obChan: "\u0627\u0631\u0628\u0637 \u0623\u0648\u0644 \u0642\u0646\u0627\u0629"
+  };
+  const CHS = Object.assign({}, CHS_EN, ({ ar: CHS_AR })[LANG] || {});
+  const tgConn = () => (state.channels || []).filter((c) => c.provider === "telegram")[0] || null;
+  function chanStatusChip(c) {
+    if (!c) return "";
+    const st = c.status === "connected" ? ["is-on", CHS.connected] : c.status === "disconnected" ? ["is-off", CHS.disabledSt] : ["is-err", CHS.connErr];
+    return `<span class="chan-status ${st[0]}">${esc(st[1])}</span>`;
+  }
+  function renderChannelsBlock() {
+    if (state.chanView) return renderChannelDetail();
+    const tg = tgConn();
+    const tgCard = `<section class="chan-card" aria-label="Telegram"><div class="chan-head"><span class="chan-name">Telegram</span><span class="chan-mark is-tg" aria-hidden="true">\u2708</span></div>` +
+      `<p class="chan-line">${esc(CHS.tgLine)}</p><div class="chan-foot">${chanStatusChip(tg)}` +
+      (tg ? `<button type="button" class="btn btn-ghost btn-sm" id="ch-open">${esc(CHS.manage)}</button>`
+          : `<button type="button" class="btn btn-primary btn-sm" id="ch-tg-connect">${esc(CHS.connect)}</button>`) + `</div></section>`;
+    const webCard = `<section class="chan-card" aria-label="${esc(chLabel("web"))}"><div class="chan-head"><span class="chan-name">${esc(chLabel("web"))}</span><span class="chan-mark is-web" aria-hidden="true">\u25c9</span></div>` +
+      `<p class="chan-line">${esc(CHS.webLine)}</p><div class="chan-foot"><button type="button" class="btn btn-ghost btn-sm" id="ch-web-manage">${esc(CHS.manage)}</button></div></section>`;
+    const gated = [["whatsapp", "is-wa", "W"], ["instagram", "is-ig", "\u25ce"], ["messenger", "is-ms", "M"]].map(([k, cls, mark]) =>
+      `<section class="chan-card" aria-label="${esc(chLabel(k))}"><div class="chan-head"><span class="chan-name">${esc(chLabel(k))}</span><span class="chan-mark ${cls}" aria-hidden="true">${mark}</span></div>` +
+      `<div class="chan-foot"><span class="chan-badge">${esc(CHS.soon)}</span></div></section>`).join("");
+    return `<div class="dash-card"><h2>${esc(CHS.chTitle)}</h2><p class="dash-note">${esc(CHS.chSub)}</p>` +
+      `<div class="chan-grid">${tgCard}${webCard}${gated}</div></div>`;
+  }
+  function renderChannelDetail() {
+    const c = tgConn();
+    if (!c) { state.chanView = null; return renderChannelsBlock(); }
+    return `<div class="dash-card"><h2>Telegram</h2>` +
+      `<div class="chan-kv"><span>${esc(CHS.status)}</span><b>${chanStatusChip(c)}</b>` +
+      `<span>${esc(CHS.handle)}</span><b>${esc(c.display_name || "\u2014")}</b>` +
+      `<span>Webhook</span><b>${c.status === "connected" ? esc(CHS.hookOk) : "\u2014"}</b></div>` +
+      `<div class="dash-inline" style="flex-wrap:wrap">` +
+      `<button type="button" class="btn btn-ghost btn-sm" id="ch-refresh">${esc(CHS.refresh)}</button>` +
+      `<button type="button" class="btn btn-ghost btn-sm" id="ch-toggle">${esc(c.status === "disconnected" ? CHS.enable : CHS.disable)}</button>` +
+      `<button type="button" class="btn btn-ghost btn-sm btn-danger" id="ch-remove">${esc(CHS.remove)}</button>` +
+      `<button type="button" class="link-btn" id="ch-back">${esc(CHS.back2)}</button></div>` +
+      `<p class="dash-note" id="ch-msg" role="status"></p></div>`;
+  }
+  async function loadChannels() {
+    try { state.channels = (await A.rest("/rest/v1/channel_connections?select=id,provider,display_name,status,created_at&order=created_at.asc")) || []; }
+    catch (e) { state.channels = []; }
+  }
+  async function tgApi(path, body) {
+    const s = await A.ensure();
+    if (!s || !s.access_token) throw new Error("no_session");
+    const r = await fetch(path, { method: "POST", headers: { "content-type": "application/json", authorization: "Bearer " + s.access_token }, body: JSON.stringify(body || {}) });
+    const j = await r.json().catch(() => null);
+    if (!r.ok || !j) throw Object.assign(new Error((j && j.error) || "failed"), { code: (j && j.error) || "failed" });
+    return j;
+  }
+  function closeTgModal() { const m = document.getElementById("tgmodal"); if (m) m.remove(); }
+  function openTgModal() {
+    closeTgModal();
+    const wrap = document.createElement("div");
+    wrap.innerHTML = `<div class="tmodal" id="tgmodal" role="dialog" aria-modal="true" aria-label="${esc(CHS.tgTitle)}">` +
+      `<div class="tmodal-card"><header style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)"><b>${esc(CHS.tgTitle)}</b>` +
+      `<button type="button" class="icon-btn" id="tgmodal-x" aria-label="${esc(CHS.tgCancel || "Close")}">\u2715</button></header>` +
+      `<div class="tmodal-body" style="padding:16px"><ol class="tg-steps"><li>${esc(CHS.tgHow1)}</li><li>${esc(CHS.tgHow2)}</li></ol>` +
+      `<form id="tg-form"><input id="tg-token" class="dstep-in" style="width:100%" dir="ltr" autocomplete="off" spellcheck="false" placeholder="${esc(CHS.tgPh)}" aria-label="Bot token">` +
+      `<div class="dash-inline" style="margin-top:12px"><button type="submit" class="btn btn-primary btn-sm" id="tg-go">${esc(CHS.tgGo)}</button>` +
+      `<span class="dash-note" id="tg-msg" role="status"></span></div></form></div></div></div>`;
+    document.body.appendChild(wrap.firstChild);
+    const m = document.getElementById("tgmodal");
+    m.addEventListener("click", (e) => { if (e.target.id === "tgmodal") closeTgModal(); });
+    document.getElementById("tgmodal-x").addEventListener("click", closeTgModal);
+    const inp = document.getElementById("tg-token");
+    if (inp) inp.focus();
+    document.getElementById("tg-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById("tg-msg"), go = document.getElementById("tg-go");
+      const token = inp.value.trim();
+      go.disabled = true; msg.textContent = CHS.tgBusy; msg.className = "dash-note";
+      try {
+        const r = await tgApi("/api/channels/telegram/connect", { token: token, workspace: state.ws.id });
+        closeTgModal();
+        await loadChannels();
+        state.chanView = r.id;
+        paint();
+        const ok = document.createElement("div");
+        ok.className = "toast";
+        ok.textContent = CHS.tgDone + (r.handle ? " \u00b7 " + r.handle : "");
+        document.body.appendChild(ok);
+        setTimeout(() => ok.remove(), 2600);
+      } catch (err) {
+        msg.textContent = (err && (err.code === "invalid token" || err.code === "bad token")) ? CHS.tgBad : CHS.tgFail;
+        msg.className = "dash-note is-err";
+        go.disabled = false;
+      }
+    });
+  }
+  function chanWire(p) {
+    const open = $("#ch-tg-connect", p);
+    if (open) open.addEventListener("click", openTgModal);
+    const od = $("#ch-open", p);
+    if (od) od.addEventListener("click", () => { const c = tgConn(); state.chanView = c ? c.id : null; paint(); });
+    const wm = $("#ch-web-manage", p);
+    if (wm) wm.addEventListener("click", () => { const el = document.getElementById("wk-card"); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); });
+    const back = $("#ch-back", p);
+    if (back) back.addEventListener("click", () => { state.chanView = null; paint(); });
+    const msg = () => $("#ch-msg", p);
+    const rf = $("#ch-refresh", p);
+    if (rf) rf.addEventListener("click", async () => {
+      const c = tgConn(); if (!c) return;
+      rf.disabled = true; const m = msg(); if (m) m.textContent = CHS.tgBusy;
+      try { await tgApi("/api/channels/telegram/action", { id: c.id, action: "refresh" }); await loadChannels(); paint(); }
+      catch (e) { if (m) { m.textContent = CHS.tgFail; m.className = "dash-note is-err"; } rf.disabled = false; }
+    });
+    const tg = $("#ch-toggle", p);
+    if (tg) tg.addEventListener("click", async () => {
+      const c = tgConn(); if (!c) return;
+      const next = c.status === "disconnected" ? "connected" : "disconnected";
+      tg.disabled = true;
+      try {
+        await A.rest("/rest/v1/channel_connections?id=eq." + encodeURIComponent(c.id), { method: "PATCH", body: JSON.stringify({ status: next, updated_at: new Date().toISOString() }) });
+        await loadChannels(); paint();
+      } catch (e) { const m = msg(); if (m) { m.textContent = CHS.tgFail; m.className = "dash-note is-err"; } tg.disabled = false; }
+    });
+    const rm = $("#ch-remove", p);
+    if (rm) rm.addEventListener("click", async () => {
+      const c = tgConn(); if (!c) return;
+      if (!window.confirm(CHS.removeWarn)) return;
+      rm.disabled = true;
+      try {
+        await tgApi("/api/channels/telegram/action", { id: c.id, action: "remove" });
+        state.chanView = null;
+        await loadChannels(); paint();
+      } catch (e) { const m = msg(); if (m) { m.textContent = CHS.tgFail; m.className = "dash-note is-err"; } rm.disabled = false; }
+    });
+  }
+
+  /* ---------- template trigger kinds + popularity ---------- */
+  const TRIG_KINDS = ["all", "comment", "story", "dm", "cart", "other"];
+  const POPULAR_TPLS = { "comment-to-dm-starter": 1, "reel-virality-guard": 1, "story-mention-thank-you": 1, "dm-price-answer": 1, "follower-only-drop": 1, "abandoned-dm-recovery": 1 };
+  function tplTrig(id) {
+    const f = (window.CHATORA_TEMPLATE_FLOWS || {})[id];
+    const t = f && f.en && f.en[0] ? String(f.en[0].text || "") : "";
+    if (/comment/i.test(t)) return "comment";
+    if (/story|mention/i.test(t)) return "story";
+    if (/cart|checkout|abandon/i.test(t)) return "cart";
+    if (/\bDM\b|direct message|keyword/i.test(t)) return "dm";
+    return "other";
+  }
+  function galleryCards(rows) {
+    return rows.map((x) => {
+      const loc = templateCopy(x);
+      return `<article class="gtpl"><header><span class="pill" style="--c:${chColor(x.ch)}">${esc(chLabel(x.ch))}</span>` +
+        (POPULAR_TPLS[x.id] ? `<span class="gtpl-pop">${esc(CHS.popular)}</span>` : "") +
+        `<span class="gtpl-steps">${num(x.steps)} ${esc(T.gSteps)}</span></header>` +
+        `<h3>${esc(loc.t)}</h3><p>${esc(loc.d)}</p>` +
+        `<button type="button" class="btn btn-ghost btn-sm" data-guse="${esc(x.id)}">${esc(T.gUse)}</button></article>`;
+    }).join("");
+  }
+  function galleryFiltered() {
+    const all = window.CHATORA_TEMPLATES || [];
+    const q = state.gq.toLowerCase();
+    return all.filter((x) => {
+      const loc = templateCopy(x);
+      return (state.gcat === "all" || x.cat === state.gcat) &&
+        (state.gtrig === "all" || tplTrig(x.id) === state.gtrig) &&
+        (!q || (loc.t + " " + loc.d + " " + x.id).toLowerCase().indexOf(q) !== -1);
+    }).sort((a, b) => ((POPULAR_TPLS[b.id] || 0) - (POPULAR_TPLS[a.id] || 0)));
+  }
 
   /* ---------- bootstrap ---------- */
   async function ensureWorkspace(user) {
@@ -328,6 +528,8 @@
     state.contacts = res[1] || [];
     state.convs = res[2] || [];
     state.broadcasts = res[3] || [];
+    await loadChannels();
+    wkLoad();
   }
 
   /* ---------- views ---------- */
@@ -375,7 +577,8 @@
     const steps = [
       { done: !/·\s*workspace$/.test(state.ws.name), txt: T.ob1, view: "settings" },
       { done: state.flows.some((f) => (f.nodes || []).length >= 2), txt: T.ob2, view: "flows" },
-      { done: state.contacts.length > 0, txt: T.ob3, view: "contacts" }
+      { done: state.contacts.length > 0, txt: T.ob3, view: "contacts" },
+      { done: !!tgConn() || WK.keys.length > 0, txt: CHS.obChan, view: "settings" }
     ];
     const done = steps.filter((s) => s.done).length;
     if (done === steps.length) {
@@ -536,26 +739,17 @@
   const catLabel = (c) => (c === "all" ? T.gAll : c === "all channels" ? T.bcAll8 : T["gCat" + c[0].toUpperCase() + c.slice(1)] || c);
 
   function renderGallery() {
-    const all = window.CHATORA_TEMPLATES || [];
-    const q = state.gq.toLowerCase();
-    const rows = all.filter((x) => {
-      const loc = templateCopy(x);
-      return (state.gcat === "all" || x.cat === state.gcat) &&
-        (!q || (loc.t + " " + loc.d + " " + x.id).toLowerCase().indexOf(q) !== -1);
-    });
+    const rows = galleryFiltered();
     const chips = CATS.map((c) =>
       `<button type="button" class="dchip${state.gcat === c ? " is-on" : ""}" data-gcat="${c}">${esc(catLabel(c))}</button>`).join("");
-    const cards = rows.map((x) => {
-      const loc = templateCopy(x);
-      return `<article class="gtpl"><header><span class="pill" style="--c:${chColor(x.ch)}">${esc(chLabel(x.ch))}</span>` +
-        `<span class="gtpl-steps">${num(x.steps)} ${esc(T.gSteps)}</span></header>` +
-        `<h3>${esc(loc.t)}</h3><p>${esc(loc.d)}</p>` +
-        `<button type="button" class="btn btn-ghost btn-sm" data-guse="${esc(x.id)}">${esc(T.gUse)}</button></article>`;
-    }).join("");
+    const tchips = TRIG_KINDS.map((k) =>
+      `<button type="button" class="dchip${state.gtrig === k ? " is-on" : ""}" data-gtrig="${k}">${esc(k === "all" ? CHS.trigAll : CHS["trig_" + k])}</button>`).join("");
+    const cards = galleryCards(rows);
     return `<div class="dash-head"><button type="button" class="btn btn-ghost btn-sm" id="g-back">← ${esc(T.back)}</button>` +
       `<input id="g-search" class="dash-search" type="search" aria-label="${esc(T.gSearch)}" placeholder="${esc(T.gSearch)}" value="${esc(state.gq)}"><button type="button" class="btn btn-primary btn-sm" id="g-blank">${esc(BLANK.b)}</button></div>` +
       `<div class="dash-card"><h2>${esc(T.gTitle)}</h2><p class="dash-note">${esc(T.gNote)}</p>` +
       `<div class="dchips">${chips}</div>` +
+      `<div class="dchips" style="margin-top:6px">${tchips}</div>` +
       `<div class="gtpl-grid">${cards || `<p class="dash-empty">${esc(T.gNone)}</p>`}</div>` +
       `<p class="dash-note">${esc(T.gStarter)}</p></div>`;
   }
@@ -1102,7 +1296,7 @@
   }
 
   function renderSettings() {
-    return renderMetaSettings() +
+    return renderChannelsBlock() + renderMetaSettings() +
       `<div class="dash-card"><h2>${esc(T.wsName)}</h2>` +
       `<form id="ws-form" class="dash-inline"><input id="ws-input" aria-label="${esc(T.wsName)}" value="${esc(state.ws.name)}" maxlength="60">` +
       `<button class="btn btn-primary btn-sm" type="submit">${esc(T.save)}</button></form>` +
@@ -1169,7 +1363,7 @@
       `<button type="button" class="btn btn-primary btn-sm" data-wk-save="${esc(k.id)}">${esc(W.s)}</button>` +
       `<button type="button" class="btn btn-ghost btn-sm" data-wk-copy="${esc(k.id)}">${esc(W.cp)}</button>` +
       `<button type="button" class="btn btn-ghost btn-sm btn-danger" data-wk-del="${esc(k.id)}">${esc(W.d)}</button></div></div>`).join("");
-    return `<div class="dash-card"><h2>${esc(W.t)}</h2><p class="dash-note">${esc(W.n)}</p>${rows}` +
+    return `<div class="dash-card" id="wk-card"><h2>${esc(W.t)}</h2><p class="dash-note">${esc(W.n)}</p>${rows}` +
       `<button type="button" class="btn btn-ghost btn-sm" id="wk-create"${WK.keys.length >= 5 ? " disabled" : ""}>${esc(W.c)}</button> <span class="dash-note">${esc(W.lim)}</span>` +
       `<p class="dash-note is-err" id="wk-msg" role="status">${esc(WK.err)}</p></div>`;
   }
@@ -1504,22 +1698,10 @@
       if (gs) gs.addEventListener("input", () => {
         state.gq = gs.value;
         const grid = $(".gtpl-grid", p);
-        const all = window.CHATORA_TEMPLATES || [];
-        const q = state.gq.toLowerCase();
-        const rows = all.filter((x) => {
-          const loc = templateCopy(x);
-          return (state.gcat === "all" || x.cat === state.gcat) &&
-            (!q || (loc.t + " " + loc.d + " " + x.id).toLowerCase().indexOf(q) !== -1);
-        });
-        grid.innerHTML = rows.map((x) => {
-          const loc = templateCopy(x);
-          return `<article class="gtpl"><header><span class="pill" style="--c:${chColor(x.ch)}">${esc(chLabel(x.ch))}</span>` +
-            `<span class="gtpl-steps">${num(x.steps)} ${esc(T.gSteps)}</span></header>` +
-            `<h3>${esc(loc.t)}</h3><p>${esc(loc.d)}</p>` +
-            `<button type="button" class="btn btn-ghost btn-sm" data-guse="${esc(x.id)}">${esc(T.gUse)}</button></article>`;
-        }).join("") || `<p class="dash-empty">${esc(T.gNone)}</p>`;
+        grid.innerHTML = galleryCards(galleryFiltered()) || `<p class="dash-empty">${esc(T.gNone)}</p>`;
         $$("[data-guse]", grid).forEach((b) => b.addEventListener("click", () => useTemplate(b.getAttribute("data-guse")).catch((e) => alert(e.message))));
       });
+      $$("[data-gtrig]", p).forEach((b) => b.addEventListener("click", () => { state.gtrig = b.getAttribute("data-gtrig"); paint(); }));
       $$("[data-dup]", p).forEach((b) => b.addEventListener("click", () => duplicateFlow(b.getAttribute("data-dup")).catch((e) => alert(e.message))));
       $$("[data-edit]", p).forEach((b) => b.addEventListener("click", () => openEditor(b.getAttribute("data-edit"))));
       bindEditor(p);
@@ -1759,6 +1941,7 @@
         } catch (err) { out.textContent = err.message; out.className = "dash-note is-err"; }
       });
       wkWire(p);
+      chanWire(p);
       const ex = $("#export", p);
       if (ex) ex.addEventListener("click", exportData);
       const s2 = $("#signout2", p);
