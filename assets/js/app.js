@@ -312,7 +312,8 @@
     tgDone: "Telegram connected",
     status: "Status", handle: "Handle", hookOk: "Webhook active",
     popular: "Popular", trigAll: "All triggers", trig_comment: "Comments", trig_story: "Stories & mentions", trig_dm: "DM & keywords", trig_cart: "Cart & checkout", trig_other: "Other",
-    obChan: "Connect your first channel"
+    obChan: "Connect your first channel",
+    bpTitle: "Basic pack", bpNote: "One click adds a welcome message, an FAQ starter and a main menu as editable drafts. Review them, then set each to Live.", bpBtn: "Add the basic pack", bpDone: "Basic pack added as drafts. Open Flows to review and publish.", bpHave: "Basic pack already added.",
   };
   const CHS_AR = {
     chTitle: "\u0627\u0644\u0642\u0646\u0648\u0627\u062a", chSub: "\u0627\u0631\u0628\u0637 \u0627\u0644\u0623\u0645\u0627\u0643\u0646 \u0627\u0644\u062a\u064a \u064a\u0631\u0627\u0633\u0644\u0643 \u0645\u0646\u0647\u0627 \u0639\u0645\u0644\u0627\u0624\u0643.",
@@ -331,7 +332,8 @@
     tgDone: "\u062a\u0645 \u0631\u0628\u0637 \u062a\u064a\u0644\u064a\u062c\u0631\u0627\u0645",
     status: "\u0627\u0644\u062d\u0627\u0644\u0629", handle: "\u0627\u0644\u0645\u0639\u0631\u0651\u0641", hookOk: "\u0627\u0644\u0648\u064a\u0628 \u0647\u0648\u0643 \u064a\u0639\u0645\u0644",
     popular: "\u0634\u0627\u0626\u0639", trigAll: "\u0643\u0644 \u0627\u0644\u0645\u0634\u063a\u0644\u0627\u062a", trig_comment: "\u0627\u0644\u062a\u0639\u0644\u064a\u0642\u0627\u062a", trig_story: "\u0627\u0644\u0642\u0635\u0635 \u0648\u0627\u0644\u0625\u0634\u0627\u0631\u0627\u062a", trig_dm: "\u0627\u0644\u0631\u0633\u0627\u0626\u0644 \u0648\u0627\u0644\u0643\u0644\u0645\u0627\u062a", trig_cart: "\u0627\u0644\u0633\u0644\u0629 \u0648\u0627\u0644\u062f\u0641\u0639", trig_other: "\u0623\u062e\u0631\u0649",
-    obChan: "\u0627\u0631\u0628\u0637 \u0623\u0648\u0644 \u0642\u0646\u0627\u0629"
+    obChan: "\u0627\u0631\u0628\u0637 \u0623\u0648\u0644 \u0642\u0646\u0627\u0629",
+    bpTitle: "الباقة الأساسية", bpNote: "بضغطة واحدة تُضاف رسالة ترحيب وأسئلة شائعة وقائمة رئيسية كمسودات قابلة للتعديل. راجعها ثم فعّل كل واحدة.", bpBtn: "أضف الباقة الأساسية", bpDone: "أُضيفت الباقة الأساسية كمسودات. افتح السيناريوهات للمراجعة والنشر.", bpHave: "الباقة الأساسية مضافة بالفعل.",
   };
   const CHS = Object.assign({}, CHS_EN, ({ ar: CHS_AR })[LANG] || {});
   const TK_EN = {
@@ -568,7 +570,7 @@
 
   function renderOverview() {
     if (!state.contacts.length && !state.flows.length && !state.convs.length) {
-      return onboarding() + `<div class="dash-card dash-empty-card"><h2>${esc(T.emptyWs)}</h2>` +
+      return onboarding() + bpCard() + `<div class="dash-card dash-empty-card"><h2>${esc(T.emptyWs)}</h2>` +
         `<button type="button" class="btn btn-primary btn-sm" data-new-flow>+ ${esc(T.newFlow)}</button></div>`;
     }
     const live = state.flows.filter((f) => f.status === "live").length;
@@ -580,7 +582,7 @@
     const byChan = Object.keys(chans).map((k) => ({ k: chLabel(k), v: chans[k], c: k })).sort((a, b) => b.v - a.v);
 
     const of = (n) => T.of.replace("{n}", n);
-    return onboarding() + `<div class="kpis">${kpi(T.kContacts, num(state.contacts.length), of("1,000"))}${kpi(T.kFlows, num(live), of(num(state.flows.length)))}` +
+    return onboarding() + bpCard() + `<div class="kpis">${kpi(T.kContacts, num(state.contacts.length), of("1,000"))}${kpi(T.kFlows, num(live), of(num(state.flows.length)))}` +
       `${kpi(T.kOpen, num(open), "")}${kpi(T.kRuns, num(runs), "")}</div>` +
       `<div class="dash-grid"><div class="dash-card"><h2>${esc(T.runsBy)}</h2>${bars(byFlow)}</div>` +
       `<div class="dash-card"><h2>${esc(T.channels)}</h2>${bars(byChan, (i) => chColor(i.c))}</div></div>` +
@@ -589,6 +591,12 @@
 
   function onboardHidden() {
     try { return localStorage.getItem("chatora.onboard.hide") === "1"; } catch (e) { return false; }
+  }
+
+  function bpCard() {
+    if (basicPackHave()) return "";
+    return `<div class="dash-card"><h2>${esc(CHS.bpTitle)}</h2><p class="muted">${esc(CHS.bpNote)}</p>` +
+      `<button type="button" class="btn btn-primary btn-sm" data-basic-pack>${esc(CHS.bpBtn)}</button></div>`;
   }
 
   function onboarding() {
@@ -1757,6 +1765,8 @@
       try { localStorage.setItem("chatora.onboard.hide", "1"); } catch (e) {}
       paint();
     });
+    const bp = $("[data-basic-pack]", p);
+    if (bp) bp.addEventListener("click", () => { bp.disabled = true; addBasicPack().catch((e) => { bp.disabled = false; alert(e.message || e); }); });
     const nf = $("[data-new-flow]", p);
     if (nf) nf.addEventListener("click", () => { state.view = "flows"; state.templates = true; paint(); });
 
@@ -2287,6 +2297,37 @@
     fr: { b: "Partir de zéro", n: "Nouveau flux", t: "Décrivez ce qui déclenche ce flux (ex. un client écrit \"prix\")", m: "Écrivez ici la première réponse" },
     de: { b: "Leer starten", n: "Neuer Ablauf", t: "Beschreiben Sie den Auslöser (z. B. Kunde schreibt \"Preis\")", m: "Erste Antwort hier schreiben" },
     pt: { b: "Começar em branco", n: "Novo fluxo", t: "Descreva o que inicia este fluxo (ex.: cliente envia \"preço\")", m: "Escreva aqui a primeira resposta" } })[LANG] || {};
+  const BASIC_PACK = {
+    en: [
+      { n: "Welcome message", t: "/start", m: ["Hi {name}! Thanks for reaching out. How can we help today?", "Type MENU any time to see what I can do."] },
+      { n: "FAQ starter", t: "faq", m: ["Here are quick answers:\n1. Prices: type PRICE\n2. Hours: type HOURS\n3. Talk to a person: type HUMAN", "Edit these answers in this flow to match your business."] },
+      { n: "Main menu", t: "menu", m: ["Main menu:\n1. Prices\n2. Opening hours\n3. Our location\n4. Talk to a person\nReply with a number."] }
+    ],
+    ar: [
+      { n: "رسالة الترحيب", t: "/start", m: ["أهلاً {name}! شكراً لتواصلك. كيف نقدر نساعدك اليوم؟", "اكتب «القائمة» في أي وقت لعرض الخيارات."] },
+      { n: "الأسئلة الشائعة", t: "faq", m: ["إجابات سريعة:\n١. الأسعار: اكتب السعر\n٢. المواعيد: اكتب المواعيد\n٣. التحدث مع موظف: اكتب موظف", "عدّل هذه الإجابات في هذا السيناريو لتناسب نشاطك."] },
+      { n: "القائمة الرئيسية", t: "القائمة", m: ["القائمة الرئيسية:\n١. الأسعار\n٢. مواعيد العمل\n٣. موقعنا\n٤. التحدث مع موظف\nرد برقم."] }
+    ]
+  };
+  function basicPackHave() {
+    const set = (BASIC_PACK[LANG] || BASIC_PACK.en)[0].n;
+    return state.flows.some((f) => f.name === set);
+  }
+  async function addBasicPack() {
+    if (basicPackHave()) { alert(CHS.bpHave); return; }
+    const pack = BASIC_PACK[LANG] || BASIC_PACK.en;
+    for (const x of pack) {
+      const nodes = [{ t: "trigger", text: x.t }].concat(x.m.map((m) => ({ t: "msg", text: m })));
+      const row = await A.rest("/rest/v1/flows", { method: "POST", body: JSON.stringify({ workspace_id: state.ws.id, name: x.n, channel: "instagram", status: "draft", runs: 0, nodes: nodes }) });
+      state.flows.unshift(Array.isArray(row) ? row[0] : row);
+    }
+    state.view = "flows"; state.templates = false;
+    paint();
+    const ok = document.createElement("div");
+    ok.className = "toast"; ok.textContent = CHS.bpDone;
+    document.body.appendChild(ok); setTimeout(() => ok.remove(), 5000);
+  }
+
   async function useBlank() {
     const row = await A.rest("/rest/v1/flows", {
       method: "POST",
