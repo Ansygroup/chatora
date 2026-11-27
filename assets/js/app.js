@@ -291,7 +291,8 @@
   };
   const CH_T = { instagram: "channelInstagram", whatsapp: "channelWhatsapp", tiktok: "channelTiktok", messenger: "channelMessenger", telegram: "channelTelegram", sms: "channelSms", email: "channelEmail", web: "channelWeb" };
   const chLabel = (k) => T[CH_T[k]] || (CH[k] || { label: k }).label;
-  const STEP_KINDS = ["trigger", "msg", "delay", "cond", "tag"];
+  const STEP_KINDS = ["trigger", "msg", "delay", "cond", "tag", "buy"];
+  const BUY_RE = /^https:\/\/(buy|donate)\.stripe\.com\/[A-Za-z0-9_\-\/?=&%.]{4,300}$/;
   const chColor = (k) => (CH[k] || { color: "#7C5CFF" }).color;
 
   /* ---------- channels (Phase 1: Telegram + Web chat; Meta gated) ---------- */
@@ -813,10 +814,12 @@
 
   function renderEditor() {
     const f = state.edit;
+    if (!T.sBuy) { T.sBuy = AR ? "رابط شراء" : "Buy link"; T.sBuyLabelPh = AR ? "نص الزر (مثلاً: اشتري الآن)" : "Button text (e.g. Buy now)"; T.sBuyUrlPh = AR ? "رابط دفع Stripe: https://buy.stripe.com/..." : "Stripe payment link: https://buy.stripe.com/..."; T.sBuyBad = AR ? "رابط الشراء لازم يبدأ بـ https://buy.stripe.com/ أو https://donate.stripe.com/" : "Buy link must start with https://buy.stripe.com/ or https://donate.stripe.com/"; }
     const rows = state.steps.map((s, i) => {
       const first = i === 0;
       const kind = STEP_KINDS.indexOf(s.t) !== -1 ? s.t : "msg";
       const body = s.t === "msg" ? `<textarea class="dstep-in" rows="2" data-i="${i}" data-k="text" placeholder="${esc(T.sMsgPh)}">${esc(s.text || "")}</textarea>`
+        : s.t === "buy" ? `<input class="dstep-in" data-i="${i}" data-k="text" maxlength="60" value="${esc(s.text || "")}" aria-label="${esc(T.sBuyLabelPh)}" placeholder="${esc(T.sBuyLabelPh)}"><input class="dstep-in" data-i="${i}" data-k="url" type="url" inputmode="url" value="${esc(s.url || "")}" aria-label="${esc(T.sBuyUrlPh)}" placeholder="${esc(T.sBuyUrlPh)}">`
         : s.t === "delay" ? `<input class="dstep-in" data-i="${i}" data-k="v" type="number" min="1" max="999" value="${esc(s.v || 5)}" aria-label="${esc(T.sDelayPh)}" placeholder="${esc(T.sDelayPh)}"><select class="dstep-in dstep-unit" data-i="${i}" data-k="u" aria-label="${esc(TK.unit)}">` + [["m", TK.uMin], ["h", TK.uHour], ["d", TK.uDay]].map((u) => `<option value="${u[0]}"${(s.u || "m") === u[0] ? " selected" : ""}>${esc(u[1])}</option>`).join("") + `</select>`
           : `<input class="dstep-in" data-i="${i}" data-k="text" value="${esc(s.text || "")}" aria-label="${esc(s.t === "tag" ? T.sTagPh : T.sCondPh)}" placeholder="${esc(s.t === "tag" ? T.sTagPh : T.sCondPh)}">`;
       return `<li class="dstep is-${kind}"><span class="dstep-n">${i + 1}</span>` +
@@ -829,7 +832,7 @@
         `</div></li>`;
     }).join("");
 
-    const adds = ["msg", "delay", "cond", "tag"].map((k) =>
+    const adds = ["msg", "delay", "cond", "tag", "buy"].map((k) =>
       `<button type="button" class="tpl-btn" data-add="${k}">+ ${esc(T["s" + k[0].toUpperCase() + k.slice(1)])}</button>`).join("");
 
     return `<div class="dash-head"><button type="button" class="btn btn-ghost btn-sm" id="ed-back">← ${esc(T.back)}</button>` +
@@ -2461,14 +2464,15 @@
     }));
     $$("[data-add]", p).forEach((b) => b.addEventListener("click", () => {
       const kind = b.getAttribute("data-add");
-      state.steps.push(kind === "delay" ? { t: "delay", v: 10 } : { t: kind, text: "" });
+      state.steps.push(kind === "delay" ? { t: "delay", v: 10 } : kind === "buy" ? { t: "buy", text: "", url: "" } : { t: kind, text: "" });
       paint();
     }));
     $("#ed-save", p).addEventListener("click", async () => {
       const name = tidy($("#ed-name").value, 70).trim() || state.edit.name;
       const stEl = $("#ed-status");
       const fstatus = stEl && ["draft", "live", "paused"].indexOf(stEl.value) !== -1 ? stEl.value : state.edit.status;
-      state.steps.forEach((s) => { if (typeof s.text === "string") s.text = tidy(s.text, 1000); });
+      state.steps.forEach((s) => { if (typeof s.text === "string") s.text = tidy(s.text, 1000); if (s.t === "buy") s.url = String(s.url || "").trim(); });
+      if (state.steps.some((s) => s.t === "buy" && !BUY_RE.test(s.url))) { const okEl = $("#ed-ok"); if (okEl) { okEl.textContent = T.sBuyBad; } window.alert(T.sBuyBad); return; }
       await A.rest("/rest/v1/flows?id=eq." + state.edit.id, {
         method: "PATCH",
         body: JSON.stringify({ name, status: fstatus, nodes: state.steps, updated_at: new Date().toISOString() })
@@ -2539,6 +2543,8 @@
         const verdict = contactMatchesCond(s.text, sampleContact());
         const mark = verdict == null ? "" : verdict ? " ✓" : " ✗";
         body.insertAdjacentHTML("beforeend", `<div class="tmodal-sys">❓ ${esc(s.text || "")}${mark}</div>`);
+      } else if (s.t === "buy") {
+        body.insertAdjacentHTML("beforeend", `<div class="tmodal-sys">💳 ${esc(s.text || "")} — ${esc(s.url || "")}</div>`);
       } else if (s.t === "tag") {
         const verdict = contactMatchesCond("tag:" + String(s.text || "").trim(), sampleContact());
         const mark = verdict == null ? "" : verdict ? " ✓" : " ✗";
