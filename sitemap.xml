@@ -1950,4 +1950,7 @@
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
+  <url>
+    <loc>https://chatora.ansygroup.com/sector-templates.html</loc>
+  </url>
 </urlset>
