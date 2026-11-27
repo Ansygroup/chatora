@@ -133,7 +133,7 @@ async function widget(request, env, url) {
     const c = r.choices && r.choices[0] && r.choices[0].message && r.choices[0].message.content;
     return typeof c === 'string' ? c : '';
   };
-  const models = [['@cf/google/gemma-3-12b-it', 300], ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', 300], ['@cf/zai-org/glm-4.7-flash', 1500]];
+  const models = [['@cf/meta/llama-3.1-8b-instruct-fast', 300], ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', 300], ['@cf/zai-org/glm-4.7-flash', 1500]];
   let reply = '';
   for (const [model, max] of models) {
     try {
@@ -518,7 +518,7 @@ export default {
       return typeof c === 'string' ? c : '';
     };
     const models = [
-      ['@cf/google/gemma-3-12b-it', 300],
+      ['@cf/meta/llama-3.1-8b-instruct-fast', 300],
       ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', 300],
       ['@cf/zai-org/glm-4.7-flash', 1500],
     ];
@@ -535,3 +535,4 @@ export default {
     return Response.json({ reply: fallback });
   },
 };
+
