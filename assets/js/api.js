@@ -136,6 +136,24 @@
     };
   }
 
+  function postWorker(row) {
+    var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+    var timer = ctrl && setTimeout(function () { ctrl.abort(); }, TIMEOUT);
+    return fetch("/api/lead", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(row),
+      signal: ctrl ? ctrl.signal : undefined,
+      keepalive: true
+    })
+      .then(function (res) {
+        if (timer) clearTimeout(timer);
+        if (!res.ok) { var error = new Error("HTTP " + res.status); error.status = res.status; throw error; }
+        return true;
+      })
+      .catch(function (err) { if (timer) clearTimeout(timer); throw err; });
+  }
+
   /* ---------- public: save a lead ---------- */
   function submitLead(data) {
     data = data || {};
@@ -163,7 +181,8 @@
         : Promise.reject(queueError());
     }
 
-    return post("leads", row)
+    return postWorker(row)
+      .catch(function () { return post("leads", row); })
       .then(function () { return { queued: false }; })
       .catch(function (err) {
         /* Permanent 4xx responses need correction, not an endless offline retry. */
