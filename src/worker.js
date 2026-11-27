@@ -120,6 +120,9 @@ async function widget(request, env, url) {
     try { await sbRpc('widget_log', { p_key: key, p_visitor: visitor, p_in: msgs[msgs.length - 1].content, p_out: '' }); } catch (e) { console.log('log', String(e)); }
     return wjson({ reply: null, human: true }, 200, origin);
   }
+  const lastText = msgs[msgs.length - 1].content;
+  const fr = await inboundRun(env, 'web', key, visitor, '', lastText, async () => { await sbRpc('widget_log', { p_key: key, p_visitor: visitor, p_in: lastText, p_out: '' }); });
+  if (fr && fr.replies.length) return wjson({ reply: fr.replies.join('\n\n').slice(0, 1200), flow: true }, 200, origin);
   const ws = wname(cfg.workspace) === 'Chat' ? 'this business' : wname(cfg.workspace);
   const know = (cfg.knowledge || []).map((f) => '- ' + String(f.name || '').slice(0, 120) + ': ' + (f.steps || []).join(' | ')).join('\n').slice(0, 4000);
   const WSYS = 'You are the website chat assistant for ' + ws + '. Answer visitors briefly and politely, in the language of their LAST message (if unsure, English). Keep replies under 70 words and ask at most one question at a time.\n' +
@@ -238,7 +241,7 @@ async function tgAdmin(request, url) {
   }
   return wjson({ error: 'bad action' }, 400, origin);
 }
-async function tgHook(request, url) {
+async function tgHook(request, url, env) {
   if (request.method !== 'POST') return wjson({ ok: true });
   const id = url.pathname.slice('/api/tg/hook/'.length);
   if (!/^[0-9a-f-]{36}$/.test(id)) return wjson({ ok: true });
@@ -255,6 +258,7 @@ async function tgHook(request, url) {
     try {
       await sbRpc('tg_log', { p_id: id, p_update: String(upd.update_id || ''), p_chat: String(msg.chat.id), p_name: name.slice(0, 80), p_text: text.slice(0, 4000) });
     } catch (e) { console.log('tg_log', String(e)); }
+    if (upd.message) await inboundRun(env, 'telegram', id, String(msg.chat.id), String(upd.update_id || ''), text);
   }
   return wjson({ ok: true });
 }
@@ -412,6 +416,31 @@ async function automationEvent(request, url) {
   return wjson({ ok: true, fired: fired }, 200, origin);
 }
 
+/* ---- Phase 2 item 4b: inbound keyword and /start matching ---- */
+async function inboundRun(env, scope, ref, visitor, update, text, onMatch) {
+  const key = env && env.AUTOMATION_SECRET;
+  if (!key) return null;
+  let m;
+  try { m = await sbRpc('inbound_match', { p_key: key, p_scope: scope, p_ref: ref, p_visitor: visitor, p_update: update, p_text: String(text || '').slice(0, 300) }); }
+  catch (e) { console.log('inbound_match', String(e)); return null; }
+  if (!m || !Array.isArray(m.runs) || !m.runs.length) return null;
+  if (onMatch) { try { await onMatch(); } catch (e) { console.log('onMatch', String(e)); } }
+  const replies = [];
+  const contact = Object.assign({ id: m.contact_id, workspace_id: m.workspace_id }, m.contact || {});
+  for (const run of m.runs.slice(0, 3)) {
+    try {
+      const r = walkFlow(run.nodes || [], 1, contact);
+      if (m.tg_token) for (const t of r.tg) await tgCall(m.tg_token, 'sendMessage', { chat_id: Number(r.chatId), text: t });
+      for (const e of r.effects) if (e.type === 'web_msg') replies.push(e.body);
+      await sbRpc('automation_finish', { p_key: key, p_run_id: run.run_id, p_status: r.status, p_next_step: r.nextIdx, p_run_at: r.runAt, p_note: ('inbound; ' + r.notes.join('; ')).slice(0, 190), p_effects: r.effects });
+    } catch (e) {
+      console.log('inbound run ' + run.run_id + ' ' + String(e));
+      try { await sbRpc('automation_finish', { p_key: key, p_run_id: run.run_id, p_status: 'failed', p_next_step: 1, p_run_at: null, p_note: String(e).slice(0, 190), p_effects: [] }); } catch (e2) {}
+    }
+  }
+  return { replies: replies };
+}
+
 async function automationTick(env) {
   const key = env && env.AUTOMATION_SECRET;
   if (!key) { console.log('automation: AUTOMATION_SECRET not set'); return; }
@@ -445,7 +474,7 @@ export default {
     if (url.pathname === '/api/widget/config' || url.pathname === '/api/widget/chat' || url.pathname === '/api/widget/poll') return widget(request, env, url);
     if (url.pathname === '/api/channels/telegram/connect' || url.pathname === '/api/channels/telegram/action' || url.pathname === '/api/channels/telegram/send') return tgAdmin(request, url);
     if (url.pathname === '/api/automation/event') return automationEvent(request, url);
-    if (url.pathname.indexOf('/api/tg/hook/') === 0) return tgHook(request, url);
+    if (url.pathname.indexOf('/api/tg/hook/') === 0) return tgHook(request, url, env);
     if (url.pathname !== '/api/chat') {
       const res = await env.ASSETS.fetch(request);
       const ct = res.headers.get('content-type') || '';
