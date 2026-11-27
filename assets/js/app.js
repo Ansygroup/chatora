@@ -334,6 +334,19 @@
     obChan: "\u0627\u0631\u0628\u0637 \u0623\u0648\u0644 \u0642\u0646\u0627\u0629"
   };
   const CHS = Object.assign({}, CHS_EN, ({ ar: CHS_AR })[LANG] || {});
+  const TK_EN = {
+    fieldsTitle: "Custom fields", fieldKeyPh: "Key (e.g. city)", fieldValPh: "Value",
+    addField: "Add field",
+    tokensHint: "Tokens: {name} · {handle} · {tags} · {field:key}",
+    tgNoConn: "Connect Telegram in Settings, Channels, to reply here."
+  };
+  const TK_AR = {
+    fieldsTitle: "حقول مخصصة", fieldKeyPh: "المفتاح (مثال: المدينة)", fieldValPh: "القيمة",
+    addField: "إضافة حقل",
+    tokensHint: "متغيرات: {name} · {handle} · {tags} · {field:key}",
+    tgNoConn: "اربط تيليجرام من الإعدادات، القنوات، لتتمكن من الرد هنا."
+  };
+  const TK = Object.assign({}, TK_EN, ({ ar: TK_AR })[LANG] || {});
   const tgConn = () => (state.channels || []).filter((c) => c.provider === "telegram")[0] || null;
   function chanStatusChip(c) {
     if (!c) return "";
@@ -508,7 +521,7 @@
     const all = [], size = 1000;
     let offset = 0;
     while (true) {
-      const rows = await A.rest("/rest/v1/contacts?select=id,name,handle,channel,tags,last_seen&order=last_seen.desc,id.asc&limit=" + size + "&offset=" + offset);
+      const rows = await A.rest("/rest/v1/contacts?select=id,name,handle,channel,tags,fields,last_seen&order=last_seen.desc,id.asc&limit=" + size + "&offset=" + offset);
       const page = rows || [];
       all.push.apply(all, page);
       if (page.length < size) break;
@@ -670,7 +683,7 @@
 
   function renderReplyArea(c, closed) {
     if (closed) return `<div class="thread-closed">${esc(T.fClosed)}</div>`;
-    if (String(c.channel) === "web") return renderWebReplyArea(c);
+    if (String(c.channel) === "web" || String(c.channel) === "telegram") return renderWebReplyArea(c);
     const provider = metaProviderForChannel(c.channel);
     if (!provider) return `<p class="dash-note channel-pending" role="status">${esc(T.channelPending)}</p>`;
     if (!state.meta.loaded) return `<p class="dash-note channel-pending" role="status">${esc(T.metaLoad)}</p>`;
@@ -711,6 +724,7 @@
     const draft = replyDraftFor(c.id);
     return `<form class="thread-form" id="meta-reply-form" autocomplete="off">` +
       `<textarea id="meta-reply-input" rows="2" maxlength="1000" dir="auto" aria-label="${esc(T.typeMsg)}" placeholder="${esc(T.typeMsg)}"${draft.busy ? " disabled" : ""}>${esc(draft.text)}</textarea>` +
+      `<p class="dash-note tokens-hint">${esc(TK.tokensHint)}</p>` +
       `<button type="submit" class="btn btn-primary btn-sm" id="meta-reply-submit"${draft.busy || !draft.text.trim() ? " disabled" : ""}>${esc(draft.busy ? T.sendBusy : T.send)}</button>` +
       `<p class="dash-note meta-send-status${draft.noticeError ? " is-err" : (draft.notice === T.sendSuccess ? " is-ok" : "")}" id="meta-send-status" role="status" aria-live="polite">${esc(draft.notice)}</p>` +
       `</form>`;
@@ -858,6 +872,10 @@
       `<label>${esc(T.handle)}<input id="cf-handle" value="${esc(ed.handle || "")}" maxlength="60"></label>` +
       `<label>${esc(T.channel)}<select id="cf-ch">${opts}</select></label>` +
       `<label>${esc(T.tags)}<input id="cf-tags" value="${esc((ed.tags || []).join(", "))}" placeholder="${esc(T.tagsPh)}" maxlength="120"></label>` +
+      `<div class="cfields"><span class="cfields-label">${esc(TK.fieldsTitle)}</span><div class="cfields-list" id="cf-fields">` +
+      Object.keys(ed.fields || {}).map((k) => `<div class="cfield-row"><code class="cfield-key">${esc(k)}</code><span class="cfield-val" dir="auto">${esc(String(ed.fields[k]))}</span><button type="button" class="row-btn is-del" data-cfdel="${esc(k)}" aria-label="×">×</button></div>`).join("") +
+      `</div><div class="cfield-new"><input id="cf-fkey" value="" placeholder="${esc(TK.fieldKeyPh)}" maxlength="30"><input id="cf-fval" value="" placeholder="${esc(TK.fieldValPh)}" maxlength="120">` +
+      `<button type="button" class="btn btn-ghost btn-sm" id="cf-fadd">${esc(TK.addField)}</button></div></div>` +
       `</div><div class="dash-inline cform-acts">` +
       `<button type="button" class="btn btn-primary btn-sm" id="cf-save">${esc(T.save)}</button>` +
       `<button type="button" class="btn btn-ghost btn-sm" id="cf-cancel">${esc(T.cancel)}</button></div></div>` : "";
@@ -876,7 +894,53 @@
 
   function contactMatches(q) {
     q = (q || "").toLowerCase();
-    return state.contacts.filter((c) => !q || (c.name + " " + (c.handle || "") + " " + (c.tags || []).join(" ")).toLowerCase().indexOf(q) !== -1);
+    return state.contacts.filter((c) => !q || (c.name + " " + (c.handle || "") + " " + (c.tags || []).join(" ") + " " + Object.keys(c.fields || {}).map((k) => k + " " + String(c.fields[k])).join(" ")).toLowerCase().indexOf(q) !== -1);
+  }
+
+  function contactFor(conversation) {
+    return state.contacts.filter((c) => c.id === (conversation && conversation.contact_id))[0] || null;
+  }
+
+  function sampleContact() { return state.contacts[0] || null; }
+
+  // Replaces {name}, {handle}, {tags} and {field:key} with live contact data.
+  function applyTokens(text, contact) {
+    const c = contact || {};
+    const fields = (c.fields && typeof c.fields === "object") ? c.fields : {};
+    return String(text || "").replace(/\{\s*(name|handle|tags)\s*\}|\{\s*field\s*:\s*([\w.\-]{1,30})\s*\}/gi, (m, simple, key) => {
+      if (simple) {
+        const k = simple.toLowerCase();
+        if (k === "name") return c.name || "";
+        if (k === "handle") return c.handle || "";
+        if (k === "tags") return (c.tags || []).join(", ");
+      }
+      if (key) {
+        const hit = Object.keys(fields).filter((k2) => k2.toLowerCase() === key.toLowerCase())[0];
+        return hit != null ? String(fields[hit]) : "";
+      }
+      return m;
+    });
+  }
+
+  // Trigger conditions: "tag:X" checks a tag, "field:k" a non-empty field, "field:k=v" an exact value.
+  // Returns true/false, or null when the syntax is not a contact condition.
+  function contactMatchesCond(cond, contact) {
+    const text = String(cond || "").trim();
+    const c = contact || {};
+    const tagM = /^tag\s*:\s*(.{1,40})$/i.exec(text);
+    if (tagM) {
+      const want = tagM[1].trim().toLowerCase();
+      return (c.tags || []).some((t) => String(t).toLowerCase() === want);
+    }
+    const fM = /^field\s*:\s*([\w.\-]{1,30})\s*(?:=\s*(.{1,60}))?$/i.exec(text);
+    if (fM) {
+      const fields = (c.fields && typeof c.fields === "object") ? c.fields : {};
+      const hit = Object.keys(fields).filter((k) => k.toLowerCase() === fM[1].toLowerCase())[0];
+      const val = hit != null ? String(fields[hit]) : "";
+      if (fM[2] == null) return hit != null && val !== "";
+      return val.toLowerCase() === fM[2].trim().toLowerCase();
+    }
+    return null;
   }
 
   function contactRows(q) {
@@ -1515,6 +1579,7 @@
     if (!conversation) return;
     const draft = replyDraftFor(conversation.id);
     if (String(conversation.channel) === "web") return submitWebReply(conversation, draft);
+    if (String(conversation.channel) === "telegram") return submitTgReply(conversation, draft);
     const input = $("#meta-reply-input");
     const text = String((input && input.value) || draft.text || "").trim();
     if (!text || draft.busy || draft.locked) return;
@@ -1627,13 +1692,43 @@
     }
     draft.busy = true; draft.notice = ""; draft.noticeError = false;
     try {
-      await A.rest("/rest/v1/messages", { method: "POST", body: JSON.stringify({ conversation_id: conversation.id, direction: "out", author: "human", body: text.slice(0, 1200) }) });
+      await A.rest("/rest/v1/messages", { method: "POST", body: JSON.stringify({ conversation_id: conversation.id, direction: "out", author: "human", body: applyTokens(text, contactFor(conversation)).slice(0, 1200) }) });
       await A.rest("/rest/v1/conversations?id=eq." + conversation.id, { method: "PATCH", body: JSON.stringify({ last_at: new Date().toISOString(), status: conversation.status === "ai" ? "human" : conversation.status }) });
       if (conversation.status === "ai") conversation.status = "human";
       draft.text = ""; draft.notice = T.sendSuccess; draft.noticeError = false;
       await refreshThreadMessages(conversation.id);
     } catch (e) {
       draft.notice = T.sendError; draft.noticeError = true;
+    } finally {
+      draft.busy = false;
+      if (state.view === "inbox" && state.conv && state.conv.id === conversation.id) paint();
+    }
+  }
+
+  async function submitTgReply(conversation, draft) {
+    const input = $("#meta-reply-input");
+    const raw = String((input && input.value) || draft.text || "").trim();
+    if (!raw || draft.busy) return;
+    if (new TextEncoder().encode(raw).byteLength > 1000) {
+      draft.text = raw; draft.notice = T.sendTooLong; draft.noticeError = true; paint(); return;
+    }
+    const contact = contactFor(conversation);
+    const chatId = String((contact && contact.handle) || "").replace(/^tg:/, "").trim();
+    if (!/^-?\d{1,20}$/.test(chatId)) {
+      draft.notice = T.sendError; draft.noticeError = true; paint(); return;
+    }
+    const text = applyTokens(raw, contact);
+    draft.busy = true; draft.notice = ""; draft.noticeError = false; paint();
+    try {
+      await tgApi("/api/channels/telegram/send", { workspace: state.ws.id, chat: chatId, text: text });
+      await A.rest("/rest/v1/messages", { method: "POST", body: JSON.stringify({ conversation_id: conversation.id, direction: "out", author: "human", body: text.slice(0, 1200) }) });
+      await A.rest("/rest/v1/conversations?id=eq." + conversation.id, { method: "PATCH", body: JSON.stringify({ last_at: new Date().toISOString(), status: conversation.status === "ai" ? "human" : conversation.status }) });
+      if (conversation.status === "ai") conversation.status = "human";
+      draft.text = ""; draft.notice = T.sendSuccess; draft.noticeError = false;
+      await refreshThreadMessages(conversation.id);
+    } catch (e) {
+      draft.notice = e && e.code === "not connected" ? TK.tgNoConn : T.sendError;
+      draft.noticeError = true;
     } finally {
       draft.busy = false;
       if (state.view === "inbox" && state.conv && state.conv.id === conversation.id) paint();
@@ -1729,7 +1824,7 @@
         if (b.hasAttribute("data-msg")) startChat(b.getAttribute("data-msg"));
         else if (b.hasAttribute("data-cedit")) {
           const c = state.contacts.filter((x) => x.id === b.getAttribute("data-cedit"))[0];
-          state.cedit = { id: c.id, name: c.name, handle: c.handle || "", channel: c.channel, tags: c.tags || [] };
+          state.cedit = { id: c.id, name: c.name, handle: c.handle || "", channel: c.channel, tags: c.tags || [], fields: Object.assign({}, c.fields || {}) };
           paint();
         } else deleteContact(b.getAttribute("data-cdel"));
       });
@@ -1782,10 +1877,27 @@
       const nw = $("#c-new", p);
       if (nw) nw.addEventListener("click", () => {
         state.imp.open = false;
-        state.cedit = { id: null, name: "", handle: "", channel: "instagram", tags: [] };
+        state.cedit = { id: null, name: "", handle: "", channel: "instagram", tags: [], fields: {} };
         paint();
         const f = $("#cf-name"); if (f) f.focus();
       });
+      const fadd = $("#cf-fadd", p);
+      if (fadd) fadd.addEventListener("click", () => {
+        syncCeditFromDom();
+        const kEl = $("#cf-fkey", p), vEl = $("#cf-fval", p);
+        const k = tidy(kEl && kEl.value, 30).trim();
+        if (!k) { if (kEl) kEl.focus(); return; }
+        const f = state.cedit.fields || (state.cedit.fields = {});
+        const existing = Object.keys(f).filter((k2) => k2.toLowerCase() === k.toLowerCase())[0];
+        if (existing == null && Object.keys(f).length >= 20) return;
+        f[existing != null ? existing : k] = tidy(vEl && vEl.value, 120).trim();
+        paint();
+      });
+      $$("[data-cfdel]", p).forEach((b) => b.addEventListener("click", () => {
+        syncCeditFromDom();
+        if (state.cedit && state.cedit.fields) delete state.cedit.fields[b.getAttribute("data-cfdel")];
+        paint();
+      }));
       const sv = $("#cf-save", p);
       if (sv) sv.addEventListener("click", saveContact);
       const cn = $("#cf-cancel", p);
@@ -2042,6 +2154,16 @@
     }
   }
 
+  function syncCeditFromDom() {
+    const ed = state.cedit;
+    if (!ed) return;
+    const n = $("#cf-name"), h = $("#cf-handle"), ch = $("#cf-ch"), tg = $("#cf-tags");
+    if (n) ed.name = n.value;
+    if (h) ed.handle = h.value;
+    if (ch) ed.channel = ch.value;
+    if (tg) ed.tags = tg.value.split(",").map((x) => x.trim()).filter(Boolean).slice(0, 6);
+  }
+
   async function saveContact() {
     const name = tidy($("#cf-name").value, 80).trim();
     if (!name) { $("#cf-name").focus(); return; }
@@ -2050,6 +2172,7 @@
       handle: tidy($("#cf-handle").value, 80).trim() || null,
       channel: $("#cf-ch").value,
       tags: $("#cf-tags").value.split(",").map((t) => t.trim()).filter(Boolean).slice(0, 6),
+      fields: state.cedit.fields || {},
       last_seen: new Date().toISOString()
     };
     if (state.cedit.id) {
@@ -2280,16 +2403,20 @@
       } else if (s.t === "trigger") {
         body.insertAdjacentHTML("beforeend", `<div class="tmodal-sys is-start">▸ ${esc(s.text || "")}</div>`);
       } else if (s.t === "cond") {
-        body.insertAdjacentHTML("beforeend", `<div class="tmodal-sys">❓ ${esc(s.text || "")}</div>`);
+        const verdict = contactMatchesCond(s.text, sampleContact());
+        const mark = verdict == null ? "" : verdict ? " ✓" : " ✗";
+        body.insertAdjacentHTML("beforeend", `<div class="tmodal-sys">❓ ${esc(s.text || "")}${mark}</div>`);
       } else if (s.t === "tag") {
-        body.insertAdjacentHTML("beforeend", `<div class="tmodal-sys">🏷️ ${esc(s.text || "")}</div>`);
+        const verdict = contactMatchesCond("tag:" + String(s.text || "").trim(), sampleContact());
+        const mark = verdict == null ? "" : verdict ? " ✓" : " ✗";
+        body.insertAdjacentHTML("beforeend", `<div class="tmodal-sys">🏷️ ${esc(s.text || "")}${mark}</div>`);
       } else if (s.t === "msg") {
         // A local visual preview only; no AI provider is called and no message is sent.
         body.insertAdjacentHTML("beforeend", `<div class="bub is-out is-typing" id="typing">${esc(T.testTyping)}</div>`);
         body.scrollTop = body.scrollHeight;
         setTimeout(() => {
           const t = $("#typing");
-          if (t) t.outerHTML = `<div class="bub is-out">${esc(s.text || "")}<span class="bub-meta">${esc(T.testRole)}</span></div>`;
+          if (t) t.outerHTML = `<div class="bub is-out">${esc(applyTokens(s.text || "", sampleContact()))}<span class="bub-meta">${esc(T.testRole)}</span></div>`;
           body.scrollTop = body.scrollHeight;
           setTimeout(tick, 420);
         }, 620);
