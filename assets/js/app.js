@@ -1244,6 +1244,8 @@
   function audience() {
     const b = state.bc;
     return state.contacts.filter((c) => {
+      if (c.channel !== "telegram" && c.channel !== "web") return false;
+      if ((c.tags || []).some((t) => String(t).toLowerCase() === "unsubscribed")) return false;
       if (b.channel !== "all" && c.channel !== b.channel) return false;
       if (b.tag && (c.tags || []).indexOf(b.tag) === -1) return false;
       return true;
@@ -1253,6 +1255,9 @@
   function renderBroadcast() {
     const b = state.bc;
     const list = audience();
+    T.bcNote = AR ? "الإرسال متاح لجهات اتصال تيليجرام والويب فقط (اللي راسلتك قبل كده). الحد: بثّ واحد كل ساعة، و30 مستلم كحد أقصى. كل رسالة تنتهي بـ «Reply STOP to unsubscribe» ومن يرد STOP يتشال تلقائياً. ابعت بس لناس وافقوا يستقبلوا منك."
+      : "Sends to Telegram and website-chat contacts who already wrote to you. Limits: one broadcast per hour, up to 30 recipients. Every message ends with \"Reply STOP to unsubscribe\" and anyone who replies STOP is skipped from then on. Only message people who agreed to hear from you.";
+    T.bcSend = AR ? "إرسال الآن" : "Send now";
     const chOpts = [`<option value="all"${b.channel === "all" ? " selected" : ""}>${esc(T.bcAll8)}</option>`]
       .concat(Object.keys(CH).map((k) => `<option value="${k}"${b.channel === k ? " selected" : ""}>${esc(chLabel(k))}</option>`)).join("");
     const tags = {};
@@ -1276,7 +1281,7 @@
       `</div>` +
       `<label class="bc-body">${esc(T.bcBody)}<textarea id="bc-body" rows="3" maxlength="600" placeholder="${esc(T.bcBodyPh)}">${esc(b.body)}</textarea></label>` +
       `<div class="bc-row"><span class="bc-count"><b>${num(list.length)}</b> ${esc(T.bcAudience)}</span>` +
-      `<button type="button" class="btn btn-primary btn-sm" id="bc-send" disabled aria-disabled="true">${esc(T.bcSend)}</button></div>` +
+      `<button type="button" class="btn btn-primary btn-sm" id="bc-send"${state.bcBusy ? " disabled" : ""}>${esc(T.bcSend)}</button></div>` +
       (list.length ? `<ul class="bc-people">${preview}</ul>` : `<p class="dash-empty">${esc(T.bcEmpty)}</p>`) +
       `</div>` +
       `<div class="dash-card"><h2>${esc(T.bcHistory)}</h2>${hist}</div>`;
@@ -1997,6 +2002,26 @@
       if (nameEl) nameEl.addEventListener("input", (e) => { state.bc.name = e.target.value; });
       const bodyEl = $("#bc-body", p);
       if (bodyEl) bodyEl.addEventListener("input", (e) => { state.bc.body = e.target.value; });
+      const sendEl = $("#bc-send", p);
+      if (sendEl) sendEl.addEventListener("click", async () => {
+        const n = audience().length, body = String(state.bc.body || "").trim();
+        if (!body) { window.alert(AR ? "اكتب الرسالة الأول" : "Write the message first"); return; }
+        if (!n) { window.alert(T.bcEmpty); return; }
+        if (n > 30) { window.alert(AR ? "الحد الأقصى 30 مستلم في البثّ. ضيّق الجمهور بتاج أو قناة." : "Max 30 recipients per broadcast. Narrow the audience with a tag or channel."); return; }
+        if (!window.confirm(AR ? "هتتبعت الرسالة لـ " + n + " شخص وافقوا يستقبلوا منك. متأكد؟" : "Send this message to " + n + " people who agreed to hear from you?")) return;
+        state.bcBusy = true; sendEl.disabled = true;
+        try {
+          const res = await tgApi("/api/broadcast/send", { workspace: state.ws.id, name: state.bc.name, channel: state.bc.channel, tag: state.bc.tag, body: body });
+          state.bc.body = "";
+          const hist = await A.rest("/rest/v1/broadcasts?select=id,name,channel,body,audience,sent,created_at&order=created_at.desc&limit=20").catch(() => null);
+          if (hist) state.broadcasts = hist;
+          window.alert((AR ? "اتبعتت لـ " : "Sent to ") + res.sent + (AR ? " من " : " of ") + res.audience);
+        } catch (e) {
+          const c = e && e.code;
+          window.alert(c === "too_soon" ? (AR ? "بثّ واحد كل ساعة. حاول بعد شوية." : "One broadcast per hour. Try again a bit later.") : c === "too_many" ? (AR ? "الجمهور أكبر من 30. ضيّقه." : "Audience is over 30. Narrow it.") : (T.sendError || "Failed"));
+        }
+        state.bcBusy = false; paint();
+      });
       // the two selects change the audience, so they do repaint
       ["#bc-channel", "#bc-tag"].forEach((sel) => {
         const el = $(sel, p);
