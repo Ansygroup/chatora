@@ -143,7 +143,9 @@ export default {
       text = text
         .split('<a href="mailto:hello@chatora.ansygroup.com">hello@chatora.ansygroup.com</a>').join('<a href="/contact.html">Contact us</a>')
         .split('hello@chatora.ansygroup.com').join('our contact form')
-        .split('chatora.ansygroup.com').join('chatora.us.ci');
+        .split('chatora.ansygroup.com').join('chatora.us.ci')
+        .replace(/<div class="foot-social">[\s\S]*?<\/div>/g, '')
+        .split('An early preview of conversation-marketing tools: editable drafts, CSV tools and audience previews. Live channels and AI replies are not enabled yet.').join('Done-for-you Instagram and WhatsApp DM automation, plus a self-serve preview workspace for drafting flows.');
       if (/\/pricing(\.html)?$/.test(url.pathname) && text.includes('</h1>')) {
         const p = url.pathname;
         const msg = /^\/ar\//.test(p) ? 'تبحث عن إعداد جاهز؟ شاهد <a href="/services.html">خدمة الإعداد الكامل وأسعارها</a>. الأسعار (بالدولار): Starter 199$ مرة واحدة، Growth 349$ إعداد + 99$ شهرياً، Scale 599$ إعداد + 199$ شهرياً.'
