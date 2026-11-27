@@ -49,7 +49,7 @@
       retry: "Try again", signout: "Sign out", build: "Open the builder",
       kContacts: "Active contacts", kFlows: "Live flows", kOpen: "Open conversations", kRuns: "Flow runs this month",
       runsBy: "Runs by flow", channels: "Contacts by channel", recent: "Latest conversations",
-      noData: "Nothing here yet.", emptyInbox: "No conversations match this filter.", inboxEmpty: "No conversations yet. Connect a messaging channel to receive messages.",
+      noData: "Nothing here yet.", emptyInbox: "No conversations match this filter.", inboxEmpty: "No conversations yet. Add the website widget or connect a messaging channel to receive messages.",
       channelPending: "Connect an official messaging channel before replying or starting conversations. No outgoing message has been sent.",
       sendNeedsMeta: "Connect this WhatsApp or Instagram channel in Settings before replying.",
       sendFeatureOff: "Replies are not enabled in this workspace yet. No message was sent.",
@@ -81,6 +81,7 @@
       delTitle: "Delete account", delNote: "Permanently deletes your account, workspace, contacts, conversations and flow drafts. This cannot be undone.",
       delPass: "Current password", delBtn: "Delete my account", delConfirm: "Delete your account and all workspace data permanently?",
       delWrong: "That password is not correct.", delFailed: "The account could not be deleted. Nothing was removed — try again later.",
+      delGoogle: "Continue with Google", delGoogleNote: "This account uses Google sign-in. Confirm with the same Google account to delete it.", delWrongAcct: "That Google account does not match this login. Try again with the Google account you signed up with.",
       metaDisconnect: "Disconnect", metaDisconnectConfirm: "Disconnect this channel? Chatora deletes the stored access token and stops receiving its messages.",
       pwShort: "At least 10 characters, with letters and numbers.", exportTitle: "Your data", exportBtn: "Download a JSON copy",
       emptyWs: "Empty workspace — no demo records are added. Import real contacts or create your first flow.",
@@ -156,7 +157,7 @@
       retry: "جرّب تاني", signout: "تسجيل الخروج", build: "افتح المحرر",
       kContacts: "جهات اتصال نشطة", kFlows: "سيناريوهات شغّالة", kOpen: "محادثات مفتوحة", kRuns: "تشغيلات الشهر",
       runsBy: "التشغيلات حسب السيناريو", channels: "جهات الاتصال حسب القناة", recent: "آخر المحادثات",
-      noData: "لسه مفيش حاجة هنا.", emptyInbox: "مفيش محادثات مطابقة للفلتر ده.", inboxEmpty: "مفيش محادثات لسه. اربط قناة مراسلة عشان تستقبل رسائل.",
+      noData: "لسه مفيش حاجة هنا.", emptyInbox: "مفيش محادثات مطابقة للفلتر ده.", inboxEmpty: "مفيش محادثات لسه. ضيف ودجت الموقع أو اربط قناة مراسلة عشان تستقبل رسائل.",
       channelPending: "اربط قناة مراسلة رسمية قبل الرد أو بدء المحادثات. لم يتم إرسال أي رسالة من مساحة العمل دي.",
       sendNeedsMeta: "اربط قناة واتساب أو إنستجرام دي من الإعدادات قبل الرد.",
       sendFeatureOff: "الردود متوقفة في مساحة العمل دي. ما اتبعتش أي رسالة.",
@@ -188,6 +189,7 @@
       delTitle: "حذف الحساب", delNote: "بيحذف حسابك ومساحة العمل وجهات الاتصال والمحادثات ومسودات السيناريوهات نهائيًا. مفيش رجوع بعد كده.",
       delPass: "كلمة السر الحالية", delBtn: "احذف حسابي", delConfirm: "تحذف حسابك وكل بيانات مساحة العمل نهائيًا؟",
       delWrong: "كلمة السر مش صحيحة.", delFailed: "ماقدرناش نحذف الحساب. مفيش حاجة اتحذفت — حاول تاني بعدين.",
+      delGoogle: "المتابعة بحساب جوجل", delGoogleNote: "الحساب ده بيستخدم تسجيل الدخول بجوجل. أكّد بنفس حساب جوجل عشان تحذفه.", delWrongAcct: "حساب جوجل ده مش هو حساب الدخول. جرّب بحساب جوجل اللي سجّلت بيه.",
       metaDisconnect: "افصل القناة", metaDisconnectConfirm: "تفصل القناة دي؟ شاتورا هيحذف رمز الوصول المحفوظ وهيوقف استقبال رسايلها.",
       pwShort: "10 حروف على الأقل مع أحرف وأرقام.", exportTitle: "بياناتك", exportBtn: "نزّل نسخة JSON",
       emptyWs: "مساحة عمل فاضية — مفيش سجلات تجريبية بتتضاف. استورد جهات اتصالك أو اعمل أول سيناريو.",
@@ -465,6 +467,7 @@
 
   function renderReplyArea(c, closed) {
     if (closed) return `<div class="thread-closed">${esc(T.fClosed)}</div>`;
+    if (String(c.channel) === "web") return renderWebReplyArea(c);
     const provider = metaProviderForChannel(c.channel);
     if (!provider) return `<p class="dash-note channel-pending" role="status">${esc(T.channelPending)}</p>`;
     if (!state.meta.loaded) return `<p class="dash-note channel-pending" role="status">${esc(T.metaLoad)}</p>`;
@@ -498,6 +501,15 @@
       `<textarea id="meta-reply-input" rows="2" maxlength="1000" dir="auto" aria-label="${esc(T.typeMsg)}" placeholder="${esc(T.typeMsg)}"${inputDisabled ? " disabled" : ""}>${esc(draft.text)}</textarea>` +
       `<button type="submit" class="btn btn-primary btn-sm" id="meta-reply-submit"${disabled || !draft.text.trim() ? " disabled" : ""}>${esc(draft.busy ? T.sendBusy : (draft.clientMessageId ? T.sendRetry : T.send))}</button>` +
       `<p class="dash-note meta-send-status${draft.noticeError || unresolved ? " is-err" : (notice === T.sendSuccess ? " is-ok" : "")}" id="meta-send-status" role="status" aria-live="polite">${esc(notice)}</p>` +
+      `</form>`;
+  }
+
+  function renderWebReplyArea(c) {
+    const draft = replyDraftFor(c.id);
+    return `<form class="thread-form" id="meta-reply-form" autocomplete="off">` +
+      `<textarea id="meta-reply-input" rows="2" maxlength="1000" dir="auto" aria-label="${esc(T.typeMsg)}" placeholder="${esc(T.typeMsg)}"${draft.busy ? " disabled" : ""}>${esc(draft.text)}</textarea>` +
+      `<button type="submit" class="btn btn-primary btn-sm" id="meta-reply-submit"${draft.busy || !draft.text.trim() ? " disabled" : ""}>${esc(draft.busy ? T.sendBusy : T.send)}</button>` +
+      `<p class="dash-note meta-send-status${draft.noticeError ? " is-err" : (draft.notice === T.sendSuccess ? " is-ok" : "")}" id="meta-send-status" role="status" aria-live="polite">${esc(draft.notice)}</p>` +
       `</form>`;
   }
 
@@ -1106,17 +1118,43 @@
       `<div class="dash-card"><h2>${esc(T.session)}</h2>` +
       `<button type="button" class="btn btn-ghost btn-sm" id="signout2">${esc(T.signoutLong)}</button></div>` +
       `<div class="dash-card dash-danger"><h2>${esc(T.delTitle)}</h2><p class="dash-note">${esc(T.delNote)}</p>` +
-      `<form id="del-form" class="dash-inline"><input id="del-pass" type="password" autocomplete="current-password" required aria-label="${esc(T.delPass)}" placeholder="${esc(T.delPass)}">` +
-      `<button class="btn btn-ghost btn-sm btn-danger" type="submit">${esc(T.delBtn)}</button></form>` +
+      (signInProvider() === "password"
+        ? `<form id="del-form" class="dash-inline"><input id="del-pass" type="password" autocomplete="current-password" required aria-label="${esc(T.delPass)}" placeholder="${esc(T.delPass)}">` +
+          `<button class="btn btn-ghost btn-sm btn-danger" type="submit">${esc(T.delBtn)}</button></form>`
+        : `<p class="dash-note">${esc(T.delGoogleNote)}</p>` +
+          `<button class="btn btn-ghost btn-sm btn-danger" type="button" id="del-google">${esc(T.delGoogle)}</button>`) +
       `<p class="dash-note" id="del-msg" role="status"></p></div>`;
+  }
+
+  function signInProvider() {
+    const s = A.session && A.session();
+    const t = s && s.access_token;
+    if (!t) return "password";
+    try {
+      const p = JSON.parse(atob(t.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+      return (p.firebase && p.firebase.sign_in_provider) || "password";
+    } catch (e) { return "password"; }
+  }
+
+  async function deleteWorkspaceAndAccount(fresh, uid) {
+    const cfg = window.CHATORA_CONFIG || {};
+    const del = await fetch(cfg.SUPABASE_URL + "/rest/v1/workspaces?owner=eq." + encodeURIComponent(uid), {
+      method: "DELETE", headers: { apikey: cfg.SUPABASE_ANON_KEY, Authorization: "Bearer " + fresh }
+    });
+    if (!del.ok) throw new Error("delete_failed");
+    const fk = encodeURIComponent(cfg.FIREBASE_API_KEY || "");
+    const fin = await fetch("https://identitytoolkit.googleapis.com/v1/accounts:delete?key=" + fk, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ idToken: fresh })
+    });
+    if (!fin.ok) throw new Error("delete_failed");
   }
 
   const RENDER = { overview: renderOverview, inbox: renderInbox, flows: renderFlows, contacts: renderContacts, broadcast: renderBroadcast, settings: renderSettings };
 
   const WK = { loaded: false, loading: false, keys: [], err: "" };
   const WKT = ({
-    en: { t: "Website chat widget", n: "Add an AI chat bubble to any website. Paste the snippet before </body>. It answers from your flows and saves each chat in your Inbox.", c: "Create key", d: "Delete", s: "Save", g: "Greeting", o: "Allowed website (optional, e.g. https://example.com)", on: "Active", cp: "Copy snippet", cd: "Copied", lim: "Limit: 5 keys.", cf: "Delete this key? The widget stops working." },
-    ar: { t: "ودجت الدردشة للموقع", n: "أضف فقاعة دردشة بالذكاء الاصطناعي لأي موقع. الصق الكود قبل </body>. يرد من سيناريوهاتك ويحفظ كل محادثة في الإنبوكس.", c: "إنشاء مفتاح", d: "حذف", s: "حفظ", g: "رسالة الترحيب", o: "الموقع المسموح (اختياري، مثل https://example.com)", on: "مفعّل", cp: "نسخ الكود", cd: "تم النسخ", lim: "الحد: 5 مفاتيح.", cf: "حذف هذا المفتاح؟ سيتوقف الودجت." }
+    en: { t: "Website chat widget", n: "Add an AI chat bubble to any website. Paste the snippet before </body>. It answers from your flows when they cover the question; otherwise it says the team will follow up. Each chat is saved in your Inbox.", c: "Create key", d: "Delete", s: "Save", g: "Greeting", o: "Allowed website (optional, e.g. https://example.com)", on: "Active", cp: "Copy snippet", cd: "Copied", lim: "Limit: 5 keys.", cf: "Delete this key? The widget stops working." },
+    ar: { t: "ودجت الدردشة للموقع", n: "أضف فقاعة دردشة بالذكاء الاصطناعي لأي موقع. الصق الكود قبل </body>. بيرد من سيناريوهاتك لو السؤال متغطي فيها، ولو لأ بيقول إن الفريق هيتابع. كل محادثة بتتحفظ في الإنبوكس.", c: "إنشاء مفتاح", d: "حذف", s: "حفظ", g: "رسالة الترحيب", o: "الموقع المسموح (اختياري، مثل https://example.com)", on: "مفعّل", cp: "نسخ الكود", cd: "تم النسخ", lim: "الحد: 5 مفاتيح.", cf: "حذف هذا المفتاح؟ سيتوقف الودجت." }
   })[LANG] || null;
   const WKE = WKT || null;
   function wkT() { return Object.assign({}, WKX_EN, WKT || {}); }
@@ -1282,6 +1320,7 @@
     const conversation = state.conv;
     if (!conversation) return;
     const draft = replyDraftFor(conversation.id);
+    if (String(conversation.channel) === "web") return submitWebReply(conversation, draft);
     const input = $("#meta-reply-input");
     const text = String((input && input.value) || draft.text || "").trim();
     if (!text || draft.busy || draft.locked) return;
@@ -1385,6 +1424,28 @@
     }
   }
 
+  async function submitWebReply(conversation, draft) {
+    const input = $("#meta-reply-input");
+    const text = String((input && input.value) || draft.text || "").trim();
+    if (!text || draft.busy) return;
+    if (new TextEncoder().encode(text).byteLength > 1000) {
+      draft.text = text; draft.notice = T.sendTooLong; draft.noticeError = true; paint(); return;
+    }
+    draft.busy = true; draft.notice = ""; draft.noticeError = false;
+    try {
+      await A.rest("/rest/v1/messages", { method: "POST", body: JSON.stringify({ conversation_id: conversation.id, direction: "out", author: "human", body: text.slice(0, 1200) }) });
+      await A.rest("/rest/v1/conversations?id=eq." + conversation.id, { method: "PATCH", body: JSON.stringify({ last_at: new Date().toISOString(), status: conversation.status === "ai" ? "human" : conversation.status }) });
+      if (conversation.status === "ai") conversation.status = "human";
+      draft.text = ""; draft.notice = T.sendSuccess; draft.noticeError = false;
+      await refreshThreadMessages(conversation.id);
+    } catch (e) {
+      draft.notice = T.sendError; draft.noticeError = true;
+    } finally {
+      draft.busy = false;
+      if (state.view === "inbox" && state.conv && state.conv.id === conversation.id) paint();
+    }
+  }
+
   /* ---------- interactions ---------- */
   function bindPanel() {
     const p = $("#panel-" + state.view);
@@ -1427,6 +1488,8 @@
       if (tc) tc.addEventListener("click", () => setStatus("closed"));
       const tr = $("#toggle-reopen");
       if (tr) tr.addEventListener("click", () => setStatus("ai"));
+      const tm = $("#toggle-mode");
+      if (tm) tm.addEventListener("click", () => setStatus(state.conv.status === "human" ? "ai" : "human"));
     }
 
     if (state.view === "flows") {
@@ -1700,6 +1763,49 @@
       if (ex) ex.addEventListener("click", exportData);
       const s2 = $("#signout2", p);
       if (s2) s2.addEventListener("click", () => A.signOut());
+      const dg = $("#del-google", p);
+      if (dg) dg.addEventListener("click", async () => {
+        const out = $("#del-msg", p);
+        if (!window.confirm(T.delConfirm)) return;
+        dg.disabled = true; out.textContent = ""; out.className = "dash-note";
+        try {
+          const cfg = window.CHATORA_CONFIG || {};
+          const me = A.session && A.session();
+          const uid = me && me.user && me.user.id, mail = String((me && me.user && me.user.email) || "").toLowerCase();
+          await new Promise((res, rej) => {
+            if (window.google && window.google.accounts && window.google.accounts.oauth2) return res();
+            const sc = document.createElement("script");
+            sc.src = "https://accounts.google.com/gsi/client"; sc.async = true;
+            sc.onload = () => res(); sc.onerror = () => rej(new Error("network"));
+            document.head.appendChild(sc);
+          });
+          const gt = await new Promise((res, rej) => {
+            const client = window.google.accounts.oauth2.initTokenClient({
+              client_id: cfg.GOOGLE_CLIENT_ID,
+              scope: "openid email profile",
+              callback: (r) => (r && r.access_token ? res(r.access_token) : rej(new Error("cancelled"))),
+              error_callback: () => rej(new Error("cancelled"))
+            });
+            client.requestAccessToken({ prompt: "select_account" });
+          });
+          const IT = "https://identitytoolkit.googleapis.com/v1/";
+          const fk = encodeURIComponent(cfg.FIREBASE_API_KEY || "");
+          const gi = await fetch(IT + "accounts:signInWithIdp?key=" + fk, {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ postBody: "access_token=" + encodeURIComponent(gt) + "&providerId=google.com", requestUri: location.origin, returnSecureToken: true })
+          });
+          if (!gi.ok) throw new Error("delete_failed");
+          const gd = await gi.json();
+          if (String(gd.email || "").toLowerCase() !== mail) throw new Error("wrong_account");
+          await deleteWorkspaceAndAccount(gd.idToken, uid);
+          await A.signOut();
+        } catch (err) {
+          const em = err && err.message;
+          out.textContent = em === "cancelled" ? "" : (em === "wrong_account" ? T.delWrongAcct : T.delFailed);
+          out.className = em === "cancelled" ? "dash-note" : "dash-note is-err";
+          dg.disabled = false;
+        }
+      });
       const df = $("#del-form", p);
       if (df) df.addEventListener("submit", async (e) => {
         e.preventDefault();
