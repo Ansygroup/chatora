@@ -80,6 +80,20 @@ async function widget(request, env, url) {
     if (!originOk(cfg, origin)) return wjson({ error: 'origin' }, 403, origin);
     return wjson({ workspace: wname(cfg.workspace), greeting: cfg.greeting }, 200, origin);
   }
+  if (url.pathname === '/api/widget/poll') {
+    if (request.method !== 'GET') return wjson({ error: 'method' }, 405, origin);
+    const key = url.searchParams.get('key') || '';
+    if (!KEYRE.test(key)) return wjson({ error: 'bad key' }, 404, origin);
+    const visitor = String(url.searchParams.get('visitor') || '');
+    const since = String(url.searchParams.get('since') || '');
+    if (wlimited('p' + rip, 120, 600000)) return wjson({ error: 'rate' }, 429, origin);
+    let cfg; try { cfg = await sbRpc('widget_config', { p_key: key }); } catch { return wjson({ error: 'unavailable' }, 502, origin); }
+    if (!cfg) return wjson({ error: 'bad key' }, 404, origin);
+    if (!originOk(cfg, origin)) return wjson({ error: 'origin' }, 403, origin);
+    let data = null;
+    try { data = await sbRpc('widget_poll', { p_key: key, p_visitor: visitor, p_since: since || null }); } catch (e) { console.log('poll', String(e)); }
+    return wjson(data || { status: 'ai', messages: [] }, 200, origin);
+  }
   if (request.method !== 'POST') return wjson({ error: 'method' }, 405, origin);
   let body;
   try {
@@ -100,6 +114,12 @@ async function widget(request, env, url) {
     .map((m) => ({ role: m.role, content: m.content.slice(0, 400) }));
   if (!msgs.length || msgs[msgs.length - 1].role !== 'user') return wjson({ error: 'no message' }, 400, origin);
   if (msgs.reduce((n, m) => n + m.content.length, 0) > 2400) return wjson({ error: 'too long' }, 413, origin);
+  let convStatus = 'ai';
+  try { const st = await sbRpc('widget_poll', { p_key: key, p_visitor: visitor, p_since: null }); convStatus = (st && st.status) || 'ai'; } catch (e) {}
+  if (convStatus === 'human') {
+    try { await sbRpc('widget_log', { p_key: key, p_visitor: visitor, p_in: msgs[msgs.length - 1].content, p_out: '' }); } catch (e) { console.log('log', String(e)); }
+    return wjson({ reply: null, human: true }, 200, origin);
+  }
   const ws = wname(cfg.workspace) === 'Chat' ? 'this business' : wname(cfg.workspace);
   const know = (cfg.knowledge || []).map((f) => '- ' + String(f.name || '').slice(0, 120) + ': ' + (f.steps || []).join(' | ')).join('\n').slice(0, 4000);
   const WSYS = 'You are the website chat assistant for ' + ws + '. Answer visitors briefly and politely, in the language of their LAST message (if unsure, English). Keep replies under 70 words and ask at most one question at a time.\n' +
@@ -134,16 +154,22 @@ async function widget(request, env, url) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    if (url.pathname === '/api/widget/config' || url.pathname === '/api/widget/chat') return widget(request, env, url);
+    if (url.pathname === '/api/widget/config' || url.pathname === '/api/widget/chat' || url.pathname === '/api/widget/poll') return widget(request, env, url);
     if (url.pathname !== '/api/chat') {
       const res = await env.ASSETS.fetch(request);
       const ct = res.headers.get('content-type') || '';
       if (request.method !== 'GET' || res.status !== 200 || !/(text\/html|xml|text\/plain|json)/i.test(ct)) return res;
       let text = await res.text();
+      const isContact = /\/contact(\.html)?$/.test(url.pathname);
+      if (isContact) text = text.split('hello@chatora.ansygroup.com').join('hello@CHATORA-EMAIL');
+      if (!isContact) {
+        text = text
+          .split('<a href="mailto:hello@chatora.ansygroup.com">hello@chatora.ansygroup.com</a>').join('<a href="/contact.html">Contact us</a>')
+          .split('hello@chatora.ansygroup.com').join('our contact form');
+      }
       text = text
-        .split('<a href="mailto:hello@chatora.ansygroup.com">hello@chatora.ansygroup.com</a>').join('<a href="/contact.html">Contact us</a>')
-        .split('hello@chatora.ansygroup.com').join('our contact form')
         .split('chatora.ansygroup.com').join('chatora.us.ci')
+        .split('hello@CHATORA-EMAIL').join('hello@chatora.ansygroup.com')
         .replace(/<div class="foot-social">[\s\S]*?<\/div>/g, '')
         .split('An early preview of conversation-marketing tools: editable drafts, CSV tools and audience previews. Live channels and AI replies are not enabled yet.').join('Done-for-you Instagram and WhatsApp DM automation, plus a self-serve preview workspace for drafting flows.');
       text = text
@@ -154,6 +180,7 @@ export default {
       text = text
         .split('Chatora — no paid plan published').join('Chatora — done-for-you packages from $49')
         .split('No. They are dated vendor snapshots checked on 28 October 2026. Chatora has not published subscription pricing.').join('No. They are dated vendor snapshots checked on 28 October 2026. Chatora package prices are on the services page.')
+        .split('Chatora has not published subscription pricing, so a savings claim cannot be calculated.').join('Chatora publishes done-for-you package prices on the services page, starting at $49 one-time; there is no self-serve subscription, so a like-for-like subscription saving cannot be calculated.')
         .split('No billing or checkout is enabled in the current preview. This is not a published free subscription plan.').join('The current preview has no billing or checkout; it is not a published free subscription plan. Done-for-you packages are sold separately on the services page.')
         .split('No subscription plan published').join('Done-for-you packages from $49')
         .split('Live channel integrations, AI replies and paid plans are not available in the current preview.').join('Live channel integrations and AI replies are not available in the current preview; done-for-you setup is sold separately on the services page.');
