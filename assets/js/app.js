@@ -338,13 +338,15 @@
     fieldsTitle: "Custom fields", fieldKeyPh: "Key (e.g. city)", fieldValPh: "Value",
     addField: "Add field",
     tokensHint: "Tokens: {name} · {handle} · {tags} · {field:key}",
-    tgNoConn: "Connect Telegram in Settings, Channels, to reply here."
+    tgNoConn: "Connect Telegram in Settings, Channels, to reply here.",
+    trigEvents: "Contact events: event:tag-applied vip · event:tag-removed vip · event:field-changed city · event:schedule field:renewal_at. Live flows fire on these; messages send on Telegram and web chat."
   };
   const TK_AR = {
     fieldsTitle: "حقول مخصصة", fieldKeyPh: "المفتاح (مثال: المدينة)", fieldValPh: "القيمة",
     addField: "إضافة حقل",
     tokensHint: "متغيرات: {name} · {handle} · {tags} · {field:key}",
-    tgNoConn: "اربط تيليجرام من الإعدادات، القنوات، لتتمكن من الرد هنا."
+    tgNoConn: "اربط تيليجرام من الإعدادات، القنوات، لتتمكن من الرد هنا.",
+    trigEvents: "أحداث جهات الاتصال: event:tag-applied vip · event:tag-removed vip · event:field-changed city · event:schedule field:renewal_at. تعمل السيناريوهات المباشرة مع هذه الأحداث؛ تُرسل الرسائل عبر تيليجرام والدردشة."
   };
   const TK = Object.assign({}, TK_EN, ({ ar: TK_AR })[LANG] || {});
   const tgConn = () => (state.channels || []).filter((c) => c.provider === "telegram")[0] || null;
@@ -820,6 +822,7 @@
 
     return `<div class="dash-head"><button type="button" class="btn btn-ghost btn-sm" id="ed-back">← ${esc(T.back)}</button>` +
       `<div class="ed-actions"><span class="dash-ok" id="ed-ok"></span>` +
+      `<select id="ed-status" class="ed-status" aria-label="${esc(T.status || 'Status')}">` + ["draft", "live", "paused"].map((s) => `<option value="${s}"${f.status === s ? " selected" : ""}>${esc(T[s] || s)}</option>`).join("") + `</select>` +
       `<button type="button" class="btn btn-ghost btn-sm" id="ed-test">${esc(T.testRun)}</button>` +
       `<button type="button" class="btn btn-primary btn-sm" id="ed-save">${esc(T.save)}</button></div></div>` +
       guideHtml() + `<div class="dash-card"><h2>${esc(T.flowName)}</h2>` +
@@ -827,7 +830,8 @@
       `<p class="dash-note">${esc(chLabel(f.channel))} · ${esc(T[["live", "paused", "draft"].includes(f.status) ? f.status : "draft"] || "")}</p></div>` +
       `<div class="dash-card"><h2>${esc(T.steps)}</h2>` +
       `<ol class="dsteps">${rows || `<li class="dash-empty">${esc(T.noSteps)}</li>`}</ol>` +
-      `<div class="dstep-add"><span>${esc(T.addStep)}</span>${adds}</div></div>` +
+      `<div class="dstep-add"><span>${esc(T.addStep)}</span>${adds}</div>` +
+      (state.steps[0] && state.steps[0].t === "trigger" ? `<p class="dash-note trig-hint">${esc(TK.trigEvents)}</p>` : "") + `</div>` +
       `<div class="dash-card is-danger"><button type="button" class="btn btn-ghost btn-sm" id="ed-del">${esc(T.deleteFlow)}</button></div>`;
   }
 
@@ -2154,6 +2158,21 @@
     }
   }
 
+  // Fires contact-event triggers (tag applied/removed, field changed) for live flows.
+  function fireContactEvents(contactId, before, after) {
+    const evs = [];
+    const bt = (before.tags || []).map((t) => String(t).toLowerCase());
+    const at = (after.tags || []).map((t) => String(t).toLowerCase());
+    (after.tags || []).forEach((t, i) => { if (bt.indexOf(at[i]) === -1) evs.push({ kind: "tag-applied", key: String(t) }); });
+    (before.tags || []).forEach((t) => { if (at.indexOf(String(t).toLowerCase()) === -1) evs.push({ kind: "tag-removed", key: String(t) }); });
+    const bf = before.fields || {}, af = after.fields || {};
+    Object.keys(af).forEach((k) => { if (String(bf[k]) !== String(af[k])) evs.push({ kind: "field-changed", key: k }); });
+    Object.keys(bf).forEach((k) => { if (!(k in af)) evs.push({ kind: "field-changed", key: k }); });
+    evs.slice(0, 10).forEach((e) => {
+      tgApi("/api/automation/event", { workspace: state.ws.id, contact_id: contactId, kind: e.kind, key: e.key }).catch(() => {});
+    });
+  }
+
   function syncCeditFromDom() {
     const ed = state.cedit;
     if (!ed) return;
@@ -2165,6 +2184,7 @@
   }
 
   async function saveContact() {
+    const before = state.cedit.id ? (state.contacts.filter((c) => c.id === state.cedit.id)[0] || {}) : {};
     const name = tidy($("#cf-name").value, 80).trim();
     if (!name) { $("#cf-name").focus(); return; }
     const body = {
@@ -2179,6 +2199,7 @@
       const row = await A.rest("/rest/v1/contacts?id=eq." + state.cedit.id, { method: "PATCH", body: JSON.stringify(body) });
       const i = state.contacts.findIndex((c) => c.id === state.cedit.id);
       if (i > -1) state.contacts[i] = Object.assign({}, state.contacts[i], Array.isArray(row) ? row[0] : body);
+      fireContactEvents(state.cedit.id, before, body);
     } else {
       const row = await A.rest("/rest/v1/contacts", { method: "POST", body: JSON.stringify(Object.assign({ workspace_id: state.ws.id }, body)) });
       state.contacts.unshift(Array.isArray(row) ? row[0] : row);
@@ -2336,12 +2357,15 @@
     }));
     $("#ed-save", p).addEventListener("click", async () => {
       const name = tidy($("#ed-name").value, 70).trim() || state.edit.name;
+      const stEl = $("#ed-status");
+      const fstatus = stEl && ["draft", "live", "paused"].indexOf(stEl.value) !== -1 ? stEl.value : state.edit.status;
       state.steps.forEach((s) => { if (typeof s.text === "string") s.text = tidy(s.text, 1000); });
       await A.rest("/rest/v1/flows?id=eq." + state.edit.id, {
         method: "PATCH",
-        body: JSON.stringify({ name, nodes: state.steps, updated_at: new Date().toISOString() })
+        body: JSON.stringify({ name, status: fstatus, nodes: state.steps, updated_at: new Date().toISOString() })
       });
       state.edit.name = name;
+      state.edit.status = fstatus;
       state.edit.nodes = state.steps;
       if (state.guide) { state.ready = true; paint(); return; }
       const ok = $("#ed-ok");
