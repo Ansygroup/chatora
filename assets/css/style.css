@@ -1655,3 +1655,13 @@ html[dir="rtl"] .cform select{background-position:16px 50%,11px 50%}
 .gtpl-pop{font-size:10.5px;padding:2px 7px;border-radius:999px;background:rgba(44,229,214,.14);color:#2CE5D6;font-weight:700;margin-inline-start:6px}
 .tg-steps{font-size:13px;color:var(--text-2);margin:0 0 12px;padding-inline-start:20px}
 .tg-steps li{margin-bottom:6px}
+
+/* Phase 2 item 1: contact custom fields + token hint */
+.cfields{display:flex;flex-direction:column;gap:6px;margin:2px 0}
+.cfields-label{font-size:12px;font-weight:600;color:var(--muted)}
+.cfield-row{display:flex;align-items:center;gap:8px;padding:4px 6px;border:1px solid var(--line);border-radius:8px}
+.cfield-key{font-size:12px;background:rgba(255,255,255,.06);padding:2px 6px;border-radius:6px;direction:ltr}
+.cfield-val{flex:1;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cfield-new{display:flex;gap:6px;flex-wrap:wrap}
+.cfield-new input{flex:1;min-width:110px}
+.tokens-hint{font-size:11px;margin:2px 0 4px;opacity:.7;direction:ltr;text-align:start}
