@@ -259,11 +259,180 @@ async function tgHook(request, url) {
   return wjson({ ok: true });
 }
 
+/* ---- Phase 2 item 2: contact-event automation ---- */
+function aTokens(text, c) {
+  const fields = (c.fields && typeof c.fields === 'object') ? c.fields : {};
+  return String(text || '').replace(/\{\s*(name|handle|tags)\s*\}|\{\s*field\s*:\s*([\w.\-]{1,30})\s*\}/gi, (m, simple, key) => {
+    if (simple) {
+      const k = simple.toLowerCase();
+      if (k === 'name') return c.name || '';
+      if (k === 'handle') return c.handle || '';
+      if (k === 'tags') return (c.tags || []).join(', ');
+    }
+    if (key) {
+      const hit = Object.keys(fields).filter((k2) => k2.toLowerCase() === key.toLowerCase())[0];
+      return hit != null ? String(fields[hit]) : '';
+    }
+    return m;
+  });
+}
+function aCond(cond, c) {
+  const text = String(cond || '').trim();
+  const tagM = /^tag\s*:\s*(.{1,40})$/i.exec(text);
+  if (tagM) {
+    const want = tagM[1].trim().toLowerCase();
+    return (c.tags || []).some((t) => String(t).toLowerCase() === want);
+  }
+  const fM = /^field\s*:\s*([\w.\-]{1,30})\s*(?:=\s*(.{1,60}))?$/i.exec(text);
+  if (fM) {
+    const fields = (c.fields && typeof c.fields === 'object') ? c.fields : {};
+    const hit = Object.keys(fields).filter((k) => k.toLowerCase() === fM[1].toLowerCase())[0];
+    const val = hit != null ? String(fields[hit]) : '';
+    if (fM[2] == null) return hit != null && val !== '';
+    return val.toLowerCase() === fM[2].trim().toLowerCase();
+  }
+  return null;
+}
+// Walks flow nodes from startIdx. Pure: collects telegram sends (out.tg) and DB
+// effects (out.effects); the caller performs them. Stops at a delay (pending),
+// a false condition (done), or the end (done).
+function walkFlow(nodes, startIdx, contact) {
+  const out = { status: 'done', nextIdx: (nodes || []).length, runAt: null, effects: [], tg: [], notes: [], chatId: '' };
+  const c = { name: contact.name || '', handle: contact.handle || '', channel: contact.channel || '', tags: Array.isArray(contact.tags) ? contact.tags.slice() : [], fields: Object.assign({}, contact.fields || {}) };
+  out.chatId = String(c.handle).replace(/^tg:/, '');
+  out.finalTags = c.tags;
+  for (let i = startIdx; i < (nodes || []).length; i++) {
+    const s = nodes[i] || {};
+    if (s.t === 'msg') {
+      const body = aTokens(String(s.text || ''), c).slice(0, 1000);
+      if (!body) continue;
+      if (c.channel === 'telegram' && /^-?\d{1,20}$/.test(out.chatId)) out.tg.push(body);
+      else if (c.channel === 'web') out.effects.push({ type: 'web_msg', contact_id: contact.id, workspace_id: contact.workspace_id, body: body });
+      else out.notes.push('msg skipped: ' + c.channel);
+    } else if (s.t === 'cond') {
+      const v = aCond(s.text, c);
+      if (v === false) { out.notes.push('cond stop'); out.nextIdx = i + 1; return out; }
+      if (v === null) out.notes.push('cond unknown');
+    } else if (s.t === 'tag') {
+      const tag = String(s.text || '').trim().slice(0, 40);
+      if (tag && c.tags.map((x) => String(x).toLowerCase()).indexOf(tag.toLowerCase()) === -1) {
+        c.tags.push(tag);
+        out.effects.push({ type: 'add_tag', contact_id: contact.id, tag: tag });
+      }
+    } else if (s.t === 'delay') {
+      const mins = Math.max(1, Math.min(1440, parseInt(s.v, 10) || 5));
+      out.status = 'pending';
+      out.nextIdx = i + 1;
+      out.runAt = new Date(Date.now() + mins * 60000).toISOString();
+      return out;
+    }
+  }
+  out.nextIdx = (nodes || []).length;
+  return out;
+}
+
+async function automationEvent(request, url) {
+  const origin = request.headers.get('origin');
+  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: wcors(origin) });
+  if (request.method !== 'POST') return wjson({ error: 'method' }, 405, origin);
+  const auth = String(request.headers.get('authorization') || '');
+  if (!/^Bearer [A-Za-z0-9._~-]{100,2400}$/.test(auth)) return wjson({ error: 'auth' }, 401, origin);
+  const rip = request.headers.get('cf-connecting-ip') || 'x';
+  if (wlimited('ae' + rip, 60, 600000)) return wjson({ error: 'rate' }, 429, origin);
+  let body;
+  try {
+    const raw = await request.text();
+    if (raw.length > 4096) return wjson({ error: 'too large' }, 413, origin);
+    body = JSON.parse(raw);
+  } catch { return wjson({ error: 'bad json' }, 400, origin); }
+  const wsid = String(body.workspace || '');
+  const cid = String(body.contact_id || '');
+  const kind = String(body.kind || '');
+  const key = String(body.key || '').slice(0, 60);
+  const kinds = { 'tag-applied': 'event:tag-applied', 'tag-removed': 'event:tag-removed', 'field-changed': 'event:field-changed' };
+  if (!/^[0-9a-f-]{36}$/.test(wsid) || !/^[0-9a-f-]{36}$/.test(cid) || !kinds[kind] || !key) return wjson({ error: 'bad request' }, 400, origin);
+  const sb = (path, init) => fetch(WSB + path, Object.assign({}, init, {
+    headers: Object.assign({ apikey: WANON, authorization: auth, 'content-type': 'application/json', prefer: 'return=representation' }, (init && init.headers) || {})
+  }));
+  const cRes = await sb('/rest/v1/contacts?id=eq.' + cid + '&workspace_id=eq.' + wsid + '&select=id,workspace_id,name,handle,channel,tags,fields&limit=1');
+  const contact = cRes.ok ? (await cRes.json())[0] : null;
+  if (!contact) return wjson({ error: 'not found' }, 404, origin);
+  const fRes = await sb('/rest/v1/flows?workspace_id=eq.' + wsid + '&status=eq.live&select=id,name,runs,nodes&limit=50');
+  const flows = fRes.ok ? await fRes.json() : [];
+  const want = kinds[kind];
+  const matched = (flows || []).filter((f) => {
+    const n0 = Array.isArray(f.nodes) ? f.nodes[0] : null;
+    if (!n0 || n0.t !== 'trigger') return false;
+    const m = new RegExp('^' + want + '\\s+(.{1,60})$', 'i').exec(String(n0.text || '').trim());
+    return m && m[1].trim().toLowerCase() === key.toLowerCase();
+  }).slice(0, 5);
+  if (!matched.length) return wjson({ ok: true, fired: 0 }, 200, origin);
+  const tgRes = await sb('/rest/v1/channel_connections?workspace_id=eq.' + wsid + '&provider=eq.telegram&status=eq.connected&select=auth_token&limit=1');
+  const tgTok = tgRes.ok ? ((await tgRes.json())[0] || {}).auth_token : null;
+  let fired = 0;
+  for (const f of matched) {
+    const runRes = await sb('/rest/v1/flow_runs', { method: 'POST', body: JSON.stringify({ workspace_id: wsid, flow_id: f.id, contact_id: cid, next_step: 1, status: 'running', note: kind }) });
+    const run = runRes.ok ? (await runRes.json())[0] : null;
+    if (!run) continue;
+    fired++;
+    const r = walkFlow(f.nodes, 1, contact);
+    if (tgTok) for (const text of r.tg) await tgCall(tgTok, 'sendMessage', { chat_id: Number(r.chatId), text: text });
+    for (const e of r.effects) {
+      if (e.type !== 'web_msg') continue;
+      const conv = await sb('/rest/v1/conversations?contact_id=eq.' + e.contact_id + '&channel=eq.web&status=neq.closed&order=last_at.desc&limit=1&select=id');
+      let convId = conv.ok ? ((await conv.json())[0] || {}).id : null;
+      if (!convId) {
+        const made = await sb('/rest/v1/conversations', { method: 'POST', body: JSON.stringify({ workspace_id: e.workspace_id, contact_id: e.contact_id, channel: 'web', status: 'ai', last_at: new Date().toISOString() }) });
+        convId = made.ok ? ((await made.json())[0] || {}).id : null;
+      }
+      if (convId) {
+        await sb('/rest/v1/messages', { method: 'POST', body: JSON.stringify({ conversation_id: convId, direction: 'out', author: 'ai', body: e.body.slice(0, 1200) }) });
+        await sb('/rest/v1/conversations?id=eq.' + convId, { method: 'PATCH', body: JSON.stringify({ last_at: new Date().toISOString() }) });
+      }
+    }
+    const beforeTags = (contact.tags || []).map((x) => String(x).toLowerCase()).join('|');
+    if (r.finalTags.map((x) => String(x).toLowerCase()).join('|') !== beforeTags) {
+      await sb('/rest/v1/contacts?id=eq.' + cid, { method: 'PATCH', body: JSON.stringify({ tags: r.finalTags.slice(0, 20) }) });
+    }
+    await sb('/rest/v1/flow_runs?id=eq.' + run.id, { method: 'PATCH', body: JSON.stringify({ status: r.status, next_step: r.nextIdx, run_at: r.runAt || new Date().toISOString(), note: (kind + '; ' + r.notes.join('; ')).slice(0, 190) }) });
+    if (r.status === 'done') await sb('/rest/v1/flows?id=eq.' + f.id, { method: 'PATCH', body: JSON.stringify({ runs: (f.runs || 0) + 1 }) });
+  }
+  return wjson({ ok: true, fired: fired }, 200, origin);
+}
+
+async function automationTick(env) {
+  const key = env && env.AUTOMATION_SECRET;
+  if (!key) { console.log('automation: AUTOMATION_SECRET not set'); return; }
+  const rpc = async (fn, payload) => {
+    try {
+      const r = await fetch(WSB + '/rest/v1/rpc/' + fn, { method: 'POST', headers: { apikey: WANON, authorization: 'Bearer ' + WANON, 'content-type': 'application/json' }, body: JSON.stringify(payload) });
+      if (!r.ok) { console.log('rpc ' + fn + ' ' + r.status); return null; }
+      return await r.json();
+    } catch (e) { console.log('rpc ' + fn + ' ' + String(e)); return null; }
+  };
+  const data = await rpc('automation_tick', { p_key: key });
+  if (!data) return;
+  const items = [].concat(data.runs || [], data.scheduled || []);
+  for (const it of items.slice(0, 40)) {
+    try {
+      const contact = Object.assign({ id: it.contact_id, workspace_id: it.workspace_id }, it.contact || {});
+      const r = walkFlow(it.nodes || [], it.next_step || 1, contact);
+      if (it.tg_token) for (const text of r.tg) await tgCall(it.tg_token, 'sendMessage', { chat_id: Number(r.chatId), text: text });
+      await rpc('automation_finish', { p_key: key, p_run_id: it.run_id, p_status: r.status, p_next_step: r.nextIdx, p_run_at: r.runAt, p_note: (it.note + '; ' + r.notes.join('; ')).slice(0, 190), p_effects: r.effects });
+    } catch (e) {
+      console.log('run ' + it.run_id + ' ' + String(e));
+      await rpc('automation_finish', { p_key: key, p_run_id: it.run_id, p_status: 'failed', p_next_step: it.next_step || 1, p_run_at: null, p_note: String(e).slice(0, 190), p_effects: [] });
+    }
+  }
+}
+
 export default {
+  async scheduled(event, env, ctx) { ctx.waitUntil(automationTick(env)); },
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname === '/api/widget/config' || url.pathname === '/api/widget/chat' || url.pathname === '/api/widget/poll') return widget(request, env, url);
     if (url.pathname === '/api/channels/telegram/connect' || url.pathname === '/api/channels/telegram/action' || url.pathname === '/api/channels/telegram/send') return tgAdmin(request, url);
+    if (url.pathname === '/api/automation/event') return automationEvent(request, url);
     if (url.pathname.indexOf('/api/tg/hook/') === 0) return tgHook(request, url);
     if (url.pathname !== '/api/chat') {
       const res = await env.ASSETS.fetch(request);
