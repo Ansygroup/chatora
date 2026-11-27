@@ -205,6 +205,19 @@ async function tgAdmin(request, url) {
     }
     return wjson({ ok: true, id: made.id, handle: handle }, 200, origin);
   }
+  if (url.pathname === '/api/channels/telegram/send') {
+    const wsid2 = String(body.workspace || '');
+    const chat = String(body.chat || '');
+    const text2 = String(body.text || '').slice(0, 4000);
+    if (!/^[0-9a-f-]{36}$/.test(wsid2) || !/^-?\d{1,20}$/.test(chat) || !text2) return wjson({ error: 'bad request' }, 400, origin);
+    const got2 = await sb('/rest/v1/channel_connections?workspace_id=eq.' + wsid2 + '&provider=eq.telegram&status=eq.connected&select=id,auth_token&limit=1');
+    if (!got2.ok) return wjson({ error: 'lookup failed' }, 502, origin);
+    const conn2 = (await got2.json())[0];
+    if (!conn2 || !conn2.auth_token) return wjson({ error: 'not connected' }, 404, origin);
+    const sent = await tgCall(conn2.auth_token, 'sendMessage', { chat_id: Number(chat), text: text2 });
+    if (!sent) return wjson({ error: 'send failed' }, 502, origin);
+    return wjson({ ok: true, message_id: sent.message_id }, 200, origin);
+  }
   const id = String(body.id || '');
   if (!/^[0-9a-f-]{36}$/.test(id)) return wjson({ error: 'bad id' }, 400, origin);
   const got = await sb('/rest/v1/channel_connections?id=eq.' + id + '&select=id,provider,auth_token,status');
@@ -250,7 +263,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname === '/api/widget/config' || url.pathname === '/api/widget/chat' || url.pathname === '/api/widget/poll') return widget(request, env, url);
-    if (url.pathname === '/api/channels/telegram/connect' || url.pathname === '/api/channels/telegram/action') return tgAdmin(request, url);
+    if (url.pathname === '/api/channels/telegram/connect' || url.pathname === '/api/channels/telegram/action' || url.pathname === '/api/channels/telegram/send') return tgAdmin(request, url);
     if (url.pathname.indexOf('/api/tg/hook/') === 0) return tgHook(request, url);
     if (url.pathname !== '/api/chat') {
       const res = await env.ASSETS.fetch(request);
