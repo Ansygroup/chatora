@@ -587,7 +587,7 @@
     const byChan = Object.keys(chans).map((k) => ({ k: chLabel(k), v: chans[k], c: k })).sort((a, b) => b.v - a.v);
 
     const of = (n) => T.of.replace("{n}", n);
-    return onboarding() + bpCard() + `<div class="kpis">${kpi(T.kContacts, num(state.contacts.length), of("1,000"))}${kpi(T.kFlows, num(live), of(num(state.flows.length)))}` +
+    return onboarding() + bpCard() + `<div class="kpis">${kpi(T.kContacts, num(state.contacts.length), of("100"))}${kpi(T.kFlows, num(live), of(num(state.flows.length)))}` +
       `${kpi(T.kOpen, num(open), "")}${kpi(T.kRuns, num(runs), "")}</div>` +
       `<div class="dash-grid"><div class="dash-card"><h2>${esc(T.runsBy)}</h2>${bars(byFlow)}</div>` +
       `<div class="dash-card"><h2>${esc(T.channels)}</h2>${bars(byChan, (i) => chColor(i.c))}</div></div>` +
@@ -1400,6 +1400,15 @@
       igPicker + `</section></div></div>`;
   }
 
+  function meterHtml() {
+    const lim = 100, n = state.contacts.length, pct = Math.min(100, Math.round(n / lim * 100)), warn = pct >= 80;
+    const col = pct >= 100 ? "#f87171" : warn ? "#fbbf24" : "#7dd3fc";
+    const lbl = AR ? num(n) + " من " + num(lim) + " جهة اتصال مستخدمة (الخطة المجانية)" : num(n) + " of " + num(lim) + " contacts used (Free plan)";
+    const note = warn ? (AR ? "اقتربت من الحد. لا يوجد حظر في المعاينة، والخطط المدفوعة غير متاحة بعد." : "You are close to the Free limit. Nothing is blocked in this preview, and paid plans are not open yet.") : "";
+    return `<div class="meter" style="margin-top:12px"><div style="font-size:13px;margin-bottom:6px">${esc(lbl)}</div>` +
+      `<div role="progressbar" aria-valuemin="0" aria-valuemax="${lim}" aria-valuenow="${Math.min(n, lim)}" style="height:8px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden"><div style="height:100%;width:${pct}%;background:${col}"></div></div>` +
+      (note ? `<p class="dash-note" style="margin-top:8px">${esc(note)}</p>` : "") + `</div>`;
+  }
   function renderSettings() {
     const sec = (id, title, open, html) => `<details class="set-sec" data-sec="${id}"${state.setOpen && state.setOpen[id] !== undefined ? (state.setOpen[id] ? " open" : "") : (open ? " open" : "")} style="margin:0 0 14px"><summary style="cursor:pointer;font-weight:700;font-size:1.05rem;padding:8px 2px">${esc(title)}</summary>${html}</details>`;
     if (!T.setCh) { T.setCh = AR ? "القنوات" : "Channels"; T.setAi = AR ? "الموقع والذكاء الاصطناعي" : "Website chat and AI"; T.setAcct = AR ? "الحساب والخطة" : "Account and plan"; }
@@ -1412,7 +1421,7 @@
       `<form id="pw-form" class="dash-inline"><input id="pw-input" type="password" autocomplete="new-password" minlength="8" aria-label="${esc(T.pwNew)}" placeholder="${esc(T.pwNew)}">` +
       `<button class="btn btn-ghost btn-sm" type="submit">${esc(T.pwSave)}</button></form>` +
       `<p class="dash-note" id="pw-msg"></p></div>` +
-      `<div class="dash-card"><h2>${esc(T.plan)}</h2><p class="dash-plan-row"><b>${esc(T.planFree)}</b> — <span>${esc(T.dataIsolation)}</span></p></div>` +
+      `<div class="dash-card"><h2>${esc(T.plan)}</h2><p class="dash-plan-row"><b>${esc(T.planFree)}</b> — <span>${esc(T.dataIsolation)}</span></p>${meterHtml()}</div>` +
       `<div class="dash-card"><h2>${esc(T.account)}</h2><p>${esc((A.user() && A.user().email) || "")}</p>` +
       `<p class="dash-note">${esc(T.exportTitle)} — <button type="button" class="link-btn" id="export">${esc(T.exportBtn)}</button></p></div>` +
       `<div class="dash-card"><h2>${esc(T.session)}</h2>` +
