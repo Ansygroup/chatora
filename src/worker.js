@@ -338,6 +338,14 @@ function walkFlow(nodes, startIdx, contact) {
       const v = aCond(s.text, c);
       if (v === false) { out.notes.push('cond stop'); out.nextIdx = i + 1; return out; }
       if (v === null) out.notes.push('cond unknown');
+    } else if (s.t === 'buy') {
+      const url = String(s.url || '').trim();
+      if (!/^https:\/\/(buy|donate)\.stripe\.com\/[A-Za-z0-9_\-\/?=&%.]{4,300}$/.test(url)) { out.notes.push('buy skipped: bad link'); continue; }
+      const label = aTokens(String(s.text || ''), c).slice(0, 60) || 'Buy';
+      const body = label + ': ' + url;
+      if (c.channel === 'telegram' && /^-?\d{1,20}$/.test(out.chatId)) out.tg.push(body);
+      else if (c.channel === 'web') out.effects.push({ type: 'web_msg', contact_id: contact.id, workspace_id: contact.workspace_id, body: body });
+      else out.notes.push('buy skipped: ' + c.channel);
     } else if (s.t === 'tag') {
       const tag = String(s.text || '').trim().slice(0, 40);
       if (tag && c.tags.map((x) => String(x).toLowerCase()).indexOf(tag.toLowerCase()) === -1) {
