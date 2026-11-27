@@ -320,7 +320,8 @@ function walkFlow(nodes, startIdx, contact) {
         out.effects.push({ type: 'add_tag', contact_id: contact.id, tag: tag });
       }
     } else if (s.t === 'delay') {
-      const mins = Math.max(1, Math.min(1440, parseInt(s.v, 10) || 5));
+      const mult = s.u === 'd' ? 1440 : s.u === 'h' ? 60 : 1;
+      const mins = Math.max(1, Math.min(43200, (parseInt(s.v, 10) || 5) * mult));
       out.status = 'pending';
       out.nextIdx = i + 1;
       out.runAt = new Date(Date.now() + mins * 60000).toISOString();
@@ -350,17 +351,28 @@ async function automationEvent(request, url) {
   const kind = String(body.kind || '');
   const key = String(body.key || '').slice(0, 60);
   const kinds = { 'tag-applied': 'event:tag-applied', 'tag-removed': 'event:tag-removed', 'field-changed': 'event:field-changed' };
-  if (!/^[0-9a-f-]{36}$/.test(wsid) || !/^[0-9a-f-]{36}$/.test(cid) || !kinds[kind] || !key) return wjson({ error: 'bad request' }, 400, origin);
+  const seqKind = kind === 'enroll' || kind === 'unenroll';
+  if (!/^[0-9a-f-]{36}$/.test(wsid) || !/^[0-9a-f-]{36}$/.test(cid) || !(kinds[kind] || seqKind) || !key) return wjson({ error: 'bad request' }, 400, origin);
+  if (seqKind && !/^[0-9a-f-]{36}$/.test(key)) return wjson({ error: 'bad flow' }, 400, origin);
   const sb = (path, init) => fetch(WSB + path, Object.assign({}, init, {
     headers: Object.assign({ apikey: WANON, authorization: auth, 'content-type': 'application/json', prefer: 'return=representation' }, (init && init.headers) || {})
   }));
   const cRes = await sb('/rest/v1/contacts?id=eq.' + cid + '&workspace_id=eq.' + wsid + '&select=id,workspace_id,name,handle,channel,tags,fields&limit=1');
   const contact = cRes.ok ? (await cRes.json())[0] : null;
   if (!contact) return wjson({ error: 'not found' }, 404, origin);
+  if (kind === 'unenroll') {
+    const u = await sb('/rest/v1/flow_runs?flow_id=eq.' + key + '&contact_id=eq.' + cid + '&workspace_id=eq.' + wsid + '&status=in.(pending,running)', { method: 'PATCH', body: JSON.stringify({ status: 'failed', note: 'unenrolled' }) });
+    const n = u.ok ? (await u.json()).length : 0;
+    return wjson({ ok: u.ok, stopped: n }, u.ok ? 200 : 502, origin);
+  }
   const fRes = await sb('/rest/v1/flows?workspace_id=eq.' + wsid + '&status=eq.live&select=id,name,runs,nodes&limit=50');
   const flows = fRes.ok ? await fRes.json() : [];
   const want = kinds[kind];
-  const matched = (flows || []).filter((f) => {
+  if (kind === 'enroll') {
+    const dup = await sb('/rest/v1/flow_runs?flow_id=eq.' + key + '&contact_id=eq.' + cid + '&status=in.(pending,running)&select=id&limit=1');
+    if (dup.ok && ((await dup.json())[0])) return wjson({ ok: true, fired: 0, already: true }, 200, origin);
+  }
+  const matched = kind === 'enroll' ? (flows || []).filter((f) => f.id === key).slice(0, 1) : (flows || []).filter((f) => {
     const n0 = Array.isArray(f.nodes) ? f.nodes[0] : null;
     if (!n0 || n0.t !== 'trigger') return false;
     const m = new RegExp('^' + want + '\\s+(.{1,60})$', 'i').exec(String(n0.text || '').trim());
