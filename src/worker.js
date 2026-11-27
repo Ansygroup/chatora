@@ -152,6 +152,7 @@ async function widget(request, env, url) {
     return wjson({ reply: null, human: true }, 200, origin);
   }
   const lastText = msgs[msgs.length - 1].content;
+  if (STOP_RE.test(lastText) && (await inboundStop(env, 'web', key, visitor))) return wjson({ reply: 'You are unsubscribed. You will not get more broadcasts.', flow: true }, 200, origin);
   const fr = await inboundRun(env, 'web', key, visitor, '', lastText, async () => { await sbRpc('widget_log', { p_key: key, p_visitor: visitor, p_in: lastText, p_out: '' }); });
   if (fr && fr.replies.length) return wjson({ reply: fr.replies.join('\n\n').slice(0, 1200), flow: true }, 200, origin);
   const ai = await aiAnswer(env, cfg, msgs);
@@ -277,6 +278,10 @@ async function tgHook(request, url, env) {
       await sbRpc('tg_log', { p_id: id, p_update: String(upd.update_id || ''), p_chat: String(msg.chat.id), p_name: name.slice(0, 80), p_text: text.slice(0, 4000) });
     } catch (e) { console.log('tg_log', String(e)); }
     if (upd.message) {
+      if (STOP_RE.test(text)) {
+        const st = await inboundStop(env, 'telegram', id, String(msg.chat.id));
+        if (st && st.tg_token) { await tgCall(st.tg_token, 'sendMessage', { chat_id: Number(msg.chat.id), text: 'You are unsubscribed. You will not get more broadcasts.' }); return wjson({ ok: true }); }
+      }
       const fr = await inboundRun(env, 'telegram', id, String(msg.chat.id), String(upd.update_id || ''), text);
       if (!fr && msg.chat.type === 'private' && !/^\/start(@\w+)?(\s|$)/i.test(text)) await tgAi(env, id, String(msg.chat.id), text);
     }
@@ -467,6 +472,86 @@ async function automationEvent(request, url) {
   return wjson({ ok: true, fired: fired }, 200, origin);
 }
 
+/* ---- Phase 2 item 8: broadcast with anti-spam limits ---- */
+const BC_MAX = 30;            // recipients per broadcast (keeps one request inside the Worker subrequest limit)
+const BC_GAP_MS = 3600000;    // one broadcast per workspace per hour
+const STOP_RE = /^\s*(stop|unsubscribe|cancel|إلغاء|الغاء|إيقاف|ايقاف)\s*[.!]?\s*$/i;
+const UNSUB_TAG = 'unsubscribed';
+async function broadcastSend(request, url) {
+  const origin = request.headers.get('origin');
+  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: wcors(origin) });
+  if (request.method !== 'POST') return wjson({ error: 'method' }, 405, origin);
+  const auth = String(request.headers.get('authorization') || '');
+  if (!/^Bearer [A-Za-z0-9._~-]{100,2400}$/.test(auth)) return wjson({ error: 'auth' }, 401, origin);
+  const rip = request.headers.get('cf-connecting-ip') || 'x';
+  if (wlimited('bc' + rip, 6, 600000)) return wjson({ error: 'rate' }, 429, origin);
+  let b;
+  try { const raw = await request.text(); if (raw.length > 4096) return wjson({ error: 'too large' }, 413, origin); b = JSON.parse(raw); } catch { return wjson({ error: 'bad json' }, 400, origin); }
+  const wsid = String(b.workspace || '');
+  const name = String(b.name || '').trim().slice(0, 60) || 'Broadcast';
+  const text = String(b.body || '').trim();
+  const channel = ['all', 'telegram', 'web'].indexOf(b.channel) !== -1 ? b.channel : 'all';
+  const tag = String(b.tag || '').trim().slice(0, 40);
+  if (!/^[0-9a-f-]{36}$/.test(wsid) || text.length < 1 || text.length > 600) return wjson({ error: 'bad request' }, 400, origin);
+  const sb = (path, init) => fetch(WSB + path, Object.assign({}, init, {
+    headers: Object.assign({ apikey: WANON, authorization: auth, 'content-type': 'application/json', prefer: 'return=representation' }, (init && init.headers) || {})
+  }));
+  const since = new Date(Date.now() - BC_GAP_MS).toISOString();
+  const recent = await sb('/rest/v1/broadcasts?workspace_id=eq.' + wsid + '&created_at=gte.' + encodeURIComponent(since) + '&select=created_at&order=created_at.desc&limit=1');
+  if (!recent.ok) return wjson({ error: 'lookup failed' }, 502, origin);
+  const last = (await recent.json())[0];
+  if (last) return wjson({ error: 'too_soon', retry_after_min: Math.max(1, Math.ceil((new Date(last.created_at).getTime() + BC_GAP_MS - Date.now()) / 60000)) }, 429, origin);
+  const cRes = await sb('/rest/v1/contacts?workspace_id=eq.' + wsid + '&channel=in.(telegram,web)&select=id,workspace_id,handle,channel,tags&limit=1000');
+  if (!cRes.ok) return wjson({ error: 'lookup failed' }, 502, origin);
+  const lc = (x) => String(x).toLowerCase();
+  const aud = (await cRes.json()).filter((c) => (channel === 'all' || c.channel === channel) && (!tag || (c.tags || []).map(lc).indexOf(lc(tag)) !== -1) && (c.tags || []).map(lc).indexOf(UNSUB_TAG) === -1);
+  if (!aud.length) return wjson({ error: 'empty' }, 400, origin);
+  if (aud.length > BC_MAX) return wjson({ error: 'too_many', n: aud.length, max: BC_MAX }, 413, origin);
+  const msgText = text + '\n\nReply STOP to unsubscribe.';
+  const made = await sb('/rest/v1/broadcasts', { method: 'POST', body: JSON.stringify({ workspace_id: wsid, name: name, channel: channel === 'all' ? null : channel, body: text, audience: aud.length, sent: 0 }) });
+  const row = made.ok ? (await made.json())[0] : null;
+  if (!row) return wjson({ error: 'save failed' }, 502, origin);
+  let sent = 0;
+  const tgs = aud.filter((c) => c.channel === 'telegram' && /^tg:-?\d{1,20}$/.test(c.handle || ''));
+  if (tgs.length) {
+    const tr = await sb('/rest/v1/channel_connections?workspace_id=eq.' + wsid + '&provider=eq.telegram&status=eq.connected&select=auth_token&limit=1');
+    const tok = tr.ok ? ((await tr.json())[0] || {}).auth_token : null;
+    if (tok) for (let i = 0; i < tgs.length; i += 20) {
+      const res = await Promise.all(tgs.slice(i, i + 20).map((c) => tgCall(tok, 'sendMessage', { chat_id: Number(c.handle.slice(3)), text: msgText }).catch(() => null)));
+      sent += res.filter(Boolean).length;
+      if (i + 20 < tgs.length) await new Promise((r) => setTimeout(r, 1000));
+    }
+  }
+  const webs = aud.filter((c) => c.channel === 'web');
+  if (webs.length) {
+    const ids = webs.map((c) => c.id).join(',');
+    const cv = await sb('/rest/v1/conversations?contact_id=in.(' + ids + ')&channel=eq.web&status=neq.closed&order=last_at.desc&select=id,contact_id');
+    const have = {};
+    (cv.ok ? await cv.json() : []).forEach((r) => { if (!have[r.contact_id]) have[r.contact_id] = r.id; });
+    const now = new Date().toISOString();
+    const missing = webs.filter((c) => !have[c.id]).map((c) => ({ workspace_id: wsid, contact_id: c.id, channel: 'web', status: 'ai', last_at: now }));
+    if (missing.length) {
+      const mk = await sb('/rest/v1/conversations', { method: 'POST', body: JSON.stringify(missing) });
+      (mk.ok ? await mk.json() : []).forEach((r) => { have[r.contact_id] = r.id; });
+    }
+    const convIds = webs.map((c) => have[c.id]).filter(Boolean);
+    if (convIds.length) {
+      const ins = await sb('/rest/v1/messages', { method: 'POST', headers: { prefer: 'return=minimal' }, body: JSON.stringify(convIds.map((id) => ({ conversation_id: id, direction: 'out', author: 'ai', body: msgText }))) });
+      if (ins.ok) {
+        sent += convIds.length;
+        await sb('/rest/v1/conversations?id=in.(' + convIds.join(',') + ')', { method: 'PATCH', headers: { prefer: 'return=minimal' }, body: JSON.stringify({ last_at: now }) });
+      }
+    }
+  }
+  await sb('/rest/v1/broadcasts?id=eq.' + row.id, { method: 'PATCH', headers: { prefer: 'return=minimal' }, body: JSON.stringify({ sent: sent }) });
+  return wjson({ ok: true, audience: aud.length, sent: sent }, 200, origin);
+}
+async function inboundStop(env, scope, ref, visitor) {
+  const key = env && env.AUTOMATION_SECRET;
+  if (!key) return null;
+  try { return await sbRpc('inbound_unsub', { p_key: key, p_scope: scope, p_ref: ref, p_visitor: visitor }); } catch (e) { console.log('inbound_unsub', String(e)); return null; }
+}
+
 /* ---- Phase 2 item 4b: inbound keyword and /start matching ---- */
 async function inboundRun(env, scope, ref, visitor, update, text, onMatch) {
   const key = env && env.AUTOMATION_SECRET;
@@ -527,6 +612,7 @@ export default {
     if (url.pathname === '/api/widget/config' || url.pathname === '/api/widget/chat' || url.pathname === '/api/widget/poll') return widget(request, env, url);
     if (url.pathname === '/api/channels/telegram/connect' || url.pathname === '/api/channels/telegram/action' || url.pathname === '/api/channels/telegram/send') return tgAdmin(request, url);
     if (url.pathname === '/api/automation/event') return automationEvent(request, url);
+    if (url.pathname === '/api/broadcast/send') return broadcastSend(request, url);
     if (url.pathname.indexOf('/api/tg/hook/') === 0) return tgHook(request, url, env);
     if (url.pathname !== '/api/chat') {
       const res = await env.ASSETS.fetch(request);
