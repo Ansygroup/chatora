@@ -291,7 +291,8 @@
   };
   const CH_T = { instagram: "channelInstagram", whatsapp: "channelWhatsapp", tiktok: "channelTiktok", messenger: "channelMessenger", telegram: "channelTelegram", sms: "channelSms", email: "channelEmail", web: "channelWeb" };
   const chLabel = (k) => T[CH_T[k]] || (CH[k] || { label: k }).label;
-  const STEP_KINDS = ["trigger", "msg", "delay", "cond", "tag", "buy"];
+  const STEP_KINDS = ["trigger", "msg", "delay", "cond", "tag", "buy", "webhook"];
+  const HOOK_OK = (u) => { try { const x = new URL(u); const h = x.hostname.toLowerCase(); return x.protocol === "https:" && !x.port && !x.username && u.length <= 300 && /^[a-z0-9.-]+$/.test(h) && h.indexOf(".") > 0 && !/^\d+(\.\d+)*$/.test(h) && !/\.(local|internal|localhost|lan|home|corp|arpa)$/.test(h); } catch (e) { return false; } };
   const BUY_RE = /^https:\/\/(buy|donate)\.stripe\.com\/[A-Za-z0-9_\-\/?=&%.]{4,300}$/;
   const chColor = (k) => (CH[k] || { color: "#7C5CFF" }).color;
 
@@ -814,11 +815,13 @@
 
   function renderEditor() {
     const f = state.edit;
-    if (!T.sBuy) { T.sBuy = AR ? "رابط شراء" : "Buy link"; T.sBuyLabelPh = AR ? "نص الزر (مثلاً: اشتري الآن)" : "Button text (e.g. Buy now)"; T.sBuyUrlPh = AR ? "رابط دفع Stripe: https://buy.stripe.com/..." : "Stripe payment link: https://buy.stripe.com/..."; T.sBuyBad = AR ? "رابط الشراء لازم يبدأ بـ https://buy.stripe.com/ أو https://donate.stripe.com/" : "Buy link must start with https://buy.stripe.com/ or https://donate.stripe.com/"; }
+    if (!T.sWebhook) { T.sWebhook = AR ? "ويب هوك" : "Webhook"; T.sHookUrlPh = AR ? "رابط https (Google Apps Script أو Zapier أو Make أو n8n)" : "https URL (Google Apps Script, Zapier, Make, n8n)"; T.sHookBad = AR ? "رابط الويب هوك لازم يكون https عام (مش IP ولا localhost)" : "Webhook URL must be a public https address (no IP or localhost)"; }
+  if (!T.sBuy) { T.sBuy = AR ? "رابط شراء" : "Buy link"; T.sBuyLabelPh = AR ? "نص الزر (مثلاً: اشتري الآن)" : "Button text (e.g. Buy now)"; T.sBuyUrlPh = AR ? "رابط دفع Stripe: https://buy.stripe.com/..." : "Stripe payment link: https://buy.stripe.com/..."; T.sBuyBad = AR ? "رابط الشراء لازم يبدأ بـ https://buy.stripe.com/ أو https://donate.stripe.com/" : "Buy link must start with https://buy.stripe.com/ or https://donate.stripe.com/"; }
     const rows = state.steps.map((s, i) => {
       const first = i === 0;
       const kind = STEP_KINDS.indexOf(s.t) !== -1 ? s.t : "msg";
       const body = s.t === "msg" ? `<textarea class="dstep-in" rows="2" data-i="${i}" data-k="text" placeholder="${esc(T.sMsgPh)}">${esc(s.text || "")}</textarea>`
+        : s.t === "webhook" ? `<input class="dstep-in" data-i="${i}" data-k="url" type="url" inputmode="url" value="${esc(s.url || "")}" aria-label="${esc(T.sHookUrlPh)}" placeholder="${esc(T.sHookUrlPh)}">`
         : s.t === "buy" ? `<input class="dstep-in" data-i="${i}" data-k="text" maxlength="60" value="${esc(s.text || "")}" aria-label="${esc(T.sBuyLabelPh)}" placeholder="${esc(T.sBuyLabelPh)}"><input class="dstep-in" data-i="${i}" data-k="url" type="url" inputmode="url" value="${esc(s.url || "")}" aria-label="${esc(T.sBuyUrlPh)}" placeholder="${esc(T.sBuyUrlPh)}">`
         : s.t === "delay" ? `<input class="dstep-in" data-i="${i}" data-k="v" type="number" min="1" max="999" value="${esc(s.v || 5)}" aria-label="${esc(T.sDelayPh)}" placeholder="${esc(T.sDelayPh)}"><select class="dstep-in dstep-unit" data-i="${i}" data-k="u" aria-label="${esc(TK.unit)}">` + [["m", TK.uMin], ["h", TK.uHour], ["d", TK.uDay]].map((u) => `<option value="${u[0]}"${(s.u || "m") === u[0] ? " selected" : ""}>${esc(u[1])}</option>`).join("") + `</select>`
           : `<input class="dstep-in" data-i="${i}" data-k="text" value="${esc(s.text || "")}" aria-label="${esc(s.t === "tag" ? T.sTagPh : T.sCondPh)}" placeholder="${esc(s.t === "tag" ? T.sTagPh : T.sCondPh)}">`;
@@ -832,7 +835,7 @@
         `</div></li>`;
     }).join("");
 
-    const adds = ["msg", "delay", "cond", "tag", "buy"].map((k) =>
+    const adds = ["msg", "delay", "cond", "tag", "buy", "webhook"].map((k) =>
       `<button type="button" class="tpl-btn" data-add="${k}">+ ${esc(T["s" + k[0].toUpperCase() + k.slice(1)])}</button>`).join("");
 
     return `<div class="dash-head"><button type="button" class="btn btn-ghost btn-sm" id="ed-back">← ${esc(T.back)}</button>` +
@@ -2464,14 +2467,15 @@
     }));
     $$("[data-add]", p).forEach((b) => b.addEventListener("click", () => {
       const kind = b.getAttribute("data-add");
-      state.steps.push(kind === "delay" ? { t: "delay", v: 10 } : kind === "buy" ? { t: "buy", text: "", url: "" } : { t: kind, text: "" });
+      state.steps.push(kind === "delay" ? { t: "delay", v: 10 } : kind === "buy" ? { t: "buy", text: "", url: "" } : kind === "webhook" ? { t: "webhook", url: "" } : { t: kind, text: "" });
       paint();
     }));
     $("#ed-save", p).addEventListener("click", async () => {
       const name = tidy($("#ed-name").value, 70).trim() || state.edit.name;
       const stEl = $("#ed-status");
       const fstatus = stEl && ["draft", "live", "paused"].indexOf(stEl.value) !== -1 ? stEl.value : state.edit.status;
-      state.steps.forEach((s) => { if (typeof s.text === "string") s.text = tidy(s.text, 1000); if (s.t === "buy") s.url = String(s.url || "").trim(); });
+      state.steps.forEach((s) => { if (typeof s.text === "string") s.text = tidy(s.text, 1000); if (s.t === "buy" || s.t === "webhook") s.url = String(s.url || "").trim(); });
+      if (state.steps.some((s) => s.t === "webhook" && !HOOK_OK(s.url))) { window.alert(T.sHookBad); return; }
       if (state.steps.some((s) => s.t === "buy" && !BUY_RE.test(s.url))) { const okEl = $("#ed-ok"); if (okEl) { okEl.textContent = T.sBuyBad; } window.alert(T.sBuyBad); return; }
       await A.rest("/rest/v1/flows?id=eq." + state.edit.id, {
         method: "PATCH",
@@ -2543,6 +2547,8 @@
         const verdict = contactMatchesCond(s.text, sampleContact());
         const mark = verdict == null ? "" : verdict ? " ✓" : " ✗";
         body.insertAdjacentHTML("beforeend", `<div class="tmodal-sys">❓ ${esc(s.text || "")}${mark}</div>`);
+      } else if (s.t === "webhook") {
+        body.insertAdjacentHTML("beforeend", `<div class="tmodal-sys">🔗 ${esc(s.url || "")}</div>`);
       } else if (s.t === "buy") {
         body.insertAdjacentHTML("beforeend", `<div class="tmodal-sys">💳 ${esc(s.text || "")} — ${esc(s.url || "")}</div>`);
       } else if (s.t === "tag") {
