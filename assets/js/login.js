@@ -292,15 +292,36 @@
       $("#auth-newpass").hidden = false;
       $(".auth-title").textContent = T.newpassTitle;
       $(".auth-sub").textContent = T.newpassSub;
-      $("#auth-google").closest(".auth-or").hidden = true;
+      if ($("#auth-google").previousElementSibling) $("#auth-google").previousElementSibling.hidden = true;
       $("#auth-google").hidden = true;
     }
 
+    /* Google blocks its sign-in inside in-app browsers (Instagram, Facebook, TikTok...) and
+     * phones often block the popup. Detect the first case up front and explain failures. */
+    var arUi = /^ar/i.test(document.documentElement.lang || "");
+    var X = arUi ? {
+      inApp: "للدخول بجوجل افتح الصفحة في Safari أو Chrome (قائمة ⋯ ثم «فتح في المتصفح»)، أو استخدم الإيميل وكلمة المرور تحت.",
+      blocked: "المتصفح منع نافذة جوجل. اسمح بالنوافذ المنبثقة للموقع أو افتح الصفحة في Chrome أو Safari، أو ادخل بالإيميل.",
+      fail: "الدخول بجوجل فشل. جرّب Chrome أو Safari، أو ادخل بالإيميل."
+    } : {
+      inApp: "To sign in with Google, open this page in Safari or Chrome (menu \u22ef, then \"Open in browser\"), or use email and password below.",
+      blocked: "Your browser blocked the Google window. Allow pop-ups for this site, open the page in Chrome or Safari, or sign in with email.",
+      fail: "Google sign-in failed. Try Chrome or Safari, or sign in with email."
+    };
+    var inApp = /(FBAN|FBAV|FB_IAB|Instagram|Snapchat|Line\/|MicroMessenger|BytedanceWebview|musical_ly|TikTok|Twitter|LinkedInApp|Pinterest|; wv\))/i.test(navigator.userAgent || "");
+    if (inApp && $("#auth-google") && !$("#auth-google").hidden) {
+      $("#auth-google").hidden = true;
+      var orRow = $("#auth-google").previousElementSibling;
+      if (orRow && /auth-or/.test(orRow.className)) orRow.hidden = true;
+      msg(X.inApp, "");
+    }
     $("#auth-google").addEventListener("click", function () {
       A.google().catch(function (e) {
-        var off = e && (e.status === 400 || /provider|not enabled|disabled/i.test(e.message || ""));
-        if (/cancel|popup_closed|popup_failed|access_denied/i.test((e && e.message) || "")) { msg("", ""); return; }
-        msg(off ? T.googleOff : T.net, "is-err");
+        var m = String((e && e.message) || "");
+        var off = e && (e.status === 400 || /provider|not enabled|disabled/i.test(m));
+        if (/popup_failed_to_open/i.test(m)) { msg(X.blocked, "is-err"); return; }
+        if (/cancel|popup_closed|access_denied/i.test(m)) { msg("", ""); return; }
+        msg(off ? T.googleOff : (/popup|gsi|script|load/i.test(m) ? X.fail : T.net), "is-err");
       });
     });
     // If a session already exists, go straight in.
