@@ -1389,6 +1389,7 @@
       `<button class="btn btn-ghost btn-sm" type="submit">${esc(T.pwSave)}</button></form>` +
       `<p class="dash-note" id="pw-msg"></p></div>` +
       widgetCard() +
+      knowledgeCard() +
       `<div class="dash-card"><h2>${esc(T.plan)}</h2><p class="dash-plan-row"><b>${esc(T.planFree)}</b> — <span>${esc(T.dataIsolation)}</span></p></div>` +
       `<div class="dash-card"><h2>${esc(T.account)}</h2><p>${esc((A.user() && A.user().email) || "")}</p>` +
       `<p class="dash-note">${esc(T.exportTitle)} — <button type="button" class="link-btn" id="export">${esc(T.exportBtn)}</button></p></div>` +
@@ -1492,6 +1493,53 @@
       try {
         await A.rest("/rest/v1/widget_keys?id=eq." + encodeURIComponent(id), { method: "DELETE" });
         WK.keys = WK.keys.filter((x) => x.id !== id); WK.err = ""; paint();
+      } catch (e) { fail(e); }
+    }));
+  }
+  /* ---- Phase 2 item 5: knowledge box (answers for the AI on web chat and Telegram) ---- */
+  const KN = { loaded: false, loading: false, items: [], err: "" };
+  const KNT = AR ? {
+    t: "صندوق المعرفة", n: "اكتب معلومات عن نشاطك (أسعار، مواعيد، سياسات). الذكاء الاصطناعي بيرد منها على الويب وتيليجرام، ولو السؤال مش مغطى بيقول إن الفريق هيتابع.",
+    ti: "العنوان (اختياري)", b: "المعلومة", a: "إضافة", d: "حذف", cf: "تحذف المعلومة دي؟", lim: "حتى 30 معلومة، كل واحدة حتى 1200 حرف مقروءة للذكاء الاصطناعي."
+  } : {
+    t: "Knowledge box", n: "Write facts about your business (prices, hours, policies). The AI answers from them on web chat and Telegram. If a question isn't covered it says the team will follow up.",
+    ti: "Title (optional)", b: "Fact or answer", a: "Add", d: "Delete", cf: "Delete this item?", lim: "Up to 30 items; the AI reads the first 1200 characters of each."
+  };
+  function knowledgeCard() {
+    const rows = KN.items.map((k) => `<div class="dash-card" style="margin:10px 0;padding:12px"><b>${esc(k.title || "")}</b><p style="white-space:pre-wrap;margin:6px 0">${esc(k.body)}</p>` +
+      `<button type="button" class="btn btn-ghost btn-sm btn-danger" data-kn-del="${esc(k.id)}">${esc(KNT.d)}</button></div>`).join("");
+    return `<div class="dash-card" id="kn-card"><h2>${esc(KNT.t)}</h2><p class="dash-note">${esc(KNT.n)}</p>${rows}` +
+      `<input id="kn-title" maxlength="120" placeholder="${esc(KNT.ti)}" aria-label="${esc(KNT.ti)}" style="width:100%;margin-top:8px">` +
+      `<textarea id="kn-body" rows="3" maxlength="2000" placeholder="${esc(KNT.b)}" aria-label="${esc(KNT.b)}" style="width:100%;margin-top:6px"></textarea>` +
+      `<button type="button" class="btn btn-primary btn-sm" id="kn-add"${KN.items.length >= 30 ? " disabled" : ""}>${esc(KNT.a)}</button> <span class="dash-note">${esc(KNT.lim)}</span>` +
+      `<p class="dash-note is-err" id="kn-msg" role="status">${esc(KN.err)}</p></div>`;
+  }
+  async function knLoad() {
+    if (KN.loaded || KN.loading) return;
+    KN.loading = true;
+    try { KN.items = (await A.rest("/rest/v1/knowledge_items?select=id,title,body&order=created_at.asc")) || []; KN.err = ""; }
+    catch (e) { KN.err = String(e.message || e); }
+    KN.loading = false; KN.loaded = true;
+    if (state.view === "settings") paint();
+  }
+  function knWire(p) {
+    knLoad();
+    const fail = (e) => { KN.err = String(e.message || e); const m = $("#kn-msg", p); if (m) m.textContent = KN.err; };
+    const add = $("#kn-add", p);
+    if (add) add.addEventListener("click", async () => {
+      const body = $("#kn-body", p).value.trim();
+      if (!body) return;
+      try {
+        const row = await A.rest("/rest/v1/knowledge_items", { method: "POST", body: JSON.stringify({ workspace_id: state.ws.id, title: $("#kn-title", p).value.trim().slice(0, 120), body: body.slice(0, 2000) }) });
+        KN.items.push(Array.isArray(row) ? row[0] : row); KN.err = ""; paint();
+      } catch (e) { fail(e); }
+    });
+    $$("[data-kn-del]", p).forEach((b) => b.addEventListener("click", async () => {
+      if (!window.confirm(KNT.cf)) return;
+      const id = b.getAttribute("data-kn-del");
+      try {
+        await A.rest("/rest/v1/knowledge_items?id=eq." + encodeURIComponent(id), { method: "DELETE" });
+        KN.items = KN.items.filter((x) => x.id !== id); KN.err = ""; paint();
       } catch (e) { fail(e); }
     }));
   }
@@ -2086,6 +2134,7 @@
         } catch (err) { out.textContent = err.message; out.className = "dash-note is-err"; }
       });
       wkWire(p);
+      knWire(p);
       chanWire(p);
       const ex = $("#export", p);
       if (ex) ex.addEventListener("click", exportData);
