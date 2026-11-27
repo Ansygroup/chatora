@@ -833,6 +833,7 @@ export default {
           : 'Want it set up for you? See the <a href="/services.html">done-for-you service and its prices</a>.'+' Done-for-you prices (USD): Spark $49, Starter $99, Growth $199 setup + $29/month, Scale $349 setup + $79/month.';
         text = text.replace('</h1>', '</h1><p class="lead">' + msg + '</p>');
       }
+      if (text.includes('</head>')) text = text.replace('</head>', '<style id="p12x">.consent{left:12px!important;right:auto!important;inset-inline:auto!important;margin:0!important;max-width:300px;padding:10px 12px!important;border-radius:12px!important;gap:8px 10px!important;bottom:12px!important}.consent-text{font-size:12.5px!important;flex:1 1 100%!important;line-height:1.4!important}.consent-actions{gap:6px!important}.consent-actions .btn{padding:6px 12px!important;font-size:12.5px!important;min-height:0!important}@media(max-width:520px){.consent{max-width:calc(100% - 150px)!important}.consent-actions{width:auto!important}}</style></head>');
       const h = new Headers(res.headers);
       h.delete('content-length'); h.delete('etag'); h.delete('content-encoding');
       return new Response(text, { status: res.status, headers: h });
