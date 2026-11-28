@@ -70,7 +70,6 @@ function originOk(cfg, origin) {
 const CHAT_MODELS = [
   ['@cf/meta/llama-3.1-8b-instruct-fast', 300],
   ['@cf/meta/llama-3.2-3b-instruct', 300],
-  ['@cf/meta/llama-3.2-1b-instruct', 300],
   ['@cf/zai-org/glm-4.7-flash', 1500],
   ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', 300],
 ];
