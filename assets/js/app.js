@@ -2257,6 +2257,17 @@
         if (state.cedit && state.cedit.fields) delete state.cedit.fields[b.getAttribute("data-cfdel")];
         paint();
       }));
+      // Infer the channel from the handle pattern (same rules as CSV import)
+      // until the user picks a channel themselves.
+      const hEl = $("#cf-handle", p), chEl = $("#cf-ch", p);
+      if (hEl && chEl) {
+        chEl.addEventListener("change", () => { chEl.dataset.picked = "1"; });
+        hEl.addEventListener("input", () => {
+          if (chEl.dataset.picked) return;
+          const g = importedChannel("", hEl.value);
+          if (g && CH[g]) chEl.value = g;
+        });
+      }
       const sv = $("#cf-save", p);
       if (sv) sv.addEventListener("click", saveContact);
       const cn = $("#cf-cancel", p);
