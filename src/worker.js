@@ -685,7 +685,8 @@ async function automationTick(env) {
     try {
       const r = await fetch(WSB + '/rest/v1/rpc/' + fn, { method: 'POST', headers: { apikey: WANON, authorization: 'Bearer ' + WANON, 'content-type': 'application/json' }, body: JSON.stringify(payload) });
       if (!r.ok) { console.log('rpc ' + fn + ' ' + r.status); return null; }
-      return await r.json();
+      const t = await r.text();
+      return t ? JSON.parse(t) : null; // void RPCs (automation_finish) return an empty body
     } catch (e) { console.log('rpc ' + fn + ' ' + String(e)); return null; }
   };
   const data = await rpc('automation_tick', { p_key: key });
