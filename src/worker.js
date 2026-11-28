@@ -73,7 +73,7 @@ const CHAT_MODELS = [
   ['@cf/zai-org/glm-4.7-flash', 1500],
   ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', 300],
 ];
-const GROQ_MODELS = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'qwen-qwq-32b', 'gemma2-9b-it'];
+const GROQ_MODELS = ['qwen/qwen3.8-27b', 'openai/gpt-oss-20b', 'openai/gpt-oss-120b'];
 async function groqChat(env, sys, msgs, max) {
   const key = env.GROQ_API_KEY; if (!key) return '';
   for (const model of GROQ_MODELS) {
