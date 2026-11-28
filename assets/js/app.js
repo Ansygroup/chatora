@@ -1340,6 +1340,7 @@
       `<label class="bc-body">${esc(T.bcBody)}<textarea id="bc-body" rows="3" maxlength="600" placeholder="${esc(T.bcBodyPh)}">${esc(b.body)}</textarea></label>` +
       `<div class="bc-row"><span class="bc-count"><b>${num(list.length)}</b> ${esc(T.bcAudience)}</span>` +
       `<button type="button" class="btn btn-primary btn-sm" id="bc-send"${state.bcBusy ? " disabled" : ""}>${esc(T.bcSend)}</button></div>` +
+      `<p class="dash-note${state.bcNoticeErr ? " is-err" : ""}" id="bc-status" role="status">${esc(state.bcNotice || "")}</p>` +
       (list.length ? `<ul class="bc-people">${preview}</ul>` : `<p class="dash-empty">${esc(T.bcEmpty)}</p>`) +
       `</div>` +
       `<div class="dash-card"><h2>${esc(T.bcHistory)}</h2>${hist}</div>`;
@@ -2274,6 +2275,28 @@
       if (cn) cn.addEventListener("click", () => { state.cedit = null; paint(); });
     }
 
+    function showArmBar(afterEl, text, yesLabel, onYes) {
+      if (!afterEl) return;
+      const host = afterEl.parentNode;
+      if (!host) return;
+      const old = host.querySelector(".arm-bar");
+      if (old) old.remove();
+      const bar = document.createElement("div");
+      bar.className = "dash-inline arm-bar";
+      bar.setAttribute("role", "alertdialog");
+      const span = document.createElement("span");
+      span.className = "dash-note";
+      span.textContent = text;
+      const yes = document.createElement("button");
+      yes.type = "button"; yes.className = "btn btn-ghost btn-sm btn-danger"; yes.textContent = yesLabel;
+      const no = document.createElement("button");
+      no.type = "button"; no.className = "btn btn-ghost btn-sm"; no.textContent = T.cancel;
+      yes.addEventListener("click", () => { bar.remove(); onYes(); });
+      no.addEventListener("click", () => bar.remove());
+      bar.appendChild(span); bar.appendChild(yes); bar.appendChild(no);
+      afterEl.insertAdjacentElement("afterend", bar);
+    }
+
     if (state.view === "broadcast") {
       // text fields only update state — a repaint here would swallow the click
       const nameEl = $("#bc-name", p);
@@ -2283,20 +2306,29 @@
       const sendEl = $("#bc-send", p);
       if (sendEl) sendEl.addEventListener("click", async () => {
         const n = audience().length, body = String(state.bc.body || "").trim();
-        if (!body) { window.alert(AR ? "اكتب الرسالة الأول" : "Write the message first"); return; }
-        if (!n) { window.alert(T.bcEmpty); return; }
-        if (n > 30) { window.alert(AR ? "الحد الأقصى 30 مستلم في البثّ. ضيّق الجمهور بتاج أو قناة." : "Max 30 recipients per broadcast. Narrow the audience with a tag or channel."); return; }
-        if (!window.confirm(AR ? "هتتبعت الرسالة لـ " + n + " شخص وافقوا يستقبلوا منك. متأكد؟" : "Send this message to " + n + " people who agreed to hear from you?")) return;
+        const bcOut = $("#bc-status", p);
+        const bcSay = (t, err) => {
+          state.bcNotice = t; state.bcNoticeErr = !!err;
+          if (bcOut) { bcOut.textContent = t; bcOut.className = "dash-note" + (err ? " is-err" : ""); }
+        };
+        if (!body) { bcSay(AR ? "اكتب الرسالة الأول" : "Write the message first", true); return; }
+        if (!n) { bcSay(T.bcEmpty, true); return; }
+        if (n > 30) { bcSay(AR ? "الحد الأقصى 30 مستلم في البثّ. ضيّق الجمهور بتاج أو قناة." : "Max 30 recipients per broadcast. Narrow the audience with a tag or channel.", true); return; }
+        if (!sendEl.dataset.armed) {
+          showArmBar(sendEl.closest(".bc-row") || sendEl, AR ? "هتتبعت الرسالة لـ " + n + " شخص وافقوا يستقبلوا منك. متأكد؟" : "Send this message to " + n + " people who agreed to hear from you?", T.bcSend, () => { sendEl.dataset.armed = "1"; sendEl.click(); });
+          return;
+        }
+        delete sendEl.dataset.armed;
         state.bcBusy = true; sendEl.disabled = true;
         try {
           const res = await tgApi("/api/broadcast/send", { workspace: state.ws.id, name: state.bc.name, channel: state.bc.channel, tag: state.bc.tag, body: body });
           state.bc.body = "";
           const hist = await A.rest("/rest/v1/broadcasts?select=id,name,channel,body,audience,sent,created_at&order=created_at.desc&limit=20").catch(() => null);
           if (hist) state.broadcasts = hist;
-          window.alert((AR ? "اتبعتت لـ " : "Sent to ") + res.sent + (AR ? " من " : " of ") + res.audience);
+          bcSay((AR ? "اتبعتت لـ " : "Sent to ") + res.sent + (AR ? " من " : " of ") + res.audience, false);
         } catch (e) {
           const c = e && e.code;
-          window.alert(c === "too_soon" ? (AR ? "بثّ واحد كل ساعة. حاول بعد شوية." : "One broadcast per hour. Try again a bit later.") : c === "too_many" ? (AR ? "الجمهور أكبر من 30. ضيّقه." : "Audience is over 30. Narrow it.") : (T.sendError || "Failed"));
+          bcSay(c === "too_soon" ? (AR ? "بثّ واحد كل ساعة. حاول بعد شوية." : "One broadcast per hour. Try again a bit later.") : c === "too_many" ? (AR ? "الجمهور أكبر من 30. ضيّقه." : "Audience is over 30. Narrow it.") : (T.sendError || "Failed"), true);
         }
         state.bcBusy = false; paint();
       });
@@ -2456,7 +2488,8 @@
       const dg = $("#del-google", p);
       if (dg) dg.addEventListener("click", async () => {
         const out = $("#del-msg", p);
-        if (!window.confirm(T.delConfirm)) return;
+        if (!dg.dataset.armed) { showArmBar(dg, T.delConfirm, T.delGoogle, () => { dg.dataset.armed = "1"; dg.click(); }); return; }
+        delete dg.dataset.armed;
         dg.disabled = true; out.textContent = ""; out.className = "dash-note";
         try {
           const cfg = window.CHATORA_CONFIG || {};
@@ -2500,7 +2533,9 @@
       if (df) df.addEventListener("submit", async (e) => {
         e.preventDefault();
         const el = $("#del-pass"), out = $("#del-msg"), btn = df.querySelector("button");
-        if (!el.value || !window.confirm(T.delConfirm)) return;
+        if (!el.value) { out.textContent = T.delPass; out.className = "dash-note is-err"; return; }
+        if (!df.dataset.armed) { showArmBar(df, T.delConfirm, T.delBtn, () => { df.dataset.armed = "1"; df.requestSubmit(); }); return; }
+        delete df.dataset.armed;
         btn.disabled = true;
         out.textContent = ""; out.className = "dash-note";
         try {

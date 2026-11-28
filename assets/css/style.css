@@ -1340,6 +1340,8 @@ table.cmp .them{color:#938FAF}
 .pill::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--c,#7C5CFF);flex:none}
 .tagpill{font-size:11px;background:rgba(255,255,255,.07);border-radius:6px;padding:2px 7px;color:var(--text-2)}
 .dash-inline{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.arm-bar{margin-top:8px;padding:10px 12px;border:1px solid var(--line-2);border-radius:11px;background:rgba(255,255,255,.03)}
+.arm-bar .dash-note{flex:1;min-width:220px;margin:0}
 .dash-inline input{flex:1;min-width:200px;background:rgba(255,255,255,.05);border:1px solid var(--line-2);border-radius:11px;padding:10px 13px;color:#fff;font:inherit;font-size:13.5px}
 .dash-plan-row{margin:0;font-size:13.5px;color:var(--text-2)}
 @media(max-width:980px){
