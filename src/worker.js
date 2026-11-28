@@ -551,7 +551,17 @@ async function broadcastSend(request, url) {
   const cRes = await sb('/rest/v1/contacts?workspace_id=eq.' + wsid + '&channel=in.(telegram,web)&select=id,workspace_id,handle,channel,tags&limit=1000');
   if (!cRes.ok) return wjson({ error: 'lookup failed' }, 502, origin);
   const lc = (x) => String(x).toLowerCase();
-  const aud = (await cRes.json()).filter((c) => (channel === 'all' || c.channel === channel) && (!tag || (c.tags || []).map(lc).indexOf(lc(tag)) !== -1) && (c.tags || []).map(lc).indexOf(UNSUB_TAG) === -1);
+  const cand = (await cRes.json()).filter((c) => (channel === 'all' || c.channel === channel) && (!tag || (c.tags || []).map(lc).indexOf(lc(tag)) !== -1) && (c.tags || []).map(lc).indexOf(UNSUB_TAG) === -1);
+  // Anti-abuse: broadcasts only reach contacts who already have a conversation
+  // with this workspace (i.e. they wrote first). Imported contacts who never
+  // messaged are excluded, matching what the UI promises.
+  let engaged = new Set();
+  if (cand.length) {
+    const cvRes = await sb('/rest/v1/conversations?workspace_id=eq.' + wsid + '&select=contact_id&limit=10000');
+    if (!cvRes.ok) return wjson({ error: 'lookup failed' }, 502, origin);
+    engaged = new Set((await cvRes.json()).map((r) => r.contact_id));
+  }
+  const aud = cand.filter((c) => engaged.has(c.id));
   if (!aud.length) return wjson({ error: 'empty' }, 400, origin);
   if (aud.length > BC_MAX) return wjson({ error: 'too_many', n: aud.length, max: BC_MAX }, 413, origin);
   const msgText = text + '\n\nReply STOP to unsubscribe.';
@@ -572,11 +582,14 @@ async function broadcastSend(request, url) {
   const webs = aud.filter((c) => c.channel === 'web');
   if (webs.length) {
     const ids = webs.map((c) => c.id).join(',');
-    const cv = await sb('/rest/v1/conversations?contact_id=in.(' + ids + ')&channel=eq.web&status=neq.closed&order=last_at.desc&select=id,contact_id');
+    const cv = await sb('/rest/v1/conversations?contact_id=in.(' + ids + ')&channel=eq.web&order=last_at.desc&select=id,contact_id,status');
     const have = {};
-    (cv.ok ? await cv.json() : []).forEach((r) => { if (!have[r.contact_id]) have[r.contact_id] = r.id; });
+    const closedOnly = new Set();
+    (cv.ok ? await cv.json() : []).forEach((r) => { if (r.status !== 'closed') { if (!have[r.contact_id]) have[r.contact_id] = r.id; } else if (!have[r.contact_id]) closedOnly.add(r.contact_id); });
     const now = new Date().toISOString();
-    const missing = webs.filter((c) => !have[c.id]).map((c) => ({ workspace_id: wsid, contact_id: c.id, channel: 'web', status: 'ai', last_at: now }));
+    // Contacts who wrote before but whose conversation is closed get a fresh
+    // one; contacts who never wrote were already filtered out of the audience.
+    const missing = webs.filter((c) => !have[c.id] && closedOnly.has(c.id)).map((c) => ({ workspace_id: wsid, contact_id: c.id, channel: 'web', status: 'ai', last_at: now }));
     if (missing.length) {
       const mk = await sb('/rest/v1/conversations', { method: 'POST', body: JSON.stringify(missing) });
       (mk.ok ? await mk.json() : []).forEach((r) => { have[r.contact_id] = r.id; });
