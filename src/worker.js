@@ -61,7 +61,7 @@ function wcors(origin) {
 function wjson(obj, status, origin) {
   return new Response(JSON.stringify(obj), { status: status || 200, headers: { 'content-type': 'application/json', 'cache-control': 'no-store', ...wcors(origin) } });
 }
-function wname(s) { s = String(s || ''); return /\u00b7\s*workspace$/.test(s) || s.includes('@') ? 'Chat' : s.slice(0, 80); }
+function wname(s) { s = String(s || ''); return /\u00b7\s*workspace$/.test(s) || s.includes('@') || !s ? 'Chat' : s.slice(0, 80); }
 function originOk(cfg, origin) {
   const a = String(cfg.allowed_origin || '').trim().replace(/\/+$/, '').toLowerCase();
   if (!a) return true;
@@ -977,7 +977,7 @@ async function leadNotify(request, env, url) {
 
 /* ---- Email channel (inbound via Cloudflare Email Routing) ---- */
 function mimeHdr(raw, name) {
-  const m = new RegExp('^' + name + ':\\s*(.*?)(?=\\r?\\n[^ \\t]|$)', 'ims').exec(raw);
+  const m = new RegExp('(?:^|\\r?\\n)' + name + ':\\s*(.*?)(?=\\r?\\n[^ \\t]|$)', 'is').exec(raw);
   return m ? m[1].replace(/\r?\n[ \t]+/g, ' ').trim() : '';
 }
 function rfc2047(s) {
@@ -1032,7 +1032,7 @@ function emailBodyText(raw) {
   const cs = cm ? cm[1] : 'utf-8';
   if (enc.indexOf('base64') > -1) return b64Decode(body).trim();
   if (enc.indexOf('quoted-printable') > -1) return qpDecode(body, cs).trim();
-  if (/text\/html/i.test(ct)) return body.replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').trim();
+  if (/text\/html/i.test(ct)) return body.replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]+>/g, ' ').trim();
   return body.trim();
 }
 async function emailInbound(message, env) {
