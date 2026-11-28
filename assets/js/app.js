@@ -467,7 +467,7 @@
     wrap.innerHTML = `<div class="tmodal" id="tgmodal" role="dialog" aria-modal="true" aria-label="${esc(CHS.tgTitle)}">` +
       `<div class="tmodal-card"><header style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)"><b>${esc(CHS.tgTitle)}</b>` +
       `<button type="button" class="icon-btn" id="tgmodal-x" aria-label="${esc(CHS.tgCancel || "Close")}">\u2715</button></header>` +
-      `<div class="tmodal-body" style="padding:16px"><ol class="tg-steps"><li>${esc(CHS.tgHow1).replace("@BotFather", '<a href="https://t.me/BotFather" target="_blank" rel="noopener noreferrer" dir="ltr">@BotFather</a>')}</li><li>${esc(CHS.tgHow2)}</li></ol>` +
+      `<div class="tmodal-body" style="padding:16px">${chanGuide("telegram")}` +
       `<form id="tg-form"><input id="tg-token" class="dstep-in" style="width:100%" dir="ltr" autocomplete="off" spellcheck="false" placeholder="${esc(CHS.tgPh)}" aria-label="Bot token">` +
       `<div class="dash-inline" style="margin-top:12px"><button type="submit" class="btn btn-primary btn-sm" id="tg-go">${esc(CHS.tgGo)}</button>` +
       `<span class="dash-note" id="tg-msg" role="status"></span></div></form></div></div></div>`;
@@ -500,6 +500,66 @@
       }
     });
   }
+  const lnk = (u, t) => `<a href="${u}" target="_blank" rel="noopener noreferrer" dir="ltr">${esc(t)}</a>`;
+  const DEVAPPS = "https://developers.facebook.com/apps", SYSUSERS = "https://business.facebook.com/settings/system-users";
+  /* Short step lists with one-click links, shown in every connect modal. */
+  function chanGuide(k) {
+    const L = {
+      telegram: AR ? [
+        `افتح ${lnk("https://t.me/BotFather", "@BotFather")} وأرسل /newbot.`,
+        "اختر اسمًا ومعرّفًا ينتهي بـ bot.",
+        "انسخ التوكن الذي يرسله لك والصقه هنا."
+      ] : [
+        `Open ${lnk("https://t.me/BotFather", "@BotFather")} in Telegram and send /newbot.`,
+        "Pick a name and a username that ends in bot.",
+        "Copy the token it sends you and paste it here."
+      ],
+      whatsapp: AR ? [
+        `افتح ${lnk(DEVAPPS, "Meta for Developers")} وأنشئ تطبيقًا من نوع Business ثم أضف منتج WhatsApp.`,
+        "من WhatsApp ثم API Setup انسخ Phone number ID.",
+        `أنشئ رمز وصول دائم من ${lnk(SYSUSERS, "System users")} مع صلاحيتي whatsapp_business_messaging وwhatsapp_business_management.`,
+        "من إعدادات التطبيق ثم Basic انسخ App secret.",
+        "اضغط ربط هنا، ثم في WhatsApp ثم Configuration ضع Callback URL وVerify token المعروضين بعد الربط واشترك في messages."
+      ] : [
+        `Open ${lnk(DEVAPPS, "Meta for Developers")}, create a Business app and add the WhatsApp product.`,
+        "In WhatsApp, API Setup, copy the Phone number ID.",
+        `Create a permanent access token in ${lnk(SYSUSERS, "System users")} with whatsapp_business_messaging and whatsapp_business_management.`,
+        "In App settings, Basic, copy the App secret.",
+        "Connect here. Then in WhatsApp, Configuration, paste the Callback URL and Verify token shown after connecting, and subscribe to messages."
+      ],
+      instagram: AR ? [
+        `افتح ${lnk(DEVAPPS, "Meta for Developers")} وأنشئ تطبيقًا ثم أضف Instagram (Messenger API).`,
+        "حسابك على إنستجرام يجب أن يكون احترافيًا ومرتبطًا بصفحة فيسبوك.",
+        "انسخ معرّف حساب إنستجرام من إعداد الـ API.",
+        `أنشئ رمز وصول من ${lnk(SYSUSERS, "System users")} مع صلاحية instagram_manage_messages، وانسخ App secret من Basic.`,
+        "اضغط ربط هنا، ثم ضع Callback URL وVerify token في Webhooks للتطبيق واشترك في messages."
+      ] : [
+        `Open ${lnk(DEVAPPS, "Meta for Developers")}, create an app and add Instagram (Messenger API).`,
+        "Your Instagram account must be professional and linked to a Facebook Page.",
+        "Copy the Instagram account ID from the API setup.",
+        `Create an access token in ${lnk(SYSUSERS, "System users")} with instagram_manage_messages, and copy the App secret from Basic.`,
+        "Connect here. Then add the Callback URL and Verify token under the app's Webhooks and subscribe to messages."
+      ],
+      messenger: AR ? [
+        `افتح ${lnk(DEVAPPS, "Meta for Developers")} وأنشئ تطبيقًا ثم أضف منتج Messenger.`,
+        "من Messenger ثم API Setup اربط صفحتك وانسخ Page ID.",
+        `أنشئ رمز وصول للصفحة (أو من ${lnk(SYSUSERS, "System users")}) مع صلاحية pages_messaging، وانسخ App secret من Basic.`,
+        "اضغط ربط هنا، ثم ضع Callback URL وVerify token في Webhooks واشترك في messages."
+      ] : [
+        `Open ${lnk(DEVAPPS, "Meta for Developers")}, create an app and add the Messenger product.`,
+        "In Messenger, API Setup, connect your Page and copy the Page ID.",
+        `Create a Page access token (or one from ${lnk(SYSUSERS, "System users")}) with pages_messaging, and copy the App secret from Basic.`,
+        "Connect here. Then add the Callback URL and Verify token under Webhooks and subscribe to messages."
+      ]
+    }[k] || [];
+    const docs = {
+      telegram: ["https://core.telegram.org/bots/tutorial", "Telegram bot guide"],
+      whatsapp: ["https://developers.facebook.com/docs/whatsapp/cloud-api/get-started", "WhatsApp Cloud API guide"],
+      instagram: ["https://developers.facebook.com/docs/messenger-platform/instagram", "Instagram messaging guide"],
+      messenger: ["https://developers.facebook.com/docs/messenger-platform/webhooks", "Messenger webhooks guide"]
+    }[k];
+    return `<ol class="tg-steps">${L.map((x) => `<li>${x}</li>`).join("")}</ol>` + (docs ? `<p class="dash-note">${lnk(docs[0], docs[1])}</p>` : "");
+  }
   function closeMtModal() { const m = document.getElementById("mtmodal"); if (m) m.remove(); }
   function openMtModal(k) {
     closeMtModal();
@@ -508,7 +568,7 @@
     wrap.innerHTML = `<div class="tmodal" id="mtmodal" role="dialog" aria-modal="true" aria-label="${esc(CHS.mtTitle + " " + chLabel(k))}">` +
       `<div class="tmodal-card"><header style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)"><b>${esc(CHS.mtTitle + " " + chLabel(k))}</b>` +
       `<button type="button" class="icon-btn" id="mtmodal-x" aria-label="Close">\u2715</button></header>` +
-      `<div class="tmodal-body" style="padding:16px"><p class="dash-note">${esc(CHS.mtHow).replace("developers.facebook.com", '<a href="https://developers.facebook.com/apps" target="_blank" rel="noopener noreferrer" dir="ltr">developers.facebook.com</a>')}</p>` +
+      `<div class="tmodal-body" style="padding:16px">${chanGuide(k)}<p class="dash-note">${esc(CHS.mtHow)}</p>` +
       `<form id="mt-form">${inp("mt-acc", CHS["mtAcc_" + k])}${inp("mt-tok", CHS.mtTok)}${inp("mt-sec", CHS.mtSec)}` +
       `<label style="display:flex;gap:8px;align-items:center;margin-top:12px"><input type="checkbox" id="mt-test"><span>${esc(CHS.mtTest)}</span></label>` +
       `<div class="dash-inline" style="margin-top:12px"><button type="submit" class="btn btn-primary btn-sm" id="mt-go">${esc(CHS.connect)}</button>` +
@@ -763,14 +823,20 @@
 
   const BIDI = /[\u202A-\u202E\u2066-\u2069\u200E\u200F\u061C\u200B-\u200D\uFEFF]/g;
   const tidy = (s, n) => String(s == null ? "" : s).replace(BIDI, "").slice(0, n);
-  const VIEWS = ["overview", "inbox", "flows", "contacts", "broadcast", "settings"];
+  const VIEWS = ["overview", "inbox", "flows", "contacts", "broadcast", "settings", "channels"];
   function strongPw(v) { return v.length >= 10 && /\d/.test(v) && /[^\d\s]/.test(v); }
   function setView(v) {
+    const goCh = v === "channels";
+    if (goCh) { v = "settings"; state.setOpen = state.setOpen || {}; state.setOpen.ch = true; state.chanView = null; }
     state.view = v;
     state.edit = null;
     state.cedit = null;
-    $$(".dash-link").forEach((x) => x.classList.toggle("is-on", x.getAttribute("data-view") === v));
+    $$(".dash-link").forEach((x) => x.classList.toggle("is-on", x.getAttribute("data-view") === (goCh ? "channels" : v)));
     paint();
+    if (goCh) scrollToChannels();
+  }
+  function scrollToChannels() {
+    setTimeout(() => { const el = document.querySelector('details.set-sec[data-sec="ch"]'); if (el) { el.open = true; el.scrollIntoView({ behavior: "smooth", block: "start" }); } }, 60);
   }
 
   const STATUS_TXT = () => ({ ai: T.aiPaused, human: T.humanMode, closed: T.fClosed });
@@ -3133,13 +3199,13 @@
     applyAppTranslations();
     const params = new URLSearchParams(location.search);
     const wantsTemplates = params.get("view") === "templates";
-    const wantView = VIEWS.indexOf(params.get("view") || "") >= 0 ? params.get("view") : "";
+    const wantView = VIEWS.indexOf(params.get("view") || "") >= 0 ? params.get("view") : (/^#channels?$/i.test(location.hash) ? "channels" : "");
     const candidate = params.get("tpl") || "";
     const tplId = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(candidate) ? candidate : "";
     const next = wantsTemplates ? "app.html?view=templates" + (tplId ? "&tpl=" + tplId : "") : wantView ? "app.html?view=" + wantView : "app.html";
     const s = await A.ensure();
     if (!s) { location.replace("login.html?next=" + encodeURIComponent(next)); return; }
-    if (wantsTemplates) { state.view = "flows"; state.templates = true; state.gq = tplId; } else if (wantView) state.view = wantView;
+    if (wantsTemplates) { state.view = "flows"; state.templates = true; state.gq = tplId; } else if (wantView === "channels") { state.view = "settings"; state.setOpen = { ch: true }; } else if (wantView) state.view = wantView;
     try {
       state.ws = await ensureWorkspace(s.user || {});
       await loadAll();
@@ -3152,6 +3218,8 @@
       $("#dash-loading").hidden = true;
       $("#dash").hidden = false;
       paint();
+      { const chb = document.querySelector('.dash-link[data-view="channels"]'); if (chb) { chb.title = CHS.chTitle; chb.setAttribute("aria-label", CHS.chTitle); } }
+      if (wantView === "channels") { $$(".dash-link").forEach((x) => x.classList.toggle("is-on", x.getAttribute("data-view") === "channels")); scrollToChannels(); }
     } catch (err) {
       $("#dash-loading").hidden = true;
       $("#dash-error").hidden = false;
