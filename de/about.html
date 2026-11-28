@@ -97,7 +97,7 @@
 <section class="section section--tight">
 <div class="container">
 <div class="stats">
-<div class="stat" data-reveal=""><div class="num">—</div><div class="lbl" data-i18n="ap.s1">Keine Live-Messaging-Kanäle verbunden</div></div>
+<div class="stat" data-reveal=""><div class="num">—</div><div class="lbl" data-i18n="ap.s1">Verbindbare Kanäle: Telegram, Web-Chat, Meta</div></div>
 <div class="stat" data-reveal="" style="--d:80ms"><div class="num"><span data-count="45">0</span></div><div class="lbl" data-i18n="ap.s2">Bearbeitbare Starter-Entwürfe; nicht für den Produktionseinsatz getestet</div></div>
 <div class="stat" data-reveal="" style="--d:160ms"><div class="num">—</div><div class="lbl" data-i18n="ap.s3">Kein Abo-Preis veröffentlicht</div></div>
 <div class="stat" data-reveal="" style="--d:240ms"><div class="num">—</div><div class="lbl" data-i18n="ap.s4">Keine Preise für Team-Sitze veröffentlicht</div></div>
@@ -119,7 +119,7 @@
 <article class="bento-card span-6" data-reveal="" style="--d:80ms">
 <div class="bento-ico"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3Z"></path><path d="m9 12 2 2 4-4"></path></svg></div>
 <h3 data-i18n="ap.v2t">Offizielle APIs, sonst nichts</h3>
-<p data-i18n="ap.v2d">Die Produktrichtung setzt auf dokumentierte, freigegebene APIs statt Passwortweitergabe oder Scraping. In der aktuellen Vorschau ist kein externer Messaging-Kanal verbunden.</p>
+<p data-i18n="ap.v2d">Die Produktrichtung bevorzugt dokumentierte, zugelassene APIs statt Passwortweitergabe oder Scraping. Telegram und Meta-Kanäle nutzen offizielle APIs; OpenWA ist ein optionaler inoffizieller Weg mit Sperrrisiko.</p>
 </article>
 <article class="bento-card span-4" data-reveal="">
 <div class="bento-ico"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><path d="M4 5h16v11H8l-4 4V5Z"></path></svg></div>
@@ -145,14 +145,14 @@
 <div>
 <span class="kicker" data-i18n="ap.hk">Produktrichtung</span>
 <h2 class="text-grad" data-i18n="ap.ht">Ein übersichtlicherer Arbeitsbereich für Gespräche</h2>
-<p class="sub" data-i18n="ap.hd">Die Vorschau nutzt Supabase für passwortbasierte Konten und kontoisolierte Arbeitsbereichsdaten; Google-Anmeldung ist nicht eingerichtet. Bearbeitbare Flow-Entwürfe, CSV-Kontakttools und Zielgruppen-Vorschauen sind verfügbar, aber Messaging-Kanäle, ausgehende Antworten, ein Live-KI-Agent und Abo-Abrechnung sind nicht aktiviert.</p>
+<p class="sub" data-i18n="ap.hd">Der Arbeitsbereich nutzt Supabase für passwortbasierte Konten und kontobezogene Daten; die Google-Anmeldung ist nicht eingerichtet. Flow-Entwürfe, Posteingang, Broadcasts, CSV-Kontakt-Tools und Kanalverbindungen sind verfügbar. Abrechnung von Abonnements ist nicht aktiviert.</p>
 <p class="sub" data-i18n="ap.hd2">Die Produktrichtung verbindet strukturierte Automatisierung mit KI-gestützten Gesprächen. Hier werden keine Kundenergebnisse, veröffentlichten Abo-Preise, Service-Level-Zusagen oder Starttermine behauptet.</p>
 <a class="btn btn-primary" data-i18n="ap.cta" href="/de/login.html?mode=signup">Produktvorschau öffnen</a>
 </div>
 <div style="display:grid;gap:12px">
 <div style="padding:18px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid var(--line)">
 <div data-i18n="ap.office" style="font-size:12px;color:#8b87ab;margin-bottom:4px">Verfügbarkeit</div>
-<div data-i18n="ab.loc" style="font-size:14px;color:#fff">Produktvorschau · keine Abrechnung oder Live-Kanäle</div>
+<div data-i18n="ab.loc" style="font-size:14px;color:#fff">Frühes Produkt · keine Abrechnung</div>
 </div>
 <div style="padding:18px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid var(--line)">
 <div data-i18n="ap.contact" style="font-size:12px;color:#8b87ab;margin-bottom:4px">Kontakt</div>
@@ -171,7 +171,7 @@
 <div class="cta-box" data-reveal="scale">
 <span class="eyebrow" style="margin-bottom:20px"><span class="dot"></span><span data-i18n="cta.badge">Produktvorschau · keine Abrechnung aktiviert</span></span>
 <h2 class="text-grad" data-i18n="cta.title">Plane dein nächstes Kundengespräch.</h2>
-<p data-i18n="cta.lead">Entdecke bearbeitbare Flow-Entwürfe, CSV-Tools für Kontakte und Zielgruppen-Vorschauen. Live-Kanalintegrationen, KI-Antworten und Bezahlpläne sind in der aktuellen Vorschau nicht verfügbar.</p>
+<p data-i18n="cta.lead">Erstellen Sie Flows, einen Posteingang und Kontakte. Telegram, Web-Chat und die offiziellen Meta-Kanäle (WhatsApp Cloud API, Instagram, Messenger) lassen sich mit Ihren eigenen Konten verbinden. Es wird kein Bezahlplan und kein Abopreis veröffentlicht.</p>
 <form class="cta-form" data-demo-form="" novalidate="">
 <label class="sr-only" data-i18n="cta.emailLabel" for="cta-email">Geschäftliche E-Mail</label>
 <input autocomplete="email" data-i18n-ph="cta.placeholder" id="cta-email" placeholder="du@deinemarke.de" required="" type="email"/>
@@ -181,7 +181,7 @@
 <div class="cta-micro">
 <span>✓ <span data-i18n="cta.m1">Keine Abonnementpläne veröffentlicht</span></span>
 <span>✓ <span data-i18n="cta.m2">Keine Abrechnung oder Kasse aktiviert</span></span>
-<span>✓ <span data-i18n="cta.m3">Kein Versand über Live-Kanäle</span></span>
+<span>✓ <span data-i18n="cta.m3">Telegram, Web-Chat und Meta-Kanäle</span></span>
 </div>
 </div>
 </div>
@@ -195,7 +195,7 @@
 <img alt="" height="34" src="../assets/img/logo.svg" width="34"/>
 <span>chatora</span>
 </a>
-<p data-i18n="footer.about">Eine frühe Vorschau für Conversational-Marketing-Tools: bearbeitbare Entwürfe, CSV-Tools und Zielgruppen-Vorschauen. Live-Kanäle und KI-Antworten sind noch nicht aktiviert.</p>
+<p data-i18n="footer.about">Ein frühes Produkt für Conversation-Marketing: Flows, Posteingang, Kontakte und Broadcasts. Es wird kein Bezahlplan und kein Abopreis veröffentlicht.</p>
 </div>
 <div class="foot-col">
 <p class="foot-h" data-i18n="footer.product">Produkt</p>

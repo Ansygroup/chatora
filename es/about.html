@@ -97,7 +97,7 @@
 <section class="section section--tight">
 <div class="container">
 <div class="stats">
-<div class="stat" data-reveal=""><div class="num">—</div><div class="lbl" data-i18n="ap.s1">No hay canales de mensajería en vivo conectados</div></div>
+<div class="stat" data-reveal=""><div class="num">—</div><div class="lbl" data-i18n="ap.s1">Canales que puedes conectar: Telegram, chat web, Meta</div></div>
 <div class="stat" data-reveal="" style="--d:80ms"><div class="num"><span data-count="45">0</span></div><div class="lbl" data-i18n="ap.s2">Borradores iniciales editables; no probados en producción</div></div>
 <div class="stat" data-reveal="" style="--d:160ms"><div class="num">—</div><div class="lbl" data-i18n="ap.s3">No se ha publicado un precio de suscripción</div></div>
 <div class="stat" data-reveal="" style="--d:240ms"><div class="num">—</div><div class="lbl" data-i18n="ap.s4">No se han publicado precios por miembro del equipo</div></div>
@@ -119,7 +119,7 @@
 <article class="bento-card span-6" data-reveal="" style="--d:80ms">
 <div class="bento-ico"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3Z"></path><path d="m9 12 2 2 4-4"></path></svg></div>
 <h3 data-i18n="ap.v2t">APIs oficiales, o ninguna</h3>
-<p data-i18n="ap.v2d">La dirección del producto prioriza APIs documentadas y aprobadas, no compartir contraseñas ni hacer scraping. En la vista previa actual no hay ningún canal de mensajería externo conectado.</p>
+<p data-i18n="ap.v2d">La dirección del producto prefiere APIs documentadas y aprobadas frente a compartir contraseñas o hacer scraping. Telegram y los canales de Meta usan APIs oficiales; OpenWA es una vía opcional no oficial con riesgo de bloqueo.</p>
 </article>
 <article class="bento-card span-4" data-reveal="">
 <div class="bento-ico"><svg fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24"><path d="M4 5h16v11H8l-4 4V5Z"></path></svg></div>
@@ -145,14 +145,14 @@
 <div>
 <span class="kicker" data-i18n="ap.hk">Dirección del producto</span>
 <h2 class="text-grad" data-i18n="ap.ht">Un espacio de trabajo más claro para las conversaciones</h2>
-<p class="sub" data-i18n="ap.hd">La vista previa usa Supabase para cuentas con contraseña y datos de espacio de trabajo aislados por cuenta; el inicio de sesión con Google no está configurado. Hay borradores de flujos editables, herramientas CSV para contactos y vistas previas de audiencia, pero no están habilitados los canales de mensajería, las respuestas salientes, un agente de IA en vivo ni la facturación por suscripción.</p>
+<p class="sub" data-i18n="ap.hd">El espacio de trabajo usa Supabase para cuentas con contraseña y datos por cuenta; el acceso con Google no está configurado. Hay borradores de flujos, bandeja de entrada, difusiones, herramientas CSV de contactos y conexiones de canales. La facturación por suscripción no está activada.</p>
 <p class="sub" data-i18n="ap.hd2">La dirección del producto combina automatización estructurada con conversaciones asistidas por IA. Aquí no se afirman resultados de clientes, precios de suscripción publicados, compromisos de nivel de servicio ni fechas de lanzamiento.</p>
 <a class="btn btn-primary" data-i18n="ap.cta" href="/es/login.html?mode=signup">Abrir la vista previa del producto</a>
 </div>
 <div style="display:grid;gap:12px">
 <div style="padding:18px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid var(--line)">
 <div data-i18n="ap.office" style="font-size:12px;color:#8b87ab;margin-bottom:4px">Disponibilidad</div>
-<div data-i18n="ab.loc" style="font-size:14px;color:#fff">Vista previa del producto · sin facturación ni canales en vivo</div>
+<div data-i18n="ab.loc" style="font-size:14px;color:#fff">Producto inicial · sin facturación</div>
 </div>
 <div style="padding:18px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid var(--line)">
 <div data-i18n="ap.contact" style="font-size:12px;color:#8b87ab;margin-bottom:4px">Contacto</div>
@@ -171,7 +171,7 @@
 <div class="cta-box" data-reveal="scale">
 <span class="eyebrow" style="margin-bottom:20px"><span class="dot"></span><span data-i18n="cta.badge">Vista previa del producto · sin facturación</span></span>
 <h2 class="text-grad" data-i18n="cta.title">Planifica tu próxima conversación con un cliente.</h2>
-<p data-i18n="cta.lead">Explora borradores de flujos editables, herramientas CSV para contactos y vistas previas de audiencia. Las integraciones de canales en directo, las respuestas de IA y los planes de pago no están disponibles en la vista previa actual.</p>
+<p data-i18n="cta.lead">Crea flujos, una bandeja de entrada y contactos. Telegram, el chat web y los canales oficiales de Meta (API de WhatsApp Cloud, Instagram, Messenger) se pueden conectar con tus propias cuentas. No se publica ningún plan de pago ni precio de suscripción.</p>
 <form class="cta-form" data-demo-form="" novalidate="">
 <label class="sr-only" data-i18n="cta.emailLabel" for="cta-email">Correo de trabajo</label>
 <input autocomplete="email" data-i18n-ph="cta.placeholder" id="cta-email" placeholder="tu@tumarca.com" required="" type="email"/>
@@ -181,7 +181,7 @@
 <div class="cta-micro">
 <span>✓ <span data-i18n="cta.m1">No hay planes de suscripción publicados</span></span>
 <span>✓ <span data-i18n="cta.m2">No hay facturación ni pago activados</span></span>
-<span>✓ <span data-i18n="cta.m3">No se envían mensajes a canales en directo</span></span>
+<span>✓ <span data-i18n="cta.m3">Telegram, chat web y canales de Meta</span></span>
 </div>
 </div>
 </div>
@@ -195,7 +195,7 @@
 <img alt="" height="34" src="../assets/img/logo.svg" width="34"/>
 <span>chatora</span>
 </a>
-<p data-i18n="footer.about">Una vista previa temprana de herramientas de marketing conversacional: borradores editables, herramientas CSV y vistas previas de audiencia. Los canales en directo y las respuestas de IA aún no están habilitados.</p>
+<p data-i18n="footer.about">Un producto en fase inicial de marketing conversacional: flujos, bandeja, contactos y difusiones. No se publica ningún plan de pago ni precio de suscripción.</p>
 </div>
 <div class="foot-col">
 <p class="foot-h" data-i18n="footer.product">Producto</p>
