@@ -924,7 +924,7 @@ async function emailInbound(message, env) {
     ok = !!(r && r.ok);
   } catch (e) { console.log('email_inbound', String(e)); }
   if (!ok) { console.log('email_inbound failed for ' + connId); return; }
-  try { await inboundRun(env, 'email', connId, fromAddr, msgId, (subject ? subject + '\n' : '') + text); } catch (e) { console.log('email inboundRun', String(e)); }
+  try { await inboundRun(env, 'email', connId, fromAddr, msgId, (subject || text).slice(0, 280)); } catch (e) { console.log('email inboundRun', String(e)); }
 }
 
 export default {
