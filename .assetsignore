@@ -2,7 +2,6 @@ _pages
 _partials
 _tools
 _deploy
-docs
 mcp
 supabase
 .github

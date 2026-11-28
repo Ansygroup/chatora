@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Integrations guide: widget, Telegram, Zapier, Make, n8n, Sheets | Chatora</title>
+<meta name="description" content="Connect Chatora to your website (WordPress, Blogger, Shopify), Telegram, Zapier, Make, n8n and Google Sheets or Calendar with free, working recipes.">
+<link rel="canonical" href="https://chatora.us.ci/docs/integrations.html">
+<style>body{font-family:system-ui,sans-serif;background:#06060c;color:#e8e8f0;margin:0;line-height:1.6}main{max-width:820px;margin:auto;padding:32px 20px}a{color:#9d8cff}h1{font-size:32px}h2{margin-top:32px;font-size:22px}pre{background:#10101a;border:1px solid #2a2a3a;border-radius:10px;padding:14px;overflow:auto;font-size:13px}code{background:#10101a;padding:1px 5px;border-radius:5px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #2a2a3a;padding:8px;text-align:left;font-size:14px}</style></head>
+<body><main>
+<p><a href="/">Chatora</a> / Docs / <a href="/docs/api.html">API</a></p>
+<h1>Integrations guide</h1>
+<p>Everything on this page works on the free plan today: the website widget, Telegram, the REST API with scoped keys, inbound events, and outbound webhooks for Zapier, Make, n8n or your own server. WhatsApp and Instagram channels are not live yet (Meta approval pending) &mdash; the free WhatsApp routes that work today are at the bottom.</p>
+
+<h2>1. Website chat widget</h2>
+<p>Add an AI chat bubble to any website. It answers from your knowledge box and flows, and every chat lands in your Inbox.</p>
+<ol>
+<li>Sign in and open <b>Settings &gt; Website chat widget</b>.</li>
+<li>Create a key, optionally set a greeting and an allowed website, and copy the snippet:</li>
+</ol>
+<pre>&lt;script src="https://chatora.us.ci/assets/widget.js" data-key="ck_YOUR_KEY" defer&gt;&lt;/script&gt;</pre>
+<p>Paste it before <code>&lt;/body&gt;</code>:</p>
+<table>
+<tr><th>Platform</th><th>Where to paste</th></tr>
+<tr><td>WordPress</td><td>Install the free WPCode plugin, then WPCode &gt; Headers &amp; Footers &gt; Footer. Or Appearance &gt; Theme File Editor &gt; footer.php.</td></tr>
+<tr><td>Blogger</td><td>Theme &gt; Edit HTML, paste right before <code>&lt;/body&gt;</code>, save.</td></tr>
+<tr><td>Shopify</td><td>Online Store &gt; Themes &gt; Edit code &gt; Layout/theme.liquid, paste right before <code>&lt;/body&gt;</code>.</td></tr>
+<tr><td>Any other site</td><td>Any page, right before <code>&lt;/body&gt;</code>.</td></tr>
+</table>
+<p>If you set an allowed website on the key, the widget only loads on that origin.</p>
+
+<h2>2. Telegram bot (free, live)</h2>
+<ol>
+<li>In Telegram, open <b>@BotFather</b>, send <code>/newbot</code> and copy the token it gives you (looks like <code>123456789:AA...</code>).</li>
+<li>In Chatora open <b>Settings &gt; Channels &gt; Telegram</b>, paste the token and connect. Chatora registers the webhook for you.</li>
+<li>Message your bot. It answers from your knowledge box and flows (trigger <code>/start</code> or keywords), and every chat appears in your Inbox. Contacts can reply STOP to unsubscribe from broadcasts.</li>
+</ol>
+
+<h2>3. Zapier</h2>
+<p><b>Trigger (Chatora &rarr; Zapier):</b> New Zap &gt; <b>Webhooks by Zapier &gt; Catch Hook</b> &gt; copy the URL &gt; in Chatora open <b>Settings &gt; Developers and API &gt; Webhooks</b>, pick the event and paste the URL. Send a test (for example, message your Telegram bot) and Zapier sees the payload. Events: <code>contact.created</code>, <code>message.received</code>, <code>event.received</code>, <code>flow.finished</code>.</p>
+<p><b>Action (Zapier &rarr; Chatora):</b> <b>Webhooks by Zapier &gt; POST</b>:</p>
+<table>
+<tr><td>URL</td><td><code>https://chatora.us.ci/api/v1/events</code></td></tr>
+<tr><td>Payload type</td><td>json</td></tr>
+<tr><td>Data</td><td><code>event</code> = tag-applied, <code>handle</code> = the email or tg: id, <code>name</code>, <code>key</code> = the tag (for example new-customer)</td></tr>
+<tr><td>Headers</td><td><code>Authorization</code> = Bearer chk_live_YOUR_KEY</td></tr>
+</table>
+<p>The API key needs the <code>events:write</code> scope. A tag event starts every live flow whose trigger is <code>event:tag-applied &lt;tag&gt;</code>. To add contacts instead, POST to <code>/api/v1/contacts</code> with a <code>contacts:write</code> key.</p>
+
+<h2>4. Make (Integromat)</h2>
+<p><b>Trigger:</b> add a <b>Custom webhook</b> module, copy its URL, add it in Chatora Settings &gt; Webhooks as above. <b>Action:</b> add an <b>HTTP &gt; Make a request</b> module: method POST, URL <code>https://chatora.us.ci/api/v1/events</code>, header <code>Authorization: Bearer chk_live_YOUR_KEY</code>, body type Raw, content type application/json, body like <code>{"event":"tag-applied","handle":"{{1.email}}","key":"vip"}</code>.</p>
+
+<h2>5. n8n</h2>
+<p><b>Trigger:</b> add a <b>Webhook</b> node, use its production URL, and register it in Chatora Settings &gt; Webhooks (or with <code>POST /api/v1/hooks</code>). <b>Action:</b> add an <b>HTTP Request</b> node: POST <code>https://chatora.us.ci/api/v1/events</code>, authentication = Generic Credential Type &gt; Header Auth (<code>Authorization: Bearer chk_live_YOUR_KEY</code>), JSON body with <code>event</code>, <code>handle</code> and <code>key</code>. Self-hosted n8n works too; the webhook target must be a plain https URL without a custom port.</p>
+
+<h2>6. Google Sheets &rarr; Chatora (free, Apps Script)</h2>
+<p>Adds new sheet rows as Chatora contacts. In the sheet: <b>Extensions &gt; Apps Script</b>, paste this, set <code>KEY</code>, then Triggers (clock icon) &gt; Add Trigger &gt; <code>onRowAdded</code> &gt; From spreadsheet &gt; On form submit (for Google Forms) or onEdit for manual entry.</p>
+<pre>var KEY = "chk_live_YOUR_KEY"; // needs the contacts:write scope
+function onRowAdded(e) {
+  var row = e.range.getValues()[0];
+  UrlFetchApp.fetch("https://chatora.us.ci/api/v1/contacts", {
+    method: "post", contentType: "application/json",
+    headers: { Authorization: "Bearer " + KEY },
+    payload: JSON.stringify({
+      name: String(row[0] || "Sheet contact"),
+      handle: String(row[1] || ""),
+      channel: "sheets", tags: ["from-sheet"]
+    }),
+    muteHttpExceptions: true
+  });
+}</pre>
+
+<h2>7. Google Calendar &rarr; Chatora (free, Apps Script)</h2>
+<p>Tags contacts when they appear as guests on new calendar events, which can start a confirmation flow. At <code>script.google.com</code>: New project, paste this, set <code>KEY</code>, then Triggers &gt; Add Trigger &gt; <code>syncCalendar</code> &gt; Time-driven &gt; every hour.</p>
+<pre>var KEY = "chk_live_YOUR_KEY"; // needs the events:write scope
+function syncCalendar() {
+  var props = PropertiesService.getScriptProperties();
+  var since = new Date(props.getProperty("since") || Date.now());
+  var now = new Date();
+  CalendarApp.getDefaultCalendar().getEvents(since, now).forEach(function (ev) {
+    ev.getGuestList().forEach(function (g) {
+      var email = g.getEmail(); if (!email) return;
+      UrlFetchApp.fetch("https://chatora.us.ci/api/v1/events", {
+        method: "post", contentType: "application/json",
+        headers: { Authorization: "Bearer " + KEY },
+        payload: JSON.stringify({ event: "tag-applied", handle: email,
+          name: g.getName() || email, key: "booked-call", channel: "calendar" }),
+        muteHttpExceptions: true
+      });
+    });
+  });
+  props.setProperty("since", now.toISOString());
+}</pre>
+
+<h2>8. Outgoing webhooks from a flow</h2>
+<p>Flows have a built-in <b>Webhook</b> step: paste any https URL and when a contact passes that step Chatora POSTs their JSON (name, handle, channel, tags, fields). Use it for per-flow alerts (CRM, email tools, your own server) without any API key. Up to 3 webhook calls per run, 5 second timeout.</p>
+
+<h2>9. WhatsApp: what works free today</h2>
+<p>Full WhatsApp Business API sending awaits Meta approval, so the app cannot send WhatsApp messages yet. What works today, free:</p>
+<ul>
+<li><b>Click-to-chat links</b> anywhere (flows, website buttons, broadcasts): <code>https://wa.me/2010XXXXXXXX?text=Hello</code> opens a WhatsApp chat with that number. Use your own number to collect leads, or your customer's number in reminder flows.</li>
+<li><b>Done-for-you WhatsApp setups</b> via the <a href="/services.html">services page</a>, where a person configures the official API for you.</li>
+</ul>
+<p>Instagram DM automation is in the same position: pending Meta approval, available through the done-for-you service.</p>
+
+<h2>Limits</h2>
+<table>
+<tr><th>Thing</th><th>Free limit</th></tr>
+<tr><td>API requests</td><td>120 per 10 minutes per key</td></tr>
+<tr><td>Events (POST /events)</td><td>60 per 10 minutes per key</td></tr>
+<tr><td>Telegram sends (POST /messages/send)</td><td>30 per 10 minutes per key</td></tr>
+<tr><td>Webhook subscriptions</td><td>10 per workspace</td></tr>
+<tr><td>Contacts</td><td>100 per workspace</td></tr>
+</table>
+<p>Details and the OpenAPI spec are in the <a href="/docs/api.html">API reference</a>.</p>
+</main></body></html>

@@ -1458,7 +1458,7 @@
   function renderSettings() {
     const sec = (id, title, open, html) => `<details class="set-sec" data-sec="${id}"${state.setOpen && state.setOpen[id] !== undefined ? (state.setOpen[id] ? " open" : "") : (open ? " open" : "")} style="margin:0 0 14px"><summary style="cursor:pointer;font-weight:700;font-size:1.05rem;padding:8px 2px">${esc(title)}</summary>${html}</details>`;
     if (!T.setCh) { T.setCh = AR ? "القنوات" : "Channels"; T.setAi = AR ? "الموقع والذكاء الاصطناعي" : "Website chat and AI"; T.setAcct = AR ? "الحساب والخطة" : "Account and plan"; }
-    return sec("ch", T.setCh, true, renderChannelsBlock() + renderMetaSettings()) + sec("ai", T.setAi, true, widgetCard() + knowledgeCard()) + sec("tpl", AR ? "قوالب ووضع العملاء" : "Templates and client mode", false, tplCard()) + sec("api", AR ? "المطوّرون و API" : "Developers and API", false, apiCard()) + sec("acct", T.setAcct, true,
+    return sec("ch", T.setCh, true, renderChannelsBlock() + renderMetaSettings()) + sec("ai", T.setAi, true, widgetCard() + knowledgeCard()) + sec("tpl", AR ? "قوالب ووضع العملاء" : "Templates and client mode", false, tplCard()) + sec("api", AR ? "المطوّرون و API" : "Developers and API", false, apiCard() + hooksCard()) + sec("acct", T.setAcct, true,
       `<div class="dash-card"><h2>${esc(T.wsName)}</h2>` +
       `<form id="ws-form" class="dash-inline"><input id="ws-input" aria-label="${esc(T.wsName)}" value="${esc(state.ws.name)}" maxlength="60">` +
       `<button class="btn btn-primary btn-sm" type="submit">${esc(T.save)}</button></form>` +
@@ -1578,12 +1578,12 @@
   const AKT = AR ? {
     t: "مفاتيح API (للمطوّرين)", n: "اربط Chatora بأدواتك أو بمساعد ذكاء اصطناعي (MCP). كل مفتاح له صلاحيات محددة، ويظهر مرة واحدة فقط بعد إنشائه. مجاني، حتى 120 طلب كل 10 دقائق لكل مفتاح.",
     nm: "اسم المفتاح", c: "إنشاء مفتاح", d: "حذف", cf: "تحذف المفتاح ده؟ أي تطبيق بيستخدمه هيتوقف.", lim: "حتى 5 مفاتيح.",
-    sc: { "contacts:read": "قراءة جهات الاتصال", "contacts:write": "إضافة جهات اتصال", "flows:read": "قراءة السيناريوهات", "conversations:read": "قراءة المحادثات" },
+    sc: { "contacts:read": "قراءة جهات الاتصال", "contacts:write": "إضافة جهات اتصال", "flows:read": "قراءة السيناريوهات", "conversations:read": "قراءة المحادثات", "events:write": "إرسال أحداث (زابير/ميك)", "hooks:write": "إدارة الويب هوك", "messages:write": "إرسال رسائل تيليجرام" },
     once: "انسخ المفتاح الآن، مش هيظهر تاني:", cp: "نسخ", cd: "تم النسخ", last: "آخر استخدام", never: "لم يُستخدم", docs: "التوثيق", spec: "OpenAPI", mcp: "رابط MCP"
   } : {
     t: "API keys (developers)", n: "Connect Chatora to your tools or an AI assistant (MCP). Each key has limited scopes and is shown only once, right after you create it. Free, up to 120 requests per 10 minutes per key.",
     nm: "Key name", c: "Create key", d: "Delete", cf: "Delete this key? Any app using it will stop working.", lim: "Up to 5 keys.",
-    sc: { "contacts:read": "Read contacts", "contacts:write": "Create contacts", "flows:read": "Read flows", "conversations:read": "Read conversations" },
+    sc: { "contacts:read": "Read contacts", "contacts:write": "Create contacts", "flows:read": "Read flows", "conversations:read": "Read conversations", "events:write": "Send events (Zapier/Make)", "hooks:write": "Manage webhooks", "messages:write": "Send Telegram messages" },
     once: "Copy the key now. It will not be shown again:", cp: "Copy", cd: "Copied", last: "Last used", never: "never used", docs: "Docs", spec: "OpenAPI", mcp: "MCP endpoint"
   };
   function apiCard() {
@@ -1637,6 +1637,60 @@
       try {
         await A.rest("/rest/v1/api_keys?id=eq." + encodeURIComponent(id), { method: "DELETE" });
         AK.keys = AK.keys.filter((x) => x.id !== id); AK.err = ""; AK.fresh = ""; paint();
+      } catch (e) { fail(e); }
+    }));
+  }
+  /* ---- Phase 3: outbound webhooks (Zapier / Make / n8n) ---- */
+  const HK = { loaded: false, loading: false, hooks: [], err: "" };
+  const HKT = AR ? {
+    t: "الويب هوك (Zapier و Make و n8n)", n: "ابعت أحداث مساحتك لأي رابط HTTPS: Catch Hook في Zapier، أو custom webhook في Make، أو Webhook node في n8n، أو سيرفر عندك. اختر الحدث والصق الرابط، وChatora هيبعت JSON كل ما الحدث يحصل.",
+    ev: { "contact.created": "جهة اتصال جديدة", "message.received": "رسالة واردة جديدة", "event.received": "حدث وصل من الـ API", "flow.finished": "سيناريو اكتمل" },
+    url: "الرابط (https://\u2026)", c: "إضافة ويب هوك", d: "حذف", cf: "تحذف الويب هوك ده؟", lim: "حتى 10 ويب هوك.", last: "آخر إرسال", never: "لم يُرسل بعد", docs: "دليل الإعداد", badurl: "الرابط لازم يبدأ بـ https://"
+  } : {
+    t: "Webhooks (Zapier, Make, n8n)", n: "Send workspace events to any HTTPS URL: a Zapier Catch Hook, a Make custom webhook, an n8n Webhook node, or your own server. Pick an event, paste the URL, and Chatora POSTs JSON every time it happens.",
+    ev: { "contact.created": "New contact", "message.received": "New incoming message", "event.received": "API event received", "flow.finished": "Flow finished" },
+    url: "Target URL (https://\u2026)", c: "Add webhook", d: "Delete", cf: "Delete this webhook?", lim: "Up to 10 webhooks.", last: "Last delivery", never: "never delivered", docs: "Setup guide", badurl: "The URL must be a valid https:// address."
+  };
+  function hooksCard() {
+    const rows = HK.hooks.map((k) => `<div class="dash-card" style="margin:10px 0;padding:12px"><b>${esc(HKT.ev[k.event] || k.event)}</b><br><code style="word-break:break-all">${esc(k.target_url)}</code>` +
+      `<p class="dash-note" style="margin:6px 0">${esc(HKT.last)}: ${esc(k.last_at ? String(k.last_at).slice(0, 16).replace("T", " ") + " · HTTP " + (k.last_status || "?") : HKT.never)}</p>` +
+      `<button type="button" class="btn btn-ghost btn-sm btn-danger" data-hk-del="${esc(k.id)}">${esc(HKT.d)}</button></div>`).join("");
+    const opts = Object.keys(HKT.ev).map((x) => `<option value="${x}">${esc(HKT.ev[x])}</option>`).join("");
+    return `<div class="dash-card" id="hk-card"><h2>${esc(HKT.t)}</h2><p class="dash-note">${esc(HKT.n)}</p>${rows}` +
+      `<select id="hk-event" aria-label="Event" style="width:100%;margin-top:8px">${opts}</select>` +
+      `<input id="hk-url" maxlength="300" placeholder="${esc(HKT.url)}" aria-label="${esc(HKT.url)}" style="width:100%;margin-top:6px">` +
+      `<button type="button" class="btn btn-primary btn-sm" id="hk-create" style="margin-top:8px"${HK.hooks.length >= 10 ? " disabled" : ""}>${esc(HKT.c)}</button> <span class="dash-note">${esc(HKT.lim)}</span>` +
+      `<p class="dash-note"><a href="/docs/integrations.html" target="_blank" rel="noopener">${esc(HKT.docs)}</a></p>` +
+      `<p class="dash-note is-err" id="hk-msg" role="status">${esc(HK.err)}</p></div>`;
+  }
+  async function hkLoad() {
+    if (HK.loaded || HK.loading) return;
+    HK.loading = true;
+    try { HK.hooks = (await A.rest("/rest/v1/hook_subscriptions?select=id,event,target_url,last_status,last_at&order=created_at.asc")) || []; HK.err = ""; }
+    catch (e) { HK.err = String(e.message || e); }
+    HK.loading = false; HK.loaded = true;
+    if (state.view === "settings") paint();
+  }
+  function hkWire(p) {
+    hkLoad();
+    const fail = (e) => { HK.err = String(e.message || e); const m = $("#hk-msg", p); if (m) m.textContent = HK.err; };
+    const cb = $("#hk-create", p);
+    if (cb) cb.addEventListener("click", async () => {
+      try {
+        const event = (($("#hk-event", p) || {}).value || "contact.created");
+        const url = ((($("#hk-url", p) || {}).value || "").trim());
+        if (!/^https:\/\/[^ /]+\.[^ /]+\S*$/.test(url) || url.length > 300) throw new Error(HKT.badurl);
+        const row = await A.rest("/rest/v1/hook_subscriptions", { method: "POST", body: JSON.stringify({ workspace_id: state.ws.id, event: event, target_url: url }) });
+        const made = Array.isArray(row) ? row[0] : row;
+        HK.hooks.push(made); HK.err = ""; paint();
+      } catch (e) { fail(e); }
+    });
+    $$("[data-hk-del]", p).forEach((b) => b.addEventListener("click", async () => {
+      if (!window.confirm(HKT.cf)) return;
+      const id = b.getAttribute("data-hk-del");
+      try {
+        await A.rest("/rest/v1/hook_subscriptions?id=eq." + encodeURIComponent(id), { method: "DELETE" });
+        HK.hooks = HK.hooks.filter((x) => x.id !== id); HK.err = ""; paint();
       } catch (e) { fail(e); }
     }));
   }
@@ -2379,6 +2433,7 @@
       });
       wkWire(p);
       akWire(p);
+      hkWire(p);
       knWire(p);
       tplWire(p);
       chanWire(p);

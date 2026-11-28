@@ -14,7 +14,10 @@
 <tr><td><code>contacts:read</code></td><td>List contacts</td></tr>
 <tr><td><code>contacts:write</code></td><td>Create a contact (free plan limit: 100 contacts). Does not start a conversation.</td></tr>
 <tr><td><code>flows:read</code></td><td>List flows (name, channel, status, step count)</td></tr>
-<tr><td><code>conversations:read</code></td><td>List conversations and read their messages</td></tr></table>
+<tr><td><code>conversations:read</code></td><td>List conversations and read their messages</td></tr>
+<tr><td><code>events:write</code></td><td>Push contact events (tag, enroll, unenroll) that start flows</td></tr>
+<tr><td><code>hooks:write</code></td><td>Manage outbound webhook subscriptions and read delivery samples</td></tr>
+<tr><td><code>messages:write</code></td><td>Send a Telegram message to a contact the workspace already has</td></tr></table>
 <h2>2. REST API</h2>
 <p>Base URL <code>https://chatora.us.ci/api/v1</code>. Send the key as a Bearer token. A key without the needed scope gets 401. Limit: 120 requests per 10 minutes per key (429 after that). The OpenAPI 3 spec is at <a href="/api/v1/openapi.json">/api/v1/openapi.json</a>.</p>
 <pre>curl https://chatora.us.ci/api/v1/contacts?limit=20 \
@@ -28,8 +31,43 @@ curl -X POST https://chatora.us.ci/api/v1/contacts \
 <tr><td>POST /contacts</td><td>contacts:write</td></tr>
 <tr><td>GET /flows</td><td>flows:read</td></tr>
 <tr><td>GET /conversations (limit, status)</td><td>conversations:read</td></tr>
-<tr><td>GET /conversations/{id}/messages (limit)</td><td>conversations:read</td></tr></table>
+<tr><td>GET /conversations/{id}/messages (limit)</td><td>conversations:read</td></tr>
+<tr><td>POST /events</td><td>events:write</td></tr>
+<tr><td>GET /hooks · POST /hooks · DELETE /hooks/{id} · GET /hooks/samples</td><td>hooks:write</td></tr>
+<tr><td>POST /messages/send</td><td>messages:write</td></tr></table>
 <p>Errors use <code>{"error":{"code":"...","message":"..."}}</code>.</p>
+<h2>2a. Events (inbound)</h2>
+<p>Push an event for a contact. Chatora finds or creates the contact by <code>handle</code>, applies the side effect and starts every live flow whose trigger matches. This is how Zapier, Make, n8n or Google Apps Script start automations in Chatora. Limit: 60 events per 10 minutes per key.</p>
+<pre>curl -X POST https://chatora.us.ci/api/v1/events \
+  -H "Authorization: Bearer chk_live_YOUR_KEY" -H "Content-Type: application/json" \
+  -d '{"event":"tag-applied","handle":"sara@example.com","name":"Sara","key":"vip"}'</pre>
+<table><tr><th>event</th><th>key carries</th><th>Side effect</th></tr>
+<tr><td><code>tag-applied</code></td><td>tag text</td><td>Adds the tag; starts flows triggered by <code>event:tag-applied &lt;tag&gt;</code></td></tr>
+<tr><td><code>tag-removed</code></td><td>tag text</td><td>Removes the tag; starts flows triggered by <code>event:tag-removed &lt;tag&gt;</code></td></tr>
+<tr><td><code>field-changed</code></td><td>field name</td><td>Starts flows triggered by <code>event:field-changed &lt;field&gt;</code></td></tr>
+<tr><td><code>enroll</code></td><td>flow id (see GET /flows)</td><td>Starts that flow for the contact</td></tr>
+<tr><td><code>unenroll</code></td><td>flow id</td><td>Stops the contact's running or pending runs of that flow</td></tr></table>
+<p>Handles that look like <code>tg:123456789</code> or <code>web:abcdef12</code> get the matching channel automatically, so flow messages reach Telegram or the web inbox.</p>
+<h2>2b. Webhooks (outbound, Zapier/Make/n8n)</h2>
+<p>Subscribe a URL and Chatora POSTs JSON each time the event happens, with an <code>x-chatora-event</code> header. Events: <code>contact.created</code>, <code>message.received</code>, <code>event.received</code>, <code>flow.finished</code>. Up to 10 subscriptions per workspace. You can also manage subscriptions in Settings, no code needed.</p>
+<pre># Subscribe (Zapier REST Hooks call this automatically)
+curl -X POST https://chatora.us.ci/api/v1/hooks \
+  -H "Authorization: Bearer chk_live_YOUR_KEY" -H "Content-Type: application/json" \
+  -d '{"event":"message.received","target_url":"https://hooks.zapier.com/hooks/catch/..."}'
+
+# Sample data / polling fallback: bare array, newest first
+curl "https://chatora.us.ci/api/v1/hooks/samples?event=message.received" \
+  -H "Authorization: Bearer chk_live_YOUR_KEY"
+
+# Unsubscribe
+curl -X DELETE https://chatora.us.ci/api/v1/hooks/SUBSCRIPTION_ID \
+  -H "Authorization: Bearer chk_live_YOUR_KEY"</pre>
+<p>Delivery body: <code>{"id": 123, "event": "message.received", "created_at": "...", ...event fields}</code>. The step-by-step Zapier, Make and n8n recipes are in the <a href="/docs/integrations.html">integrations guide</a>.</p>
+<h2>2c. Send a Telegram message</h2>
+<pre>curl -X POST https://chatora.us.ci/api/v1/messages/send \
+  -H "Authorization: Bearer chk_live_YOUR_KEY" -H "Content-Type: application/json" \
+  -d '{"handle":"tg:123456789","text":"Your order is on its way."}'</pre>
+<p>Only works for contacts the workspace already has, through the connected Telegram bot. Limit: 30 per 10 minutes per key. WhatsApp and Instagram sending are not available yet (Meta approval pending).</p>
 <h2>3. MCP (remote)</h2>
 <p>Endpoint <code>https://chatora.us.ci/mcp</code> (Streamable HTTP, stateless, JSON responses, POST only). Authenticate with the same Bearer key. Tools: <code>list_contacts</code>, <code>create_contact</code>, <code>list_flows</code>, <code>list_conversations</code>, <code>get_conversation_messages</code>. Each tool needs the matching scope.</p>
 <pre>{
@@ -40,6 +78,8 @@ curl -X POST https://chatora.us.ci/api/v1/contacts \
     }
   }
 }</pre>
+<h2>3a. More guides</h2>
+<p>The <a href="/docs/integrations.html">integrations guide</a> covers the website widget snippet (WordPress, Blogger, Shopify), Telegram setup, Zapier, Make, n8n, Google Sheets and Calendar via Apps Script, and the free WhatsApp routes that work today.</p>
 <h2>Privacy</h2>
 <p>A key can only reach the workspace that created it. Conversation messages contain your customers' text, so give <code>conversations:read</code> only to tools you trust. Delete a key in Settings to stop it at once.</p>
 </main></body></html>
