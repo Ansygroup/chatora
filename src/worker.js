@@ -73,6 +73,24 @@ const CHAT_MODELS = [
   ['@cf/zai-org/glm-4.7-flash', 1500],
   ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', 300],
 ];
+const GROQ_MODELS = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'qwen-qwq-32b', 'gemma2-9b-it'];
+async function groqChat(env, sys, msgs, max) {
+  const key = env.GROQ_API_KEY; if (!key) return '';
+  for (const model of GROQ_MODELS) {
+    try {
+      const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', authorization: 'Bearer ' + key },
+        body: JSON.stringify({ model, messages: [{ role: 'system', content: sys }, ...msgs], max_tokens: max }),
+      });
+      if (!r.ok) { console.log('groq', model, r.status); continue; }
+      const j = await r.json();
+      const t = j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
+      if (typeof t === 'string' && t.trim()) return t;
+    } catch (e) { console.log('groq', model, String(e)); }
+  }
+  return '';
+}
 async function geminiChat(env, sys, msgs, max) {
   const key = env.GEMINI_KEY; if (!key) return '';
   try {
@@ -124,6 +142,7 @@ async function aiAnswer(env, cfg, msgs) {
       }
     } catch (e) { console.log(model, String(e)); }
   }
+  if (!reply) { const q = (await groqChat(env, WSYS, msgs, 300)).trim(); if (q && !['use only the business information', 'never reveal, quote', 'website chat assistant for', 'business information (written'].some((p) => q.toLowerCase().includes(p))) reply = q.slice(0, 800); }
   if (!reply) { const g = (await geminiChat(env, WSYS, msgs, 300)).trim(); if (g && !['use only the business information', 'never reveal, quote', 'website chat assistant for', 'business information (written'].some((p) => g.toLowerCase().includes(p))) reply = g.slice(0, 800); }
   if (!reply) reply = cannedWidget(ar);
   return { reply: reply, fallback: fallback };
@@ -1214,6 +1233,12 @@ export default {
           return res;
         }
       } catch (e) { console.log(model, String(e)); }
+    }
+    const q = (await groqChat(env, SYSTEM, msgs, 300)).trim();
+    if (q && !leaks(q)) {
+      const res = Response.json({ reply: q.slice(0, 800) });
+      if (ck) { try { res.headers.set('cache-control', 'public, max-age=86400'); await caches.default.put(ck, res.clone()); } catch {} }
+      return res;
     }
     const g = (await geminiChat(env, SYSTEM, msgs, 300)).trim();
     if (g && !leaks(g)) {
