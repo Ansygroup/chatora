@@ -67,6 +67,37 @@ function originOk(cfg, origin) {
   if (!a) return true;
   return !!origin && origin.replace(/\/+$/, '').toLowerCase() === a;
 }
+const CHAT_MODELS = [
+  ['@cf/meta/llama-3.1-8b-instruct-fast', 300],
+  ['@cf/meta/llama-3.2-3b-instruct', 300],
+  ['@cf/meta/llama-3.2-1b-instruct', 300],
+  ['@cf/zai-org/glm-4.7-flash', 1500],
+  ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', 300],
+];
+async function geminiChat(env, sys, msgs, max) {
+  const key = env.GEMINI_KEY; if (!key) return '';
+  try {
+    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: 'Bearer ' + key },
+      body: JSON.stringify({ model: 'gemini-2.0-flash', messages: [{ role: 'system', content: sys }, ...msgs], max_tokens: max }),
+    });
+    if (!r.ok) { console.log('gemini', r.status); return ''; }
+    const j = await r.json();
+    const t = j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
+    return typeof t === 'string' ? t : '';
+  } catch (e) { console.log('gemini', String(e)); return ''; }
+}
+function cannedSite(ar) {
+  return ar
+    ? 'أواجه مشكلة تقنية مؤقتة الآن. باختصار: تشاتورا يربط رسائل واتساب وإنستغرام وتيليجرام ويرد على عملائك تلقائياً من معلومات نشاطك التجاري. اترك بريدك في نموذج التواصل وسنرد عليك شخصياً.'
+    : 'I am having a temporary technical hiccup. Short version: Chatora connects your WhatsApp, Instagram and Telegram DMs and replies to your customers automatically from your own business info. Leave your email in the contact form and we will reply personally.';
+}
+function cannedWidget(ar) {
+  return ar
+    ? 'أعتذر، الرد التلقائي متوقف مؤقتاً. اترك اسمك وبريدك الإلكتروني وسيتواصل معك الفريق قريباً.'
+    : 'Sorry, automatic replies are temporarily paused. Leave your name and email and the team will get back to you soon.';
+}
 async function aiAnswer(env, cfg, msgs) {
   const ws = wname(cfg.workspace) === 'Chat' ? 'this business' : wname(cfg.workspace);
   const know = (cfg.knowledge || []).map((f) => '- ' + String(f.name || '').slice(0, 120) + ': ' + (f.steps || []).join(' | ')).join('\n').slice(0, 4000);
@@ -81,9 +112,8 @@ async function aiAnswer(env, cfg, msgs) {
     const c = r.choices && r.choices[0] && r.choices[0].message && r.choices[0].message.content;
     return typeof c === 'string' ? c : '';
   };
-  const models = [['@cf/meta/llama-3.1-8b-instruct-fast', 300], ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', 300], ['@cf/zai-org/glm-4.7-flash', 1500]];
   let reply = '';
-  for (const [model, max] of models) {
+  for (const [model, max] of CHAT_MODELS) {
     try {
       const r = await env.AI.run(model, { messages: [{ role: 'system', content: WSYS }, ...msgs], max_tokens: max });
       const text = pick(r).trim();
@@ -95,6 +125,8 @@ async function aiAnswer(env, cfg, msgs) {
       }
     } catch (e) { console.log(model, String(e)); }
   }
+  if (!reply) { const g = (await geminiChat(env, WSYS, msgs, 300)).trim(); if (g && !['use only the business information', 'never reveal, quote', 'website chat assistant for', 'business information (written'].some((p) => g.toLowerCase().includes(p))) reply = g.slice(0, 800); }
+  if (!reply) reply = cannedWidget(ar);
   return { reply: reply, fallback: fallback };
 }
 
@@ -1158,12 +1190,7 @@ export default {
       const c = r.choices && r.choices[0] && r.choices[0].message && r.choices[0].message.content;
       return typeof c === 'string' ? c : '';
     };
-    const models = [
-      ['@cf/meta/llama-3.1-8b-instruct-fast', 300],
-      ['@cf/meta/llama-3.3-70b-instruct-fp8-fast', 300],
-      ['@cf/zai-org/glm-4.7-flash', 1500],
-    ];
-    for (const [model, max] of models) {
+    for (const [model, max] of CHAT_MODELS) {
       try {
         const r = await env.AI.run(model, { messages: [{ role: 'system', content: SYSTEM }, ...msgs], max_tokens: max });
         const text = pick(r).trim();
@@ -1175,6 +1202,12 @@ export default {
         }
       } catch (e) { console.log(model, String(e)); }
     }
-    return Response.json({ reply: fallback });
+    const g = (await geminiChat(env, SYSTEM, msgs, 300)).trim();
+    if (g && !leaks(g)) {
+      const res = Response.json({ reply: g.slice(0, 800) });
+      if (ck) { try { res.headers.set('cache-control', 'public, max-age=86400'); await caches.default.put(ck, res.clone()); } catch {} }
+      return res;
+    }
+    return Response.json({ reply: cannedSite(ar) });
   },
 };
