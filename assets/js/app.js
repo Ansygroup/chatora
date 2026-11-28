@@ -58,7 +58,7 @@
       sendError: "Could not send the reply. Check the connection and try again.", sendTooLong: "Message is too long. Maximum 1,000 UTF-8 bytes.",
       sendStatusSending: "Sending", sendStatusSent: "Sent", sendStatusDelivered: "Delivered", sendStatusRead: "Read", sendStatusFailed: "Failed", sendStatusUnknown: "Status unknown",
       flowPending: "Flows stay as drafts until a real messaging channel and automation are connected.",
-      guideTitle: "Two steps to a ready flow", guide1: "Replace the [bracketed] parts with your own details (offer, link, price)", guide2: "Press Save", guideReadyTitle: "Your flow draft is saved", guideReadyText: "Next step: connect WhatsApp or Instagram so it can reply to real messages. Self-connect is coming soon, so our team sets it up for you (the next page has the link). Until then this stays a draft.", connectCta: "Connect WhatsApp / Instagram", tryOptional: "Try it first (optional)",
+      guideTitle: "Two steps to a ready flow", guide1: "Replace the [bracketed] parts with your own details (offer, link, price)", guide2: "Press Save", guideReadyTitle: "Your flow draft is saved", guideReadyText: "Next step: connect a channel (WhatsApp, Instagram, Messenger or Telegram) so it can reply to real messages. Until then this stays a draft.", connectCta: "Connect a channel", tryOptional: "Try it first (optional)",
       send: "Send", typeMsg: "Write a reply…", aiPaused: "Waiting for a channel connection", humanMode: "Assigned to a person",
       takeOver: "Take over", giveBack: "Hand back to AI", close: "Close", reopen: "Reopen",
       newFlow: "New flow", pickTemplate: "Start from a template", cancel: "Cancel",
@@ -168,7 +168,7 @@
       sendError: "ماقدرناش نبعت الرد. راجع الاتصال وحاول تاني.", sendTooLong: "الرسالة طويلة. الحد الأقصى 1000 بايت UTF-8.",
       sendStatusSending: "جارٍ الإرسال", sendStatusSent: "أُرسلت", sendStatusDelivered: "تم التسليم", sendStatusRead: "مقروءة", sendStatusFailed: "فشل", sendStatusUnknown: "الحالة غير معروفة",
       flowPending: "السيناريوهات تفضل مسودات لحد ربط قناة مراسلة وتشغيل أتمتة فعلية.",
-      guideTitle: "خطوتين وسيناريوك جاهز", guide1: "بدّل الأجزاء اللي بين [أقواس] ببياناتك (العرض، اللينك، السعر)", guide2: "اضغط حفظ", guideReadyTitle: "السيناريو اتحفظ وجاهز", guideReadyText: "الخطوة الجاية: اربط واتساب أو إنستجرام عشان يرد على رسايل حقيقية. الربط الذاتي قريب، فريقنا بيظبطهالك دلوقتي (اللينك في الصفحة الجاية). وطول ما مفيش ربط بيفضل مسودة.", connectCta: "اربط واتساب / إنستجرام", tryOptional: "جرّبه الأول (اختياري)",
+      guideTitle: "خطوتين وسيناريوك جاهز", guide1: "بدّل الأجزاء اللي بين [أقواس] ببياناتك (العرض، اللينك، السعر)", guide2: "اضغط حفظ", guideReadyTitle: "السيناريو اتحفظ وجاهز", guideReadyText: "الخطوة الجاية: اربط قناة (واتساب أو إنستجرام أو ماسنجر أو تيليجرام) عشان يرد على رسايل حقيقية. وطول ما مفيش ربط بيفضل مسودة.", connectCta: "اربط قناة", tryOptional: "جرّبه الأول (اختياري)",
       send: "إرسال", typeMsg: "اكتب رد…", aiPaused: "في انتظار ربط القناة", humanMode: "محوّلة لموظف",
       takeOver: "خد المحادثة", giveBack: "رجّعها للذكاء الاصطناعي", close: "اقفل", reopen: "افتحها تاني",
       newFlow: "سيناريو جديد", pickTemplate: "ابدأ من قالب", cancel: "إلغاء",
@@ -306,7 +306,18 @@
     chTitle: "Channels", chSub: "Connect the places your customers message you.",
     tgLine: "Your own Telegram bot, live in two clicks.",
     webLine: "The chat bubble for your website. Paste one snippet, done.",
-    soon: "Coming soon", connect: "Connect", manage: "Manage", openDetail: "Open",
+    mtLine_whatsapp: "Your WhatsApp Business number through the WhatsApp Cloud API. Replies from your bot, inbox and live handover.",
+    mtLine_instagram: "Instagram DMs for your professional account. Replies from your bot, inbox and live handover.",
+    mtLine_messenger: "Messenger chats for your Facebook Page. Replies from your bot, inbox and live handover.",
+    mtTitle: "Connect", mtAcc_whatsapp: "Phone number ID", mtAcc_instagram: "Instagram account ID", mtAcc_messenger: "Facebook Page ID",
+    mtTok: "Access token", mtSec: "App secret", mtTest: "Test mode (no Meta account needed, nothing is sent to Meta)",
+    mtHow: "Create an app at developers.facebook.com, add the product, then paste the IDs and a long-lived access token from it. Use your own Meta app: Meta reviews and approves it, Chatora does not. Test mode lets you try the whole flow first.",
+    mtBad: "Meta rejected these details. Check the ID and token.", mtMissing: "Fill every field, or turn on test mode.",
+    mtDone: " connected", mtWebhook: "Callback URL", mtVerify: "Verify token", mtCopy: "Copy", mtCopied: "Copied",
+    mtHook: "In your Meta app, set the webhook Callback URL and Verify token to these values, then subscribe to messages.",
+    mtTestMode: "Test mode on. Replies stay inside Chatora.", mtTestBtn: "Send a test message", mtTestOk: "Bot replied: ", mtTestNone: "No reply (the AI may be rate limited). Try again.",
+    mtNoConn: "Connect this channel in Settings, Channels, to reply here.",
+    connect: "Connect", manage: "Manage", openDetail: "Open",
     connected: "Connected", disabledSt: "Disabled", connErr: "Connection problem",
     refresh: "Refresh", disable: "Disable", enable: "Enable", remove: "Remove", back2: "Back to channels",
     removeWarn: "Remove this channel? Messages stop arriving and past chats stay in the inbox. This cannot be undone.",
@@ -334,7 +345,18 @@
     chTitle: "\u0627\u0644\u0642\u0646\u0648\u0627\u062a", chSub: "\u0627\u0631\u0628\u0637 \u0627\u0644\u0623\u0645\u0627\u0643\u0646 \u0627\u0644\u062a\u064a \u064a\u0631\u0627\u0633\u0644\u0643 \u0645\u0646\u0647\u0627 \u0639\u0645\u0644\u0627\u0624\u0643.",
     tgLine: "\u0628\u0648\u062a \u062a\u064a\u0644\u064a\u062c\u0631\u0627\u0645 \u0627\u0644\u062e\u0627\u0635 \u0628\u0643 \u064a\u0639\u0645\u0644 \u0628\u062e\u0637\u0648\u062a\u064a\u0646.",
     webLine: "\u0641\u0642\u0627\u0639\u0629 \u0627\u0644\u062f\u0631\u062f\u0634\u0629 \u0644\u0645\u0648\u0642\u0639\u0643. \u0627\u0644\u0635\u0642 \u0643\u0648\u062f\u064b\u0627 \u0648\u0627\u062d\u062f\u064b\u0627 \u0648\u0627\u0646\u062a\u0647\u0649.",
-    soon: "\u0642\u0631\u064a\u0628\u064b\u0627", connect: "\u0631\u0628\u0637", manage: "\u0625\u062f\u0627\u0631\u0629", openDetail: "\u0641\u062a\u062d",
+    mtLine_whatsapp: "\u0631\u0642\u0645 \u0648\u0627\u062a\u0633\u0627\u0628 \u0627\u0644\u0623\u0639\u0645\u0627\u0644 \u0639\u0628\u0631 WhatsApp Cloud API. \u0631\u062f\u0648\u062f \u0627\u0644\u0628\u0648\u062a \u0648\u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0648\u0627\u0631\u062f \u0648\u0627\u0644\u062a\u0633\u0644\u064a\u0645 \u0644\u0644\u0645\u0648\u0638\u0641.",
+    mtLine_instagram: "\u0631\u0633\u0627\u0626\u0644 \u0625\u0646\u0633\u062a\u063a\u0631\u0627\u0645 \u0644\u062d\u0633\u0627\u0628\u0643 \u0627\u0644\u0645\u0647\u0646\u064a. \u0631\u062f\u0648\u062f \u0627\u0644\u0628\u0648\u062a \u0648\u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0648\u0627\u0631\u062f.",
+    mtLine_messenger: "\u0645\u062d\u0627\u062f\u062b\u0627\u062a \u0645\u0627\u0633\u0646\u062c\u0631 \u0644\u0635\u0641\u062d\u062a\u0643 \u0639\u0644\u0649 \u0641\u064a\u0633\u0628\u0648\u0643. \u0631\u062f\u0648\u062f \u0627\u0644\u0628\u0648\u062a \u0648\u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0648\u0627\u0631\u062f.",
+    mtTitle: "\u0631\u0628\u0637", mtAcc_whatsapp: "\u0645\u0639\u0631\u0651\u0641 \u0631\u0642\u0645 \u0627\u0644\u0647\u0627\u062a\u0641 (Phone number ID)", mtAcc_instagram: "\u0645\u0639\u0631\u0651\u0641 \u062d\u0633\u0627\u0628 \u0625\u0646\u0633\u062a\u063a\u0631\u0627\u0645", mtAcc_messenger: "\u0645\u0639\u0631\u0651\u0641 \u0635\u0641\u062d\u0629 \u0641\u064a\u0633\u0628\u0648\u0643",
+    mtTok: "\u0631\u0645\u0632 \u0627\u0644\u0648\u0635\u0648\u0644 (Access token)", mtSec: "\u0633\u0631\u0651 \u0627\u0644\u062a\u0637\u0628\u064a\u0642 (App secret)", mtTest: "\u0648\u0636\u0639 \u0627\u0644\u062a\u062c\u0631\u0628\u0629 (\u0628\u062f\u0648\u0646 \u062d\u0633\u0627\u0628 \u0645\u064a\u062a\u0627\u060c \u0644\u0627 \u064a\u064f\u0631\u0633\u0644 \u0634\u064a\u0621 \u0625\u0644\u0649 \u0645\u064a\u062a\u0627)",
+    mtHow: "\u0623\u0646\u0634\u0626 \u062a\u0637\u0628\u064a\u0642\u064b\u0627 \u0639\u0644\u0649 developers.facebook.com \u0648\u0623\u0636\u0641 \u0627\u0644\u0645\u0646\u062a\u062c\u060c \u062b\u0645 \u0627\u0644\u0635\u0642 \u0627\u0644\u0645\u0639\u0631\u0651\u0641\u0627\u062a \u0648\u0631\u0645\u0632 \u0648\u0635\u0648\u0644 \u0637\u0648\u064a\u0644 \u0627\u0644\u0645\u062f\u0649. \u0627\u0633\u062a\u062e\u062f\u0645 \u062a\u0637\u0628\u064a\u0642 \u0645\u064a\u062a\u0627 \u0627\u0644\u062e\u0627\u0635 \u0628\u0643: \u0645\u064a\u062a\u0627 \u062a\u0631\u0627\u062c\u0639\u0647 \u0648\u062a\u0639\u062a\u0645\u062f\u0647. \u064a\u0645\u0643\u0646\u0643 \u062a\u062c\u0631\u0628\u0629 \u0627\u0644\u0645\u0633\u0627\u0631 \u0643\u0644\u0647 \u0623\u0648\u0644\u0627\u064b \u0628\u0648\u0636\u0639 \u0627\u0644\u062a\u062c\u0631\u0628\u0629.",
+    mtBad: "\u0631\u0641\u0636\u062a \u0645\u064a\u062a\u0627 \u0647\u0630\u0647 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a. \u062a\u062d\u0642\u0642 \u0645\u0646 \u0627\u0644\u0645\u0639\u0631\u0651\u0641 \u0648\u0627\u0644\u0631\u0645\u0632.", mtMissing: "\u0623\u0643\u0645\u0644 \u0643\u0644 \u0627\u0644\u062d\u0642\u0648\u0644 \u0623\u0648 \u0641\u0639\u0651\u0644 \u0648\u0636\u0639 \u0627\u0644\u062a\u062c\u0631\u0628\u0629.",
+    mtDone: " \u062a\u0645 \u0627\u0644\u0631\u0628\u0637", mtWebhook: "\u0631\u0627\u0628\u0637 \u0627\u0644\u0627\u0633\u062a\u062f\u0639\u0627\u0621 (Callback URL)", mtVerify: "\u0631\u0645\u0632 \u0627\u0644\u062a\u062d\u0642\u0642 (Verify token)", mtCopy: "\u0646\u0633\u062e", mtCopied: "\u062a\u0645 \u0627\u0644\u0646\u0633\u062e",
+    mtHook: "\u0641\u064a \u062a\u0637\u0628\u064a\u0642 \u0645\u064a\u062a\u0627 \u0636\u0639 \u0631\u0627\u0628\u0637 \u0627\u0644\u0627\u0633\u062a\u062f\u0639\u0627\u0621 \u0648\u0631\u0645\u0632 \u0627\u0644\u062a\u062d\u0642\u0642 \u0628\u0647\u0630\u0647 \u0627\u0644\u0642\u064a\u0645\u060c \u062b\u0645 \u0627\u0634\u062a\u0631\u0643 \u0641\u064a \u0627\u0644\u0631\u0633\u0627\u0626\u0644.",
+    mtTestMode: "\u0648\u0636\u0639 \u0627\u0644\u062a\u062c\u0631\u0628\u0629 \u0645\u0641\u0639\u0651\u0644. \u0627\u0644\u0631\u062f\u0648\u062f \u062a\u0628\u0642\u0649 \u062f\u0627\u062e\u0644 \u0634\u0627\u062a\u0648\u0631\u0627.", mtTestBtn: "\u0623\u0631\u0633\u0644 \u0631\u0633\u0627\u0644\u0629 \u062a\u062c\u0631\u064a\u0628\u064a\u0629", mtTestOk: "\u0631\u062f \u0627\u0644\u0628\u0648\u062a: ", mtTestNone: "\u0644\u0627 \u0631\u062f (\u0642\u062f \u064a\u0643\u0648\u0646 \u0627\u0644\u0630\u0643\u0627\u0621 \u0645\u0634\u063a\u0648\u0644\u0627\u064b). \u062d\u0627\u0648\u0644 \u0645\u062c\u062f\u062f\u0627\u064b.",
+    mtNoConn: "\u0627\u0631\u0628\u0637 \u0647\u0630\u0647 \u0627\u0644\u0642\u0646\u0627\u0629 \u0645\u0646 \u0627\u0644\u0625\u0639\u062f\u0627\u062f\u0627\u062a\u060c \u0627\u0644\u0642\u0646\u0648\u0627\u062a\u060c \u0644\u062a\u062a\u0645\u0643\u0646 \u0645\u0646 \u0627\u0644\u0631\u062f \u0647\u0646\u0627.",
+    connect: "\u0631\u0628\u0637", manage: "\u0625\u062f\u0627\u0631\u0629", openDetail: "\u0641\u062a\u062d",
     connected: "\u0645\u062a\u0635\u0644", disabledSt: "\u0645\u0639\u0637\u0651\u0644", connErr: "\u0645\u0634\u0643\u0644\u0629 \u0641\u064a \u0627\u0644\u0627\u062a\u0635\u0627\u0644",
     refresh: "\u062a\u062d\u062f\u064a\u062b", disable: "\u062a\u0639\u0637\u064a\u0644", enable: "\u062a\u0641\u0639\u064a\u0644", remove: "\u0625\u0632\u0627\u0644\u0629", back2: "\u0631\u062c\u0648\u0639 \u0644\u0644\u0642\u0646\u0648\u0627\u062a",
     removeWarn: "\u0625\u0632\u0627\u0644\u0629 \u0647\u0630\u0647 \u0627\u0644\u0642\u0646\u0627\u0629\u061f \u0633\u062a\u062a\u0648\u0642\u0641 \u0627\u0644\u0631\u0633\u0627\u0626\u0644 \u0639\u0646 \u0627\u0644\u0648\u0635\u0648\u0644 \u0648\u064a\u0628\u0642\u0649 \u0633\u062c\u0644\u0647\u0627 \u0641\u064a \u0627\u0644\u0628\u0631\u064a\u062f. \u0644\u0627 \u064a\u0645\u0643\u0646 \u0627\u0644\u062a\u0631\u0627\u062c\u0639.",
@@ -371,6 +393,10 @@
   };
   const TK = Object.assign({}, TK_EN, ({ ar: TK_AR })[LANG] || {});
   const tgConn = () => (state.channels || []).filter((c) => c.provider === "telegram")[0] || null;
+  const META_KEYS = ["whatsapp", "instagram", "messenger"];
+  const metaConn = (k) => (state.channels || []).filter((c) => c.provider === k)[0] || null;
+  const curConn = () => (state.channels || []).filter((c) => c.id === state.chanView)[0] || null;
+  const actPath = (c) => (c && META_KEYS.indexOf(c.provider) >= 0 ? "/api/channels/meta/action" : "/api/channels/telegram/action");
   const emConn = () => (state.channels || []).filter((c) => c.provider === "email")[0] || null;
   function chanStatusChip(c) {
     if (!c) return "";
@@ -386,9 +412,13 @@
           : `<button type="button" class="btn btn-primary btn-sm" id="ch-tg-connect">${esc(CHS.connect)}</button>`) + `</div></section>`;
     const webCard = `<section class="chan-card" aria-label="${esc(chLabel("web"))}"><div class="chan-head"><span class="chan-name">${esc(chLabel("web"))}</span><span class="chan-mark is-web" aria-hidden="true">\u25c9</span></div>` +
       `<p class="chan-line">${esc(CHS.webLine)}</p><div class="chan-foot"><button type="button" class="btn btn-ghost btn-sm" id="ch-web-manage">${esc(CHS.manage)}</button></div></section>`;
-    const gated = [["whatsapp", "is-wa", "W"], ["instagram", "is-ig", "\u25ce"], ["messenger", "is-ms", "M"]].map(([k, cls, mark]) =>
-      `<section class="chan-card" aria-label="${esc(chLabel(k))}"><div class="chan-head"><span class="chan-name">${esc(chLabel(k))}</span><span class="chan-mark ${cls}" aria-hidden="true">${mark}</span></div>` +
-      `<div class="chan-foot"><span class="chan-badge">${esc(CHS.soon)}</span></div></section>`).join("");
+    const gated = [["whatsapp", "is-wa", "W"], ["instagram", "is-ig", "\u25ce"], ["messenger", "is-ms", "M"]].map(([k, cls, mark]) => {
+      const mc = metaConn(k);
+      return `<section class="chan-card" aria-label="${esc(chLabel(k))}"><div class="chan-head"><span class="chan-name">${esc(chLabel(k))}</span><span class="chan-mark ${cls}" aria-hidden="true">${mark}</span></div>` +
+        `<p class="chan-line">${esc(CHS["mtLine_" + k])}</p><div class="chan-foot">${chanStatusChip(mc)}` +
+        (mc ? `<button type="button" class="btn btn-ghost btn-sm" data-mt-open="${esc(mc.id)}">${esc(CHS.manage)}</button>`
+            : `<button type="button" class="btn btn-primary btn-sm" data-mt-connect="${k}">${esc(CHS.connect)}</button>`) + `</div></section>`;
+    }).join("");
     const em = emConn();
     const emailCard = `<section class="chan-card" aria-label="${esc(chLabel("email"))}"><div class="chan-head"><span class="chan-name">${esc(chLabel("email"))}</span><span class="chan-mark is-em" aria-hidden="true">@</span></div>` +
       `<p class="chan-line">${esc(CHS.emLine)}</p>` +
@@ -400,21 +430,26 @@
       `<div class="chan-grid">${tgCard}${webCard}${emailCard}${gated}</div></div>`;
   }
   function renderChannelDetail() {
-    const c = tgConn();
+    const c = curConn();
     if (!c) { state.chanView = null; return renderChannelsBlock(); }
-    return `<div class="dash-card"><h2>Telegram</h2>` +
+    const isMeta = META_KEYS.indexOf(c.provider) >= 0;
+    const meta = isMeta ? `<div class="chan-kv"><span>${esc(CHS.mtWebhook)}</span><b dir="ltr" style="word-break:break-all">${esc(location.origin + "/api/meta/hook/" + c.id)}</b>` +
+      `<span>${esc(CHS.mtVerify)}</span><b dir="ltr" style="word-break:break-all">${esc(c.verify_token || "\u2014")}</b></div>` +
+      `<p class="dash-note">${esc(c.test_mode ? CHS.mtTestMode : CHS.mtHook)}</p>` : "";
+    return `<div class="dash-card"><h2>${esc(isMeta ? chLabel(c.provider) : "Telegram")}</h2>` +
       `<div class="chan-kv"><span>${esc(CHS.status)}</span><b>${chanStatusChip(c)}</b>` +
       `<span>${esc(CHS.handle)}</span><b>${esc(c.display_name || "\u2014")}</b>` +
-      `<span>Webhook</span><b>${c.status === "connected" ? esc(CHS.hookOk) : "\u2014"}</b></div>` +
+      (isMeta ? "" : `<span>Webhook</span><b>${c.status === "connected" ? esc(CHS.hookOk) : "\u2014"}</b>`) + `</div>` + meta +
       `<div class="dash-inline" style="flex-wrap:wrap">` +
       `<button type="button" class="btn btn-ghost btn-sm" id="ch-refresh">${esc(CHS.refresh)}</button>` +
+      (isMeta && c.test_mode ? `<button type="button" class="btn btn-ghost btn-sm" id="ch-mt-test">${esc(CHS.mtTestBtn)}</button>` : "") +
       `<button type="button" class="btn btn-ghost btn-sm" id="ch-toggle">${esc(c.status === "disconnected" ? CHS.enable : CHS.disable)}</button>` +
       `<button type="button" class="btn btn-ghost btn-sm btn-danger" id="ch-remove">${esc(CHS.remove)}</button>` +
       `<button type="button" class="link-btn" id="ch-back">${esc(CHS.back2)}</button></div>` +
       `<p class="dash-note" id="ch-msg" role="status"></p></div>`;
   }
   async function loadChannels() {
-    try { state.channels = (await A.rest("/rest/v1/channel_connections?select=id,provider,display_name,status,created_at&order=created_at.asc")) || []; }
+    try { state.channels = (await A.rest("/rest/v1/channel_connections?select=id,provider,display_name,status,created_at,test_mode,verify_token&order=created_at.asc")) || []; }
     catch (e) { state.channels = []; }
   }
   async function tgApi(path, body) {
@@ -465,7 +500,58 @@
       }
     });
   }
+  function closeMtModal() { const m = document.getElementById("mtmodal"); if (m) m.remove(); }
+  function openMtModal(k) {
+    closeMtModal();
+    const wrap = document.createElement("div");
+    const inp = (id, ph, ltr) => `<input id="${id}" class="dstep-in" style="width:100%;margin-top:8px" dir="ltr" autocomplete="off" spellcheck="false" placeholder="${esc(ph)}" aria-label="${esc(ph)}">`;
+    wrap.innerHTML = `<div class="tmodal" id="mtmodal" role="dialog" aria-modal="true" aria-label="${esc(CHS.mtTitle + " " + chLabel(k))}">` +
+      `<div class="tmodal-card"><header style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)"><b>${esc(CHS.mtTitle + " " + chLabel(k))}</b>` +
+      `<button type="button" class="icon-btn" id="mtmodal-x" aria-label="Close">\u2715</button></header>` +
+      `<div class="tmodal-body" style="padding:16px"><p class="dash-note">${esc(CHS.mtHow)}</p>` +
+      `<form id="mt-form">${inp("mt-acc", CHS["mtAcc_" + k])}${inp("mt-tok", CHS.mtTok)}${inp("mt-sec", CHS.mtSec)}` +
+      `<label style="display:flex;gap:8px;align-items:center;margin-top:12px"><input type="checkbox" id="mt-test"><span>${esc(CHS.mtTest)}</span></label>` +
+      `<div class="dash-inline" style="margin-top:12px"><button type="submit" class="btn btn-primary btn-sm" id="mt-go">${esc(CHS.connect)}</button>` +
+      `<span class="dash-note" id="mt-msg" role="status"></span></div></form></div></div></div>`;
+    document.body.appendChild(wrap.firstChild);
+    const m = document.getElementById("mtmodal");
+    m.addEventListener("click", (e) => { if (e.target.id === "mtmodal") closeMtModal(); });
+    document.getElementById("mtmodal-x").addEventListener("click", closeMtModal);
+    const test = document.getElementById("mt-test");
+    const sync = () => { document.getElementById("mt-tok").disabled = test.checked; document.getElementById("mt-sec").disabled = test.checked; };
+    test.addEventListener("change", sync);
+    document.getElementById("mt-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById("mt-msg"), go = document.getElementById("mt-go");
+      const v = (id) => document.getElementById(id).value.trim();
+      const tm = test.checked;
+      if (!v("mt-acc") || (!tm && (!v("mt-tok") || !v("mt-sec")))) { msg.textContent = CHS.mtMissing; msg.className = "dash-note is-err"; return; }
+      go.disabled = true; msg.textContent = CHS.tgBusy; msg.className = "dash-note";
+      try {
+        const r = await tgApi("/api/channels/meta/connect", { provider: k, workspace: state.ws.id, account: v("mt-acc"), token: tm ? "" : v("mt-tok"), app_secret: tm ? "" : v("mt-sec"), test_mode: tm });
+        closeMtModal();
+        await loadChannels();
+        state.chanView = r.id;
+        paint();
+        const ok = document.createElement("div"); ok.className = "toast"; ok.textContent = chLabel(k) + CHS.mtDone;
+        document.body.appendChild(ok); setTimeout(() => ok.remove(), 2600);
+      } catch (err) {
+        msg.textContent = (err && (err.code === "invalid token" || err.code === "bad token" || err.code === "bad secret" || err.code === "bad account")) ? CHS.mtBad : CHS.tgFail;
+        msg.className = "dash-note is-err"; go.disabled = false;
+      }
+    });
+  }
   function chanWire(p) {
+    p.querySelectorAll("[data-mt-connect]").forEach((b) => b.addEventListener("click", () => openMtModal(b.getAttribute("data-mt-connect"))));
+    p.querySelectorAll("[data-mt-open]").forEach((b) => b.addEventListener("click", () => { state.chanView = b.getAttribute("data-mt-open"); paint(); }));
+    const mtt = $("#ch-mt-test", p);
+    if (mtt) mtt.addEventListener("click", async () => {
+      const c = curConn(); if (!c) return;
+      mtt.disabled = true; const m = $("#ch-msg", p); if (m) { m.textContent = CHS.tgBusy; m.className = "dash-note"; }
+      try { const r = await tgApi("/api/channels/meta/action", { id: c.id, action: "test" }); if (m) m.textContent = r.reply ? CHS.mtTestOk + r.reply : CHS.mtTestNone; }
+      catch (e) { if (m) { m.textContent = CHS.tgFail; m.className = "dash-note is-err"; } }
+      mtt.disabled = false;
+    });
     const open = $("#ch-tg-connect", p);
     if (open) open.addEventListener("click", openTgModal);
     const od = $("#ch-open", p);
@@ -477,14 +563,14 @@
     const msg = () => $("#ch-msg", p);
     const rf = $("#ch-refresh", p);
     if (rf) rf.addEventListener("click", async () => {
-      const c = tgConn(); if (!c) return;
+      const c = curConn(); if (!c) return;
       rf.disabled = true; const m = msg(); if (m) m.textContent = CHS.tgBusy;
-      try { await tgApi("/api/channels/telegram/action", { id: c.id, action: "refresh" }); await loadChannels(); paint(); }
+      try { await tgApi(actPath(c), { id: c.id, action: "refresh" }); await loadChannels(); paint(); }
       catch (e) { if (m) { m.textContent = CHS.tgFail; m.className = "dash-note is-err"; } rf.disabled = false; }
     });
     const tg = $("#ch-toggle", p);
     if (tg) tg.addEventListener("click", async () => {
-      const c = tgConn(); if (!c) return;
+      const c = curConn(); if (!c) return;
       const next = c.status === "disconnected" ? "connected" : "disconnected";
       tg.disabled = true;
       try {
@@ -519,11 +605,11 @@
     });
     const rm = $("#ch-remove", p);
     if (rm) rm.addEventListener("click", async () => {
-      const c = tgConn(); if (!c) return;
+      const c = curConn(); if (!c) return;
       if (!window.confirm(CHS.removeWarn)) return;
       rm.disabled = true;
       try {
-        await tgApi("/api/channels/telegram/action", { id: c.id, action: "remove" });
+        await tgApi(actPath(c), { id: c.id, action: "remove" });
         state.chanView = null;
         await loadChannels(); paint();
       } catch (e) { const m = msg(); if (m) { m.textContent = CHS.tgFail; m.className = "dash-note is-err"; } rm.disabled = false; }
@@ -748,7 +834,7 @@
 
   function renderReplyArea(c, closed) {
     if (closed) return `<div class="thread-closed">${esc(T.fClosed)}</div>`;
-    if (String(c.channel) === "web" || String(c.channel) === "telegram") return renderWebReplyArea(c);
+    if (String(c.channel) === "web" || String(c.channel) === "telegram" || META_KEYS.indexOf(String(c.channel)) >= 0) return renderWebReplyArea(c);
     const provider = metaProviderForChannel(c.channel);
     if (!provider) return `<p class="dash-note channel-pending" role="status">${esc(T.channelPending)}</p>`;
     if (!state.meta.loaded) return `<p class="dash-note channel-pending" role="status">${esc(T.metaLoad)}</p>`;
@@ -1402,11 +1488,8 @@
   }
 
   function renderMetaSettings() {
-    /* Meta channels are not live yet: show a calm note instead of a setup error. Re-enables itself once a Meta App ID is configured. */
-    if (!/^\d{5,32}$/.test(String((window.CHATORA_CONFIG || {}).META_APP_ID || ""))) {
-      const ar = (document.documentElement.lang || "").indexOf("ar") === 0;
-      return `<div class="dash-card meta-setup-card"><h2>${ar ? "قنوات واتساب وإنستجرام" : "WhatsApp and Instagram channels"}</h2><p class="dash-note">${ar ? "قريبًا: ربط القنوات الرسمية. حاليًا فريقنا بيجهّز لك القنوات، كلّمنا على واتساب لو عايز تبدأ." : "Coming soon: connecting official channels yourself. For now our team sets channels up for you. Message us on WhatsApp to get started."}</p></div>`;
-    }
+    /* Meta channels now connect from the Channels cards above (own Meta app credentials, or test mode). */
+    return "";
     const meta = window.CHATORA_META_ONBOARDING;
     const waReady = !!(meta && meta.isConfigured("whatsapp") && state.meta.loaded && !state.meta.loadFailed);
     const igReady = !!(meta && meta.isConfigured("instagram") && state.meta.loaded && !state.meta.loadFailed);
@@ -1925,6 +2008,7 @@
     const draft = replyDraftFor(conversation.id);
     if (String(conversation.channel) === "web") return submitWebReply(conversation, draft);
     if (String(conversation.channel) === "telegram") return submitTgReply(conversation, draft);
+    if (META_KEYS.indexOf(String(conversation.channel)) >= 0) return submitMetaReply(conversation, draft);
     const input = $("#meta-reply-input");
     const text = String((input && input.value) || draft.text || "").trim();
     if (!text || draft.busy || draft.locked) return;
@@ -2044,6 +2128,32 @@
       await refreshThreadMessages(conversation.id);
     } catch (e) {
       draft.notice = T.sendError; draft.noticeError = true;
+    } finally {
+      draft.busy = false;
+      if (state.view === "inbox" && state.conv && state.conv.id === conversation.id) paint();
+    }
+  }
+
+  async function submitMetaReply(conversation, draft) {
+    const input = $("#meta-reply-input");
+    const raw = String((input && input.value) || draft.text || "").trim();
+    if (!raw || draft.busy) return;
+    if (new TextEncoder().encode(raw).byteLength > 1000) { draft.text = raw; draft.notice = T.sendTooLong; draft.noticeError = true; paint(); return; }
+    const contact = contactFor(conversation);
+    const to = String((contact && contact.handle) || "").replace(/^(wa|ig|ms):/, "").trim();
+    if (!/^[\w.:-]{3,64}$/.test(to)) { draft.notice = T.sendError; draft.noticeError = true; paint(); return; }
+    const text = applyTokens(raw, contact);
+    draft.busy = true; draft.notice = ""; draft.noticeError = false; paint();
+    try {
+      await tgApi("/api/channels/meta/send", { workspace: state.ws.id, provider: String(conversation.channel), to: to, text: text });
+      await A.rest("/rest/v1/messages", { method: "POST", body: JSON.stringify({ conversation_id: conversation.id, direction: "out", author: "human", body: text.slice(0, 1200) }) });
+      await A.rest("/rest/v1/conversations?id=eq." + conversation.id, { method: "PATCH", body: JSON.stringify({ last_at: new Date().toISOString(), status: conversation.status === "ai" ? "human" : conversation.status }) });
+      if (conversation.status === "ai") conversation.status = "human";
+      draft.text = ""; draft.notice = T.sendSuccess; draft.noticeError = false;
+      await refreshThreadMessages(conversation.id);
+    } catch (e) {
+      draft.notice = e && e.code === "not connected" ? CHS.mtNoConn : T.sendError;
+      draft.noticeError = true;
     } finally {
       draft.busy = false;
       if (state.view === "inbox" && state.conv && state.conv.id === conversation.id) paint();

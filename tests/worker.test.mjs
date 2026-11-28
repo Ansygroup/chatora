@@ -17,7 +17,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const src = readFileSync(join(root, 'src', 'worker.js'), 'utf8')
   .replace(/^import[^\n]*\n/, '') // cloudflare:email import
   .replace('export default {', 'const __handler = {')
-  + '\n;globalThis.__t = { leaks, limited, wlimited, wname, originOk, aTokens, aCond, hookUrlOk, walkFlow, apiInt, mimeHdr, rfc2047, qpDecode, b64Decode, emailBodyText, STOP_RE, KEYRE, TGRE, APIKEY, LINK_RE, UNSUB_TAG, BC_MAX, BC_GAP_MS };';
+  + '\n;globalThis.__t = { metaParse, metaSigOk, metaHook, leaks, limited, wlimited, wname, originOk, aTokens, aCond, hookUrlOk, walkFlow, apiInt, mimeHdr, rfc2047, qpDecode, b64Decode, emailBodyText, STOP_RE, KEYRE, TGRE, APIKEY, LINK_RE, UNSUB_TAG, BC_MAX, BC_GAP_MS };';
 
 vm.runInThisContext(src, { filename: 'worker.js' });
 const W = globalThis.__t;
@@ -295,4 +295,23 @@ test('broadcast anti-spam constants stay conservative', () => {
 test('LINK_RE only matches https links', () => {
   const m = 'see https://example.com/page and http://insecure.com'.match(W.LINK_RE);
   assert.deepEqual(m, ['https://example.com/page']);
+});
+
+/* ---------- Meta channels ---------- */
+test('metaParse reads WhatsApp text messages and names', () => {
+  const b = { entry: [{ changes: [{ value: { contacts: [{ wa_id: '201000', profile: { name: 'Sam' } }], messages: [{ id: 'wamid.1', from: '201000', type: 'text', text: { body: 'hi' } }, { id: 'wamid.2', from: '201000', type: 'image' }] } }] }] };
+  assert.deepEqual(W.metaParse('whatsapp', b), [{ id: 'wamid.1', user: '201000', name: 'Sam', text: 'hi' }]);
+});
+test('metaParse reads Messenger/Instagram and skips echoes', () => {
+  const b = { entry: [{ messaging: [{ sender: { id: '55' }, message: { mid: 'm1', text: 'yo' } }, { sender: { id: '56' }, message: { mid: 'm2', text: 'x', is_echo: true } }] }] };
+  assert.deepEqual(W.metaParse('messenger', b), [{ id: 'm1', user: '55', name: '', text: 'yo' }]);
+  assert.deepEqual(W.metaParse('instagram', {}), []);
+});
+test('metaSigOk accepts a correct HMAC and rejects wrong or missing', async () => {
+  const { createHmac } = await import('node:crypto');
+  const sig = 'sha256=' + createHmac('sha256', 'topsecret').update('{"a":1}').digest('hex');
+  assert.equal(await W.metaSigOk('topsecret', '{"a":1}', sig), true);
+  assert.equal(await W.metaSigOk('other', '{"a":1}', sig), false);
+  assert.equal(await W.metaSigOk('topsecret', '{"a":1}', ''), false);
+  assert.equal(await W.metaSigOk('', '{"a":1}', sig), false);
 });
