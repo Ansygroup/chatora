@@ -523,7 +523,15 @@ async function metaAdmin(request, url, env) {
   if (!got.ok) return wjson({ error: 'lookup failed' }, 502, origin);
   const row = (await got.json())[0];
   if (!row || !META_PROV[row.provider]) return wjson({ error: 'not found' }, 404, origin);
-  if (body.action === 'remove') { const del = await sb('/rest/v1/channel_connections?id=eq.' + id, { method: 'DELETE' }); return wjson({ ok: del.ok }, del.ok ? 200 : 502, origin); }
+  if (body.action === 'remove') {
+    // Removing a test-mode channel also deletes the simulated test contacts and their conversations.
+    if (row.test_mode) {
+      const pre = row.provider === 'whatsapp' ? 'wa:' : row.provider === 'instagram' ? 'ig:' : 'ms:';
+      await sb('/rest/v1/contacts?workspace_id=eq.' + row.workspace_id + '&channel=eq.' + row.provider + '&name=eq.Test%20contact&handle=like.' + pre + '1000000*', { method: 'DELETE', headers: { prefer: 'return=minimal' } });
+    }
+    const del = await sb('/rest/v1/channel_connections?id=eq.' + id, { method: 'DELETE' });
+    return wjson({ ok: del.ok }, del.ok ? 200 : 502, origin);
+  }
   if (body.action === 'refresh') {
     const me = row.test_mode ? { id: row.external_account_id } : (row.auth_token ? await metaGraph(row.auth_token, '/' + row.external_account_id + '?fields=id') : null);
     const st = me ? 'connected' : 'reauth_required';
@@ -533,7 +541,7 @@ async function metaAdmin(request, url, env) {
   if (body.action === 'test') {
     // Injects a sample inbound message through the same pipeline as the webhook; in test mode nothing is sent to Meta.
     if (!row.test_mode) return wjson({ error: 'test mode off' }, 400, origin);
-    const text = String(body.text || 'Hi, what are your opening hours?').slice(0, 300);
+    const text = '[Test] ' + String(body.text || 'Hi, what are your opening hours?').replace(/^\[Test\]\s*/, '').slice(0, 290);
     const reply = await metaHandle(env, rowToConn(row), { id: 'test-in-' + Date.now().toString(36), user: '1000000' + String(Date.now()).slice(-6), name: 'Test contact', text: text });
     return wjson({ ok: true, reply: reply }, 200, origin);
   }

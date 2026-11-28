@@ -316,6 +316,7 @@
     mtDone: " connected", mtWebhook: "Callback URL", mtVerify: "Verify token", mtCopy: "Copy", mtCopied: "Copied",
     mtHook: "In your Meta app, set the webhook Callback URL and Verify token to these values, then subscribe to messages.",
     mtTestMode: "Test mode on. Replies stay inside Chatora.", mtTestBtn: "Send a test message", mtTestOk: "Bot replied: ", mtTestNone: "No reply (the AI may be rate limited). Try again.",
+    delConv: "Delete conversation", delConvWarn: "Delete this conversation and all its messages? This cannot be undone.",
     mtNoConn: "Connect this channel in Settings, Channels, to reply here.",
     connect: "Connect", manage: "Manage", openDetail: "Open",
     connected: "Connected", disabledSt: "Disabled", connErr: "Connection problem",
@@ -355,6 +356,7 @@
     mtDone: " \u062a\u0645 \u0627\u0644\u0631\u0628\u0637", mtWebhook: "\u0631\u0627\u0628\u0637 \u0627\u0644\u0627\u0633\u062a\u062f\u0639\u0627\u0621 (Callback URL)", mtVerify: "\u0631\u0645\u0632 \u0627\u0644\u062a\u062d\u0642\u0642 (Verify token)", mtCopy: "\u0646\u0633\u062e", mtCopied: "\u062a\u0645 \u0627\u0644\u0646\u0633\u062e",
     mtHook: "\u0641\u064a \u062a\u0637\u0628\u064a\u0642 \u0645\u064a\u062a\u0627 \u0636\u0639 \u0631\u0627\u0628\u0637 \u0627\u0644\u0627\u0633\u062a\u062f\u0639\u0627\u0621 \u0648\u0631\u0645\u0632 \u0627\u0644\u062a\u062d\u0642\u0642 \u0628\u0647\u0630\u0647 \u0627\u0644\u0642\u064a\u0645\u060c \u062b\u0645 \u0627\u0634\u062a\u0631\u0643 \u0641\u064a \u0627\u0644\u0631\u0633\u0627\u0626\u0644.",
     mtTestMode: "\u0648\u0636\u0639 \u0627\u0644\u062a\u062c\u0631\u0628\u0629 \u0645\u0641\u0639\u0651\u0644. \u0627\u0644\u0631\u062f\u0648\u062f \u062a\u0628\u0642\u0649 \u062f\u0627\u062e\u0644 \u0634\u0627\u062a\u0648\u0631\u0627.", mtTestBtn: "\u0623\u0631\u0633\u0644 \u0631\u0633\u0627\u0644\u0629 \u062a\u062c\u0631\u064a\u0628\u064a\u0629", mtTestOk: "\u0631\u062f \u0627\u0644\u0628\u0648\u062a: ", mtTestNone: "\u0644\u0627 \u0631\u062f (\u0642\u062f \u064a\u0643\u0648\u0646 \u0627\u0644\u0630\u0643\u0627\u0621 \u0645\u0634\u063a\u0648\u0644\u0627\u064b). \u062d\u0627\u0648\u0644 \u0645\u062c\u062f\u062f\u0627\u064b.",
+    delConv: "\u062d\u0630\u0641 \u0627\u0644\u0645\u062d\u0627\u062f\u062b\u0629", delConvWarn: "\u062d\u0630\u0641 \u0647\u0630\u0647 \u0627\u0644\u0645\u062d\u0627\u062f\u062b\u0629 \u0648\u0643\u0644 \u0631\u0633\u0627\u0626\u0644\u0647\u0627\u061f \u0644\u0627 \u064a\u0645\u0643\u0646 \u0627\u0644\u062a\u0631\u0627\u062c\u0639.",
     mtNoConn: "\u0627\u0631\u0628\u0637 \u0647\u0630\u0647 \u0627\u0644\u0642\u0646\u0627\u0629 \u0645\u0646 \u0627\u0644\u0625\u0639\u062f\u0627\u062f\u0627\u062a\u060c \u0627\u0644\u0642\u0646\u0648\u0627\u062a\u060c \u0644\u062a\u062a\u0645\u0643\u0646 \u0645\u0646 \u0627\u0644\u0631\u062f \u0647\u0646\u0627.",
     connect: "\u0631\u0628\u0637", manage: "\u0625\u062f\u0627\u0631\u0629", openDetail: "\u0641\u062a\u062d",
     connected: "\u0645\u062a\u0635\u0644", disabledSt: "\u0645\u0639\u0637\u0651\u0644", connErr: "\u0645\u0634\u0643\u0644\u0629 \u0641\u064a \u0627\u0644\u0627\u062a\u0635\u0627\u0644",
@@ -963,6 +965,7 @@
       (closed ? "" : `<button type="button" class="btn btn-ghost btn-sm" id="toggle-mode">${esc(c.status === "human" ? T.giveBack : T.takeOver)}</button>` +
         `<button type="button" class="btn btn-ghost btn-sm" id="toggle-close">${esc(T.close)}</button>`) +
       (closed ? `<button type="button" class="btn btn-ghost btn-sm" id="toggle-reopen">${esc(T.reopen)}</button>` : "") +
+      `<button type="button" class="btn btn-ghost btn-sm btn-danger" id="toggle-delete">${esc(CHS.delConv)}</button>` +
       `</div></header><div class="thread-body" id="thread-body">${bubbles}</div>` + renderReplyArea(c, closed);
   }
 
@@ -2300,6 +2303,18 @@
       if (tc) tc.addEventListener("click", () => setStatus("closed"));
       const tr = $("#toggle-reopen");
       if (tr) tr.addEventListener("click", () => setStatus("ai"));
+      const td = $("#toggle-delete");
+      if (td) td.addEventListener("click", async () => {
+        if (!state.conv || !window.confirm(CHS.delConvWarn)) return;
+        const id = state.conv.id;
+        td.disabled = true;
+        try {
+          await A.rest("/rest/v1/conversations?id=eq." + encodeURIComponent(id), { method: "DELETE" });
+          state.convs = state.convs.filter((x) => x.id !== id);
+          state.conv = null;
+          paint();
+        } catch (e) { td.disabled = false; window.alert(T.sendError); }
+      });
       const tm = $("#toggle-mode");
       if (tm) tm.addEventListener("click", () => setStatus(state.conv.status === "human" ? "ai" : "human"));
     }
