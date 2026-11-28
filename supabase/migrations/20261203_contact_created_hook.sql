@@ -30,7 +30,7 @@ BEGIN
   FOR v_sub IN SELECT id, target_url FROM public.hook_subscriptions
     WHERE workspace_id = new.workspace_id AND event = 'contact.created'
   LOOP
-    PERFORM extensions.net.http_post(
+    PERFORM net.http_post(
       url := v_sub.target_url,
       headers := '{"content-type":"application/json","user-agent":"Chatora-Webhook/1","x-chatora-event":"contact.created"}'::jsonb,
       body := jsonb_build_object('id', v_id, 'event', 'contact.created', 'created_at', now()) || v_data
