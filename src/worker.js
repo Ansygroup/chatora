@@ -80,7 +80,7 @@ async function geminiChat(env, sys, msgs, max) {
     const r = await fetch('https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: 'Bearer ' + key },
-      body: JSON.stringify({ model: 'gemini-2.0-flash', messages: [{ role: 'system', content: sys }, ...msgs], max_tokens: max }),
+      body: JSON.stringify({ model: 'gemini-2.5-flash-lite', messages: [{ role: 'system', content: sys }, ...msgs], max_tokens: max }),
     });
     if (!r.ok) { console.log('gemini', r.status); return ''; }
     const j = await r.json();
