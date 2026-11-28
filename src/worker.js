@@ -780,9 +780,9 @@ async function apiCall(op, h, a, env) {
     const st = r.error === 'duplicate_handle' ? 409 : r.error === 'not_found' ? 404 : 422;
     return { status: st, body: { error: { code: r.error, message: m[r.error] || 'Invalid request.' }, ...(r.id ? { id: r.id } : {}) } };
   }
-  if (op === 'contacts.create' && r.data && r.data.workspace_id && env) {
-    try { await hookEmit(env, r.data.workspace_id, 'contact.created', r.data); } catch (e) { console.log('hook contact.created', String(e)); }
-  }
+  // contact.created is emitted by the contacts_after_insert_hook DB trigger for
+  // every insert path (API, UI form, CSV import), so the worker no longer emits
+  // it here; doing both would double-fire webhooks.
   return { status: op === 'contacts.create' ? 201 : 200, body: r };
 }
 async function apiAuthHash(request) {
