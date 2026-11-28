@@ -317,6 +317,14 @@
     tgBad: "That token did not work. Check it and try again.",
     tgFail: "Connection failed. Please try again.",
     tgDone: "Telegram connected",
+    emLine: "\u0639\u0646\u0648\u0627\u0646 \u0628\u0631\u064a\u062f \u062e\u0627\u0635 \u0628\u0643 \u0644\u0631\u0633\u0627\u0626\u0644 \u0627\u0644\u0639\u0645\u0644\u0627\u0621. \u062a\u0635\u0644 \u0627\u0644\u0631\u0633\u0627\u0626\u0644 \u0625\u0644\u0649 \u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0648\u0627\u0631\u062f \u0648\u064a\u0645\u0643\u0646 \u0644\u0644\u0633\u064a\u0646\u0627\u0631\u064a\u0648\u0647\u0627\u062a \u0623\u0646 \u062a\u062a\u0641\u0627\u0639\u0644. \u0627\u0644\u0631\u062f\u0648\u062f \u0628\u0627\u0644\u0628\u0631\u064a\u062f \u063a\u064a\u0631 \u0645\u062a\u0627\u062d\u0629 \u0628\u0639\u062f.",
+    emAddr: "\u0639\u0646\u0648\u0627\u0646\u0643", emCopy: "\u0646\u0633\u062e", emCopied: "\u062a\u0645 \u0627\u0644\u0646\u0633\u062e",
+    emNote: "\u0623\u0631\u0633\u0644 \u0623\u0648 \u062d\u0648\u0651\u0644 \u0628\u0631\u064a\u062f\u064b\u0627 \u0625\u0644\u0649 \u0647\u0630\u0627 \u0627\u0644\u0639\u0646\u0648\u0627\u0646 \u0648\u0633\u064a\u0638\u0647\u0631 \u0641\u064a \u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0648\u0627\u0631\u062f. \u0627\u0644\u0631\u062f\u0648\u062f \u0627\u0644\u0622\u0644\u064a\u0629 \u0628\u0627\u0644\u0628\u0631\u064a\u062f \u063a\u064a\u0631 \u0645\u062a\u0627\u062d\u0629 \u0628\u0639\u062f.",
+    emFail: "\u062a\u0639\u0630\u0631 \u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u0639\u0646\u0648\u0627\u0646. \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649.",
+    emLine: "Your own email address for customer mail. Messages land in the Inbox and flows can react. Replies by email are not sent yet.",
+    emAddr: "Your address", emCopy: "Copy", emCopied: "Copied",
+    emNote: "Send or forward mail to this address and it appears in your Inbox. Auto-replies by email are not available yet.",
+    emFail: "Could not create the address. Please try again.",
     status: "Status", handle: "Handle", hookOk: "Webhook active",
     popular: "Popular", trigAll: "All triggers", trig_comment: "Comments", trig_story: "Stories & mentions", trig_dm: "DM & keywords", trig_cart: "Cart & checkout", trig_other: "Other",
     obChan: "Connect your first channel",
@@ -363,6 +371,7 @@
   };
   const TK = Object.assign({}, TK_EN, ({ ar: TK_AR })[LANG] || {});
   const tgConn = () => (state.channels || []).filter((c) => c.provider === "telegram")[0] || null;
+  const emConn = () => (state.channels || []).filter((c) => c.provider === "email")[0] || null;
   function chanStatusChip(c) {
     if (!c) return "";
     const st = c.status === "connected" ? ["is-on", CHS.connected] : c.status === "disconnected" ? ["is-off", CHS.disabledSt] : ["is-err", CHS.connErr];
@@ -380,8 +389,15 @@
     const gated = [["whatsapp", "is-wa", "W"], ["instagram", "is-ig", "\u25ce"], ["messenger", "is-ms", "M"]].map(([k, cls, mark]) =>
       `<section class="chan-card" aria-label="${esc(chLabel(k))}"><div class="chan-head"><span class="chan-name">${esc(chLabel(k))}</span><span class="chan-mark ${cls}" aria-hidden="true">${mark}</span></div>` +
       `<div class="chan-foot"><span class="chan-badge">${esc(CHS.soon)}</span></div></section>`).join("");
+    const em = emConn();
+    const emailCard = `<section class="chan-card" aria-label="${esc(chLabel("email"))}"><div class="chan-head"><span class="chan-name">${esc(chLabel("email"))}</span><span class="chan-mark is-em" aria-hidden="true">@</span></div>` +
+      `<p class="chan-line">${esc(CHS.emLine)}</p>` +
+      (em ? `<div class="chan-kv" style="margin-bottom:10px"><span>${esc(CHS.emAddr)}</span><b dir="ltr">${esc(em.id)}@chatora.us.ci</b></div><p class="dash-note">${esc(CHS.emNote)}</p><div class="chan-foot">${chanStatusChip(em)}` +
+            `<button type="button" class="btn btn-ghost btn-sm" id="ch-em-copy">${esc(CHS.emCopy)}</button>` +
+            `<button type="button" class="btn btn-ghost btn-sm btn-danger" id="ch-em-remove">${esc(CHS.remove)}</button></div>`
+          : `<div class="chan-foot"><button type="button" class="btn btn-primary btn-sm" id="ch-em-connect">${esc(CHS.connect)}</button></div>`) + `</section>`;
     return `<div class="dash-card"><h2>${esc(CHS.chTitle)}</h2><p class="dash-note">${esc(CHS.chSub)}</p>` +
-      `<div class="chan-grid">${tgCard}${webCard}${gated}</div></div>`;
+      `<div class="chan-grid">${tgCard}${webCard}${emailCard}${gated}</div></div>`;
   }
   function renderChannelDetail() {
     const c = tgConn();
@@ -475,6 +491,30 @@
         await A.rest("/rest/v1/channel_connections?id=eq." + encodeURIComponent(c.id), { method: "PATCH", body: JSON.stringify({ status: next, updated_at: new Date().toISOString() }) });
         await loadChannels(); paint();
       } catch (e) { const m = msg(); if (m) { m.textContent = CHS.tgFail; m.className = "dash-note is-err"; } tg.disabled = false; }
+    });
+    const emc = $("#ch-em-connect", p);
+    if (emc) emc.addEventListener("click", async () => {
+      emc.disabled = true;
+      try {
+        await A.rest("/rest/v1/channel_connections", { method: "POST", body: JSON.stringify({ workspace_id: state.ws.id, provider: "email", display_name: "Email", status: "connected" }) });
+        await loadChannels(); paint();
+      } catch (e) {
+        emc.disabled = false;
+        const tt = document.createElement("div"); tt.className = "toast"; tt.textContent = CHS.emFail; document.body.appendChild(tt); setTimeout(() => tt.remove(), 2600);
+      }
+    });
+    const emcopy = $("#ch-em-copy", p);
+    if (emcopy) emcopy.addEventListener("click", async () => {
+      const c = emConn(); if (!c) return;
+      try { await navigator.clipboard.writeText(c.id + "@chatora.us.ci"); emcopy.textContent = CHS.emCopied; setTimeout(() => { emcopy.textContent = CHS.emCopy; }, 1600); } catch (e) {}
+    });
+    const emrm = $("#ch-em-remove", p);
+    if (emrm) emrm.addEventListener("click", async () => {
+      const c = emConn(); if (!c) return;
+      if (!window.confirm(CHS.removeWarn)) return;
+      emrm.disabled = true;
+      try { await A.rest("/rest/v1/channel_connections?id=eq." + encodeURIComponent(c.id), { method: "DELETE" }); await loadChannels(); paint(); }
+      catch (e) { emrm.disabled = false; }
     });
     const rm = $("#ch-remove", p);
     if (rm) rm.addEventListener("click", async () => {
