@@ -316,6 +316,7 @@
     mtDone: " connected", mtWebhook: "Callback URL", mtVerify: "Verify token", mtCopy: "Copy", mtCopied: "Copied",
     mtHook: "In your Meta app, set the webhook Callback URL and Verify token to these values, then subscribe to messages.",
     mtTestMode: "Test mode on. Replies stay inside Chatora.", mtTestBtn: "Send a test message", mtTestOk: "Bot replied: ", mtTestNone: "No reply (the AI may be rate limited). Try again.",
+    cfCancel: "Cancel", emConfirm: "Create your Chatora email address? It starts receiving customer mail right away. You can remove it later.",
     delConv: "Delete conversation", delConvWarn: "Delete this conversation and all its messages? This cannot be undone.",
     mtNoConn: "Connect this channel in Settings, Channels, to reply here.",
     connect: "Connect", manage: "Manage", openDetail: "Open",
@@ -329,10 +330,6 @@
     tgBad: "That token did not work. Check it and try again.",
     tgFail: "Connection failed. Please try again.",
     tgDone: "Telegram connected",
-    emLine: "\u0639\u0646\u0648\u0627\u0646 \u0628\u0631\u064a\u062f \u062e\u0627\u0635 \u0628\u0643 \u0644\u0631\u0633\u0627\u0626\u0644 \u0627\u0644\u0639\u0645\u0644\u0627\u0621. \u062a\u0635\u0644 \u0627\u0644\u0631\u0633\u0627\u0626\u0644 \u0625\u0644\u0649 \u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0648\u0627\u0631\u062f \u0648\u064a\u0645\u0643\u0646 \u0644\u0644\u0633\u064a\u0646\u0627\u0631\u064a\u0648\u0647\u0627\u062a \u0623\u0646 \u062a\u062a\u0641\u0627\u0639\u0644. \u0627\u0644\u0631\u062f\u0648\u062f \u0628\u0627\u0644\u0628\u0631\u064a\u062f \u063a\u064a\u0631 \u0645\u062a\u0627\u062d\u0629 \u0628\u0639\u062f.",
-    emAddr: "\u0639\u0646\u0648\u0627\u0646\u0643", emCopy: "\u0646\u0633\u062e", emCopied: "\u062a\u0645 \u0627\u0644\u0646\u0633\u062e",
-    emNote: "\u0623\u0631\u0633\u0644 \u0623\u0648 \u062d\u0648\u0651\u0644 \u0628\u0631\u064a\u062f\u064b\u0627 \u0625\u0644\u0649 \u0647\u0630\u0627 \u0627\u0644\u0639\u0646\u0648\u0627\u0646 \u0648\u0633\u064a\u0638\u0647\u0631 \u0641\u064a \u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0648\u0627\u0631\u062f. \u0627\u0644\u0631\u062f\u0648\u062f \u0627\u0644\u0622\u0644\u064a\u0629 \u0628\u0627\u0644\u0628\u0631\u064a\u062f \u063a\u064a\u0631 \u0645\u062a\u0627\u062d\u0629 \u0628\u0639\u062f.",
-    emFail: "\u062a\u0639\u0630\u0631 \u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u0639\u0646\u0648\u0627\u0646. \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649.",
     emLine: "Your own email address for customer mail. Messages land in the Inbox and flows can react. Replies by email are not sent yet.",
     emAddr: "Your address", emCopy: "Copy", emCopied: "Copied",
     emNote: "Send or forward mail to this address and it appears in your Inbox. Auto-replies by email are not available yet.",
@@ -356,6 +353,7 @@
     mtDone: " \u062a\u0645 \u0627\u0644\u0631\u0628\u0637", mtWebhook: "\u0631\u0627\u0628\u0637 \u0627\u0644\u0627\u0633\u062a\u062f\u0639\u0627\u0621 (Callback URL)", mtVerify: "\u0631\u0645\u0632 \u0627\u0644\u062a\u062d\u0642\u0642 (Verify token)", mtCopy: "\u0646\u0633\u062e", mtCopied: "\u062a\u0645 \u0627\u0644\u0646\u0633\u062e",
     mtHook: "\u0641\u064a \u062a\u0637\u0628\u064a\u0642 \u0645\u064a\u062a\u0627 \u0636\u0639 \u0631\u0627\u0628\u0637 \u0627\u0644\u0627\u0633\u062a\u062f\u0639\u0627\u0621 \u0648\u0631\u0645\u0632 \u0627\u0644\u062a\u062d\u0642\u0642 \u0628\u0647\u0630\u0647 \u0627\u0644\u0642\u064a\u0645\u060c \u062b\u0645 \u0627\u0634\u062a\u0631\u0643 \u0641\u064a \u0627\u0644\u0631\u0633\u0627\u0626\u0644.",
     mtTestMode: "\u0648\u0636\u0639 \u0627\u0644\u062a\u062c\u0631\u0628\u0629 \u0645\u0641\u0639\u0651\u0644. \u0627\u0644\u0631\u062f\u0648\u062f \u062a\u0628\u0642\u0649 \u062f\u0627\u062e\u0644 \u0634\u0627\u062a\u0648\u0631\u0627.", mtTestBtn: "\u0623\u0631\u0633\u0644 \u0631\u0633\u0627\u0644\u0629 \u062a\u062c\u0631\u064a\u0628\u064a\u0629", mtTestOk: "\u0631\u062f \u0627\u0644\u0628\u0648\u062a: ", mtTestNone: "\u0644\u0627 \u0631\u062f (\u0642\u062f \u064a\u0643\u0648\u0646 \u0627\u0644\u0630\u0643\u0627\u0621 \u0645\u0634\u063a\u0648\u0644\u0627\u064b). \u062d\u0627\u0648\u0644 \u0645\u062c\u062f\u062f\u0627\u064b.",
+    cfCancel: "\u0625\u0644\u063a\u0627\u0621", emConfirm: "\u0625\u0646\u0634\u0627\u0621 \u0639\u0646\u0648\u0627\u0646 \u0628\u0631\u064a\u062f \u0634\u0627\u062a\u0648\u0631\u0627 \u0627\u0644\u062e\u0627\u0635 \u0628\u0643\u061f \u0633\u064a\u0628\u062f\u0623 \u0627\u0633\u062a\u0642\u0628\u0627\u0644 \u0631\u0633\u0627\u0626\u0644 \u0627\u0644\u0639\u0645\u0644\u0627\u0621 \u0641\u0648\u0631\u064b\u0627. \u064a\u0645\u0643\u0646\u0643 \u0625\u0632\u0627\u0644\u062a\u0647 \u0644\u0627\u062d\u0642\u064b\u0627.",
     delConv: "\u062d\u0630\u0641 \u0627\u0644\u0645\u062d\u0627\u062f\u062b\u0629", delConvWarn: "\u062d\u0630\u0641 \u0647\u0630\u0647 \u0627\u0644\u0645\u062d\u0627\u062f\u062b\u0629 \u0648\u0643\u0644 \u0631\u0633\u0627\u0626\u0644\u0647\u0627\u061f \u0644\u0627 \u064a\u0645\u0643\u0646 \u0627\u0644\u062a\u0631\u0627\u062c\u0639.",
     mtNoConn: "\u0627\u0631\u0628\u0637 \u0647\u0630\u0647 \u0627\u0644\u0642\u0646\u0627\u0629 \u0645\u0646 \u0627\u0644\u0625\u0639\u062f\u0627\u062f\u0627\u062a\u060c \u0627\u0644\u0642\u0646\u0648\u0627\u062a\u060c \u0644\u062a\u062a\u0645\u0643\u0646 \u0645\u0646 \u0627\u0644\u0631\u062f \u0647\u0646\u0627.",
     connect: "\u0631\u0628\u0637", manage: "\u0625\u062f\u0627\u0631\u0629", openDetail: "\u0641\u062a\u062d",
@@ -369,6 +367,10 @@
     tgBad: "\u0627\u0644\u062a\u0648\u0643\u0646 \u063a\u064a\u0631 \u0635\u062d\u064a\u062d. \u062a\u0623\u0643\u062f \u0645\u0646\u0647 \u0648\u062d\u0627\u0648\u0644 \u0645\u062c\u062f\u062f\u064b\u0627.",
     tgFail: "\u0641\u0634\u0644 \u0627\u0644\u0631\u0628\u0637. \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649.",
     tgDone: "\u062a\u0645 \u0631\u0628\u0637 \u062a\u064a\u0644\u064a\u062c\u0631\u0627\u0645",
+    emLine: "\u0639\u0646\u0648\u0627\u0646 \u0628\u0631\u064a\u062f \u062e\u0627\u0635 \u0628\u0643 \u0644\u0631\u0633\u0627\u0626\u0644 \u0627\u0644\u0639\u0645\u0644\u0627\u0621. \u062a\u0635\u0644 \u0627\u0644\u0631\u0633\u0627\u0626\u0644 \u0625\u0644\u0649 \u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0648\u0627\u0631\u062f \u0648\u064a\u0645\u0643\u0646 \u0644\u0644\u0633\u064a\u0646\u0627\u0631\u064a\u0648\u0647\u0627\u062a \u0623\u0646 \u062a\u062a\u0641\u0627\u0639\u0644. \u0627\u0644\u0631\u062f\u0648\u062f \u0628\u0627\u0644\u0628\u0631\u064a\u062f \u063a\u064a\u0631 \u0645\u062a\u0627\u062d\u0629 \u0628\u0639\u062f.",
+    emAddr: "\u0639\u0646\u0648\u0627\u0646\u0643", emCopy: "\u0646\u0633\u062e", emCopied: "\u062a\u0645 \u0627\u0644\u0646\u0633\u062e",
+    emNote: "\u0623\u0631\u0633\u0644 \u0623\u0648 \u062d\u0648\u0651\u0644 \u0628\u0631\u064a\u062f\u064b\u0627 \u0625\u0644\u0649 \u0647\u0630\u0627 \u0627\u0644\u0639\u0646\u0648\u0627\u0646 \u0648\u0633\u064a\u0638\u0647\u0631 \u0641\u064a \u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0648\u0627\u0631\u062f. \u0627\u0644\u0631\u062f\u0648\u062f \u0627\u0644\u0622\u0644\u064a\u0629 \u0628\u0627\u0644\u0628\u0631\u064a\u062f \u063a\u064a\u0631 \u0645\u062a\u0627\u062d\u0629 \u0628\u0639\u062f.",
+    emFail: "\u062a\u0639\u0630\u0631 \u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u0639\u0646\u0648\u0627\u0646. \u062d\u0627\u0648\u0644 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649.",
     status: "\u0627\u0644\u062d\u0627\u0644\u0629", handle: "\u0627\u0644\u0645\u0639\u0631\u0651\u0641", hookOk: "\u0627\u0644\u0648\u064a\u0628 \u0647\u0648\u0643 \u064a\u0639\u0645\u0644",
     popular: "\u0634\u0627\u0626\u0639", trigAll: "\u0643\u0644 \u0627\u0644\u0645\u0634\u063a\u0644\u0627\u062a", trig_comment: "\u0627\u0644\u062a\u0639\u0644\u064a\u0642\u0627\u062a", trig_story: "\u0627\u0644\u0642\u0635\u0635 \u0648\u0627\u0644\u0625\u0634\u0627\u0631\u0627\u062a", trig_dm: "\u0627\u0644\u0631\u0633\u0627\u0626\u0644 \u0648\u0627\u0644\u0643\u0644\u0645\u0627\u062a", trig_cart: "\u0627\u0644\u0633\u0644\u0629 \u0648\u0627\u0644\u062f\u0641\u0639", trig_other: "\u0623\u062e\u0631\u0649",
     obChan: "\u0627\u0631\u0628\u0637 \u0623\u0648\u0644 \u0642\u0646\u0627\u0629",
@@ -562,6 +564,24 @@
     }[k];
     return `<ol class="tg-steps">${L.map((x) => `<li>${x}</li>`).join("")}</ol>` + (docs ? `<p class="dash-note">${lnk(docs[0], docs[1])}</p>` : "");
   }
+  function askConfirm(msg, okLabel) {
+    return new Promise((resolve) => {
+      const old = document.getElementById("cfmodal"); if (old) old.remove();
+      const wrap = document.createElement("div");
+      wrap.innerHTML = `<div class="tmodal" id="cfmodal" role="alertdialog" aria-modal="true" aria-label="${esc(msg)}"><div class="tmodal-card"><div class="tmodal-body" style="padding:18px">` +
+        `<p style="margin:0 0 16px">${esc(msg)}</p><div class="dash-inline" style="justify-content:flex-end"><button type="button" class="btn btn-ghost btn-sm" id="cf-no">${esc(CHS.cfCancel)}</button>` +
+        `<button type="button" class="btn btn-primary btn-sm" id="cf-yes">${esc(okLabel)}</button></div></div></div></div>`;
+      document.body.appendChild(wrap.firstChild);
+      const m = document.getElementById("cfmodal");
+      const done = (v) => { document.removeEventListener("keydown", onKey, true); m.remove(); resolve(v); };
+      const onKey = (e) => { if (e.key === "Escape") { e.preventDefault(); done(false); } };
+      document.addEventListener("keydown", onKey, true);
+      m.addEventListener("click", (e) => { if (e.target.id === "cfmodal") done(false); });
+      document.getElementById("cf-no").addEventListener("click", () => done(false));
+      document.getElementById("cf-yes").addEventListener("click", () => done(true));
+      document.getElementById("cf-no").focus();
+    });
+  }
   function closeMtModal() { const m = document.getElementById("mtmodal"); if (m) m.remove(); }
   function openMtModal(k) {
     closeMtModal();
@@ -580,17 +600,17 @@
     m.addEventListener("click", (e) => { if (e.target.id === "mtmodal") closeMtModal(); });
     document.getElementById("mtmodal-x").addEventListener("click", closeMtModal);
     const test = document.getElementById("mt-test");
-    const sync = () => { document.getElementById("mt-tok").disabled = test.checked; document.getElementById("mt-sec").disabled = test.checked; };
+    const sync = () => { ["mt-tok", "mt-sec", "mt-acc"].forEach((id) => { document.getElementById(id).disabled = test.checked; }); };
     test.addEventListener("change", sync);
     document.getElementById("mt-form").addEventListener("submit", async (e) => {
       e.preventDefault();
       const msg = document.getElementById("mt-msg"), go = document.getElementById("mt-go");
       const v = (id) => document.getElementById(id).value.trim();
       const tm = test.checked;
-      if (!v("mt-acc") || (!tm && (!v("mt-tok") || !v("mt-sec")))) { msg.textContent = CHS.mtMissing; msg.className = "dash-note is-err"; return; }
+      if (!tm && (!v("mt-acc") || !v("mt-tok") || !v("mt-sec"))) { msg.textContent = CHS.mtMissing; msg.className = "dash-note is-err"; return; }
       go.disabled = true; msg.textContent = CHS.tgBusy; msg.className = "dash-note";
       try {
-        const r = await tgApi("/api/channels/meta/connect", { provider: k, workspace: state.ws.id, account: v("mt-acc"), token: tm ? "" : v("mt-tok"), app_secret: tm ? "" : v("mt-sec"), test_mode: tm });
+        const r = await tgApi("/api/channels/meta/connect", { provider: k, workspace: state.ws.id, account: tm ? "99999999" : v("mt-acc"), token: tm ? "" : v("mt-tok"), app_secret: tm ? "" : v("mt-sec"), test_mode: tm });
         closeMtModal();
         await loadChannels();
         state.chanView = r.id;
@@ -642,6 +662,7 @@
     });
     const emc = $("#ch-em-connect", p);
     if (emc) emc.addEventListener("click", async () => {
+      if (!(await askConfirm(CHS.emConfirm, CHS.connect))) return;
       emc.disabled = true;
       try {
         const emid = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(16).slice(2));
@@ -660,7 +681,7 @@
     const emrm = $("#ch-em-remove", p);
     if (emrm) emrm.addEventListener("click", async () => {
       const c = emConn(); if (!c) return;
-      if (!window.confirm(CHS.removeWarn)) return;
+      if (!(await askConfirm(CHS.removeWarn, CHS.remove))) return;
       emrm.disabled = true;
       try { await A.rest("/rest/v1/channel_connections?id=eq." + encodeURIComponent(c.id), { method: "DELETE" }); await loadChannels(); paint(); }
       catch (e) { emrm.disabled = false; }
@@ -668,7 +689,7 @@
     const rm = $("#ch-remove", p);
     if (rm) rm.addEventListener("click", async () => {
       const c = curConn(); if (!c) return;
-      if (!window.confirm(CHS.removeWarn)) return;
+      if (!(await askConfirm(CHS.removeWarn, CHS.remove))) return;
       rm.disabled = true;
       try {
         await tgApi(actPath(c), { id: c.id, action: "remove" });
@@ -2305,7 +2326,7 @@
       if (tr) tr.addEventListener("click", () => setStatus("ai"));
       const td = $("#toggle-delete");
       if (td) td.addEventListener("click", async () => {
-        if (!state.conv || !window.confirm(CHS.delConvWarn)) return;
+        if (!state.conv || !(await askConfirm(CHS.delConvWarn, CHS.delConv))) return;
         const id = state.conv.id;
         td.disabled = true;
         try {

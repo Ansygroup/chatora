@@ -437,7 +437,9 @@ async function metaHandle(env, conn, msg) {
   if (fr) return '';
   if (ctx.skip) return '';
   const ai = await aiAnswer(env, { workspace: ctx.workspace, knowledge: ctx.knowledge || [] }, [{ role: 'user', content: msg.text.slice(0, 400) }]);
-  const out = ai && ai.reply;
+  let out = ai && ai.reply;
+  // Test mode must answer the same way on every channel, so an empty AI answer falls back to a fixed reply.
+  if (!out && conn.test_mode) out = '[Test] Your ' + conn.provider + ' bot is connected. I received: "' + msg.text.replace(/^\[Test\]\s*/, '').slice(0, 120) + '"';
   if (!out) return '';
   const sent = await metaSend(conn, msg.user, out);
   if (sent === null) return '';
