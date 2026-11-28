@@ -7,7 +7,7 @@
 <body><main>
 <p><a href="/">Chatora</a> / Docs / <a href="/docs/api.html">API</a></p>
 <h1>Integrations guide</h1>
-<p>Everything on this page works on the free plan today: the website widget, Telegram, the REST API with scoped keys, inbound events, and outbound webhooks for Zapier, Make, n8n or your own server. WhatsApp and Instagram channels are not live yet (Meta approval pending) &mdash; the free WhatsApp routes that work today are at the bottom.</p>
+<p>Everything on this page works on the free plan today: the website widget, Telegram, WhatsApp/Instagram/Messenger through your own Meta app, WhatsApp through a self-hosted OpenWA gateway, the REST API with scoped keys, inbound events, and outbound webhooks for Zapier, Make, n8n or your own server. The WhatsApp options, with their trade-offs, are at the bottom.</p>
 
 <h2>1. Website chat widget</h2>
 <p>Add an AI chat bubble to any website. It answers from your knowledge box and flows, and every chat lands in your Inbox.</p>
@@ -92,13 +92,28 @@ function syncCalendar() {
 <h2>8. Outgoing webhooks from a flow</h2>
 <p>Flows have a built-in <b>Webhook</b> step: paste any https URL and when a contact passes that step Chatora POSTs their JSON (name, handle, channel, tags, fields). Use it for per-flow alerts (CRM, email tools, your own server) without any API key. Up to 3 webhook calls per run, 5 second timeout.</p>
 
-<h2>9. WhatsApp: what works free today</h2>
-<p>Full WhatsApp Business API sending awaits Meta approval, so the app cannot send WhatsApp messages yet. What works today, free:</p>
+<h2 id="whatsapp">9. WhatsApp: three ways, free to start</h2>
+<h3>Option A &mdash; WhatsApp Cloud API (official, self-serve)</h3>
+<p>Dashboard &rarr; Channels &rarr; WhatsApp: connect your own Meta app credentials (phone number ID + access token; Meta reviews your app, not Chatora). Replies from flows, the AI agent and the inbox, with Meta's 24-hour reply window enforced. A test mode simulates the channel before you connect real credentials. This is the compliant path; Meta bills message fees directly to your Meta account.</p>
+<h3>Option B &mdash; OpenWA gateway (self-hosted, unofficial)</h3>
+<p><a href="https://github.com/rmyndharis/OpenWA">OpenWA</a> is a free, open-source (MIT) WhatsApp gateway you run yourself with Docker. It keeps a WhatsApp Web session alive and exposes a REST + webhook API; Chatora connects to it as an optional channel: inbound messages reach your flows and AI replies, and outbound sends go through it.</p>
+<p><b>Read this first (the honest catch):</b> OpenWA is <b>unofficial</b>: not approved by Meta, built on a reverse-engineered client. WhatsApp can restrict or ban the connected number, and the project itself warns about this. So:</p>
 <ul>
-<li><b>Click-to-chat links</b> anywhere (flows, website buttons, broadcasts): <code>https://wa.me/2010XXXXXXXX?text=Hello</code> opens a WhatsApp chat with that number. Use your own number to collect leads, or your customer's number in reminder flows.</li>
-<li><b>Done-for-you WhatsApp setups</b> via the <a href="/services.html">services page</a>, where a person configures the official API for you.</li>
+<li>Use a <b>dedicated SIM/number</b> you can afford to lose. Never your main business number, never your personal one.</li>
+<li>Reply to people who messaged you first or opted in, keep volumes modest, and honor STOP (handled automatically).</li>
+<li>If losing the number would hurt, use Option A instead.</li>
 </ul>
-<p>Instagram DM automation is in the same position: pending Meta approval, available through the done-for-you service.</p>
+<h4>Setup (about 15 minutes)</h4>
+<ol>
+<li><b>Run the gateway</b> on any computer or small VPS with Docker: <code>docker run -d --name openwa -p 3000:3000 -e WA_API_KEY="pick-a-long-random-key" rmyndharis/openwa:latest</code> (exact image name and flags are in the OpenWA README).</li>
+<li><b>Expose it over HTTPS</b> (Chatora can only reach https URLs). The free way is a Cloudflare Tunnel: <code>cloudflared tunnel --url http://localhost:3000</code> gives a free <code>https://....trycloudflare.com</code> address, or map a subdomain you own.</li>
+<li><b>Create a session</b> in the OpenWA dashboard (e.g. <code>main</code>) and scan the QR code with the dedicated number's WhatsApp app (Settings &rarr; Linked devices).</li>
+<li><b>Connect in Chatora</b>: Dashboard &rarr; Channels &rarr; WhatsApp (OpenWA), paste the https URL, API key and session ID. Chatora verifies them and registers its webhook with your gateway automatically.</li>
+</ol>
+<p>Once connected: inbound WhatsApp messages match your flows (keywords, menus, AI replies), STOP applies, the contact cap applies, and messages are logged like other channels. Broadcasts can target the OpenWA channel from the channel picker.</p>
+<h3>Option C &mdash; click-to-chat links (zero setup)</h3>
+<p>Put <code>https://wa.me/2010XXXXXXXX?text=Hello</code> anywhere (flows, website buttons, broadcasts): it opens a WhatsApp chat with that number. Use your own number to collect leads. No automation, but zero risk and zero setup.</p>
+<p>Instagram DM and Messenger automation are also live in Dashboard &rarr; Channels with your own Meta app credentials, and through the <a href="/services.html">done-for-you service</a>.</p>
 
 <h2>Limits</h2>
 <table>

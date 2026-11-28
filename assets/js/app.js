@@ -292,7 +292,8 @@
     instagram: { label: "Instagram", color: "#FF5FA2" }, whatsapp: { label: "WhatsApp", color: "#25D366" },
     tiktok: { label: "TikTok", color: "#2CE5D6" }, messenger: { label: "Messenger", color: "#7C5CFF" },
     telegram: { label: "Telegram", color: "#5AA9E6" }, sms: { label: "SMS", color: "#C9FF6B" },
-    email: { label: "Email", color: "#A19DC2" }, web: { label: "Web chat", color: "#A78BFA" }
+    email: { label: "Email", color: "#A19DC2" }, web: { label: "Web chat", color: "#A78BFA" },
+    whatsapp_openwa: { label: "WhatsApp (OpenWA)", color: "#128C7E" }
   };
   const CH_T = { instagram: "channelInstagram", whatsapp: "channelWhatsapp", tiktok: "channelTiktok", messenger: "channelMessenger", telegram: "channelTelegram", sms: "channelSms", email: "channelEmail", web: "channelWeb" };
   const chLabel = (k) => T[CH_T[k]] || (CH[k] || { label: k }).label;
@@ -305,6 +306,16 @@
   const CHS_EN = {
     chTitle: "Channels", chSub: "Connect the places your customers message you.",
     tgLine: "Your own Telegram bot, live in two clicks.",
+    waLine: "Self-hosted via the free OpenWA gateway. Unofficial: ban risk, use a dedicated number.",
+    waTitle: "Connect WhatsApp (OpenWA)",
+    waWarn: "OpenWA is unofficial, not approved by Meta. WhatsApp can restrict or ban the connected number. Use a dedicated number you can afford to lose, never your main one.",
+    waHow1: "Run OpenWA on your own server or computer with Docker (free). Setup guide: chatora.us.ci/docs/integrations.html#whatsapp",
+    waHow2: "In its dashboard, create a session and scan the QR code with the dedicated WhatsApp number.",
+    waHow3: "Paste the gateway's public HTTPS address, its API key and the session ID. We check them and register the webhook for you.",
+    waUrlPh: "https://your-gateway.example.com", waKeyPh: "OpenWA API key", waSidPh: "Session ID",
+    waGo: "Verify and connect", waDone: "WhatsApp (OpenWA) connected",
+    waBad: "The gateway rejected those details. Check the URL, API key and session ID.",
+    waFail: "Connection failed. Is the gateway reachable over HTTPS?",
     webLine: "The chat bubble for your website. Paste one snippet, done.",
     mtLine_whatsapp: "Your WhatsApp Business number through the WhatsApp Cloud API. Replies from your bot, inbox and live handover.",
     mtLine_instagram: "Instagram DMs for your professional account. Replies from your bot, inbox and live handover.",
@@ -342,6 +353,16 @@
   const CHS_AR = {
     chTitle: "\u0627\u0644\u0642\u0646\u0648\u0627\u062a", chSub: "\u0627\u0631\u0628\u0637 \u0627\u0644\u0623\u0645\u0627\u0643\u0646 \u0627\u0644\u062a\u064a \u064a\u0631\u0627\u0633\u0644\u0643 \u0645\u0646\u0647\u0627 \u0639\u0645\u0644\u0627\u0624\u0643.",
     tgLine: "\u0628\u0648\u062a \u062a\u064a\u0644\u064a\u062c\u0631\u0627\u0645 \u0627\u0644\u062e\u0627\u0635 \u0628\u0643 \u064a\u0639\u0645\u0644 \u0628\u062e\u0637\u0648\u062a\u064a\u0646.",
+    waLine: "استضافة ذاتية عبر بوابة OpenWA المجانية. غير رسمية: خطر حظر، استخدم رقماً مخصصاً.",
+    waTitle: "ربط واتساب (OpenWA)",
+    waWarn: "OpenWA غير رسمية وغير معتمدة من Meta. قد يقيّد واتساب الرقم المرتبط أو يحظره. استخدم رقماً مخصصاً يمكنك تحمّل خسارته، وليس رقمك الأساسي أبداً.",
+    waHow1: "شغّل OpenWA على خادمك أو جهازك عبر Docker (مجاناً). دليل الإعداد: chatora.us.ci/docs/integrations.html#whatsapp",
+    waHow2: "في لوحة تحكمه أنشئ جلسة وامسح رمز QR برقم الواتساب المخصص.",
+    waHow3: "الصق عنوان HTTPS العام للبوابة ومفتاح API ومعرّف الجلسة. نتحقق منها ونسجّل الويب هوك تلقائياً.",
+    waUrlPh: "https://your-gateway.example.com", waKeyPh: "مفتاح API الخاص بـ OpenWA", waSidPh: "معرّف الجلسة",
+    waGo: "تحقق واربط", waDone: "تم ربط واتساب (OpenWA)",
+    waBad: "البوابة رفضت هذه البيانات. تحقق من الرابط والمفتاح ومعرّف الجلسة.",
+    waFail: "فشل الربط. هل البوابة متاحة عبر HTTPS؟",
     webLine: "\u0641\u0642\u0627\u0639\u0629 \u0627\u0644\u062f\u0631\u062f\u0634\u0629 \u0644\u0645\u0648\u0642\u0639\u0643. \u0627\u0644\u0635\u0642 \u0643\u0648\u062f\u064b\u0627 \u0648\u0627\u062d\u062f\u064b\u0627 \u0648\u0627\u0646\u062a\u0647\u0649.",
     mtLine_whatsapp: "\u0631\u0642\u0645 \u0648\u0627\u062a\u0633\u0627\u0628 \u0627\u0644\u0623\u0639\u0645\u0627\u0644 \u0639\u0628\u0631 WhatsApp Cloud API. \u0631\u062f\u0648\u062f \u0627\u0644\u0628\u0648\u062a \u0648\u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0648\u0627\u0631\u062f \u0648\u0627\u0644\u062a\u0633\u0644\u064a\u0645 \u0644\u0644\u0645\u0648\u0638\u0641.",
     mtLine_instagram: "\u0631\u0633\u0627\u0626\u0644 \u0625\u0646\u0633\u062a\u063a\u0631\u0627\u0645 \u0644\u062d\u0633\u0627\u0628\u0643 \u0627\u0644\u0645\u0647\u0646\u064a. \u0631\u062f\u0648\u062f \u0627\u0644\u0628\u0648\u062a \u0648\u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0648\u0627\u0631\u062f.",
@@ -397,10 +418,11 @@
   };
   const TK = Object.assign({}, TK_EN, ({ ar: TK_AR })[LANG] || {});
   const tgConn = () => (state.channels || []).filter((c) => c.provider === "telegram")[0] || null;
+  const waConn = () => (state.channels || []).filter((c) => c.provider === "whatsapp_openwa")[0] || null;
   const META_KEYS = ["whatsapp", "instagram", "messenger"];
   const metaConn = (k) => (state.channels || []).filter((c) => c.provider === k)[0] || null;
   const curConn = () => (state.channels || []).filter((c) => c.id === state.chanView)[0] || null;
-  const actPath = (c) => (c && META_KEYS.indexOf(c.provider) >= 0 ? "/api/channels/meta/action" : "/api/channels/telegram/action");
+  const actPath = (c) => (c && c.provider === "whatsapp_openwa" ? "/api/channels/openwa/action" : c && META_KEYS.indexOf(c.provider) >= 0 ? "/api/channels/meta/action" : "/api/channels/telegram/action");
   const emConn = () => (state.channels || []).filter((c) => c.provider === "email")[0] || null;
   function chanStatusChip(c) {
     if (!c) return "";
@@ -430,8 +452,13 @@
             `<button type="button" class="btn btn-ghost btn-sm" id="ch-em-copy">${esc(CHS.emCopy)}</button>` +
             `<button type="button" class="btn btn-ghost btn-sm btn-danger" id="ch-em-remove">${esc(CHS.remove)}</button></div>`
           : `<div class="chan-foot"><button type="button" class="btn btn-primary btn-sm" id="ch-em-connect">${esc(CHS.connect)}</button></div>`) + `</section>`;
+    const waO = waConn();
+    const waOwaCard = `<section class="chan-card" aria-label="WhatsApp (OpenWA)"><div class="chan-head"><span class="chan-name">WhatsApp (OpenWA)</span><span class="chan-mark is-wa" aria-hidden="true">W</span></div>` +
+      `<p class="chan-line">${esc(CHS.waLine)}</p><div class="chan-foot">${chanStatusChip(waO)}` +
+      (waO ? `<button type="button" class="btn btn-ghost btn-sm" data-wa-open="${esc(waO.id)}">${esc(CHS.manage)}</button>`
+           : `<button type="button" class="btn btn-primary btn-sm" id="ch-wa-connect">${esc(CHS.connect)}</button>`) + `</div></section>`;
     return `<div class="dash-card"><h2>${esc(CHS.chTitle)}</h2><p class="dash-note">${esc(CHS.chSub)}</p>` +
-      `<div class="chan-grid">${tgCard}${webCard}${emailCard}${gated}</div></div>`;
+      `<div class="chan-grid">${tgCard}${webCard}${emailCard}${gated}${waOwaCard}</div></div>`;
   }
   function renderChannelDetail() {
     const c = curConn();
@@ -440,7 +467,9 @@
     const meta = isMeta ? `<div class="chan-kv"><span>${esc(CHS.mtWebhook)}</span><b dir="ltr" style="word-break:break-all">${esc(location.origin + "/api/meta/hook/" + c.id)}</b>` +
       `<span>${esc(CHS.mtVerify)}</span><b dir="ltr" style="word-break:break-all">${esc(c.verify_token || "\u2014")}</b></div>` +
       `<p class="dash-note">${esc(c.test_mode ? CHS.mtTestMode : CHS.mtHook)}</p>` : "";
-    return `<div class="dash-card"><h2>${esc(isMeta ? chLabel(c.provider) : "Telegram")}</h2>` +
+    const title = isMeta ? chLabel(c.provider) : c.provider === "whatsapp_openwa" ? "WhatsApp (OpenWA)" : "Telegram";
+    return `<div class="dash-card"><h2>${esc(title)}</h2>` +
+      (c.provider === "whatsapp_openwa" ? `<p class="dash-note" style="color:var(--warn,#e8a13a)">${esc(CHS.waWarn)}</p>` : "") +
       `<div class="chan-kv"><span>${esc(CHS.status)}</span><b>${chanStatusChip(c)}</b>` +
       `<span>${esc(CHS.handle)}</span><b>${esc(c.display_name || "\u2014")}</b>` +
       (isMeta ? "" : `<span>Webhook</span><b>${c.status === "connected" ? esc(CHS.hookOk) : "\u2014"}</b>`) + `</div>` + meta +
@@ -623,7 +652,51 @@
       }
     });
   }
+  function closeWaModal() { const m = document.getElementById("wamodal"); if (m) m.remove(); }
+  function openWaModal() {
+    closeWaModal();
+    const wrap = document.createElement("div");
+    wrap.innerHTML = `<div class="tmodal" id="wamodal" role="dialog" aria-modal="true" aria-label="${esc(CHS.waTitle)}">` +
+      `<div class="tmodal-card"><header style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)"><b>${esc(CHS.waTitle)}</b>` +
+      `<button type="button" class="icon-btn" id="wamodal-x" aria-label="${esc(CHS.tgCancel || "Close")}">\u2715</button></header>` +
+      `<div class="tmodal-body" style="padding:16px"><p class="dash-note" style="color:var(--warn,#e8a13a);margin:0 0 10px">${esc(CHS.waWarn)}</p><ol class="tg-steps"><li>${esc(CHS.waHow1)}</li><li>${esc(CHS.waHow2)}</li><li>${esc(CHS.waHow3)}</li></ol>` +
+      `<form id="wa-form"><input id="wa-url" class="dstep-in" style="width:100%;margin-bottom:8px" dir="ltr" autocomplete="off" spellcheck="false" placeholder="${esc(CHS.waUrlPh)}" aria-label="Server URL">` +
+      `<input id="wa-key" class="dstep-in" style="width:100%;margin-bottom:8px" dir="ltr" autocomplete="off" spellcheck="false" placeholder="${esc(CHS.waKeyPh)}" aria-label="API key">` +
+      `<input id="wa-sid" class="dstep-in" style="width:100%" dir="ltr" autocomplete="off" spellcheck="false" placeholder="${esc(CHS.waSidPh)}" aria-label="Session ID">` +
+      `<div class="dash-inline" style="margin-top:12px"><button type="submit" class="btn btn-primary btn-sm" id="wa-go">${esc(CHS.waGo)}</button>` +
+      `<span class="dash-note" id="wa-msg" role="status"></span></div></form></div></div></div>`;
+    document.body.appendChild(wrap.firstChild);
+    const m = document.getElementById("wamodal");
+    m.addEventListener("click", (e) => { if (e.target.id === "wamodal") closeWaModal(); });
+    document.getElementById("wamodal-x").addEventListener("click", closeWaModal);
+    const inp = document.getElementById("wa-url");
+    if (inp) inp.focus();
+    document.getElementById("wa-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const msg = document.getElementById("wa-msg"), go = document.getElementById("wa-go");
+      go.disabled = true; msg.textContent = CHS.tgBusy; msg.className = "dash-note";
+      try {
+        const r = await tgApi("/api/channels/openwa/connect", { base_url: document.getElementById("wa-url").value.trim(), api_key: document.getElementById("wa-key").value.trim(), session_id: document.getElementById("wa-sid").value.trim(), workspace: state.ws.id });
+        closeWaModal();
+        await loadChannels();
+        state.chanView = r.id || null;
+        paint();
+        const okT = document.createElement("div");
+        okT.className = "toast";
+        okT.textContent = CHS.waDone + (r.handle ? " \u00b7 " + r.handle : "");
+        document.body.appendChild(okT);
+        setTimeout(() => okT.remove(), 2600);
+      } catch (err) {
+        msg.textContent = (err && (err.code === "invalid credentials" || err.code === "bad url" || err.code === "bad key" || err.code === "bad session")) ? CHS.waBad : CHS.waFail;
+        msg.className = "dash-note is-err";
+        go.disabled = false;
+      }
+    });
+  }
   function chanWire(p) {
+    p.querySelectorAll("[data-wa-open]").forEach((b) => b.addEventListener("click", () => { state.chanView = b.getAttribute("data-wa-open"); paint(); }));
+    const waBtn = $("#ch-wa-connect", p);
+    if (waBtn) waBtn.addEventListener("click", openWaModal);
     p.querySelectorAll("[data-mt-connect]").forEach((b) => b.addEventListener("click", () => openMtModal(b.getAttribute("data-mt-connect"))));
     p.querySelectorAll("[data-mt-open]").forEach((b) => b.addEventListener("click", () => { state.chanView = b.getAttribute("data-mt-open"); paint(); }));
     const mtt = $("#ch-mt-test", p);
