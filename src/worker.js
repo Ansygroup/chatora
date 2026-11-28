@@ -359,7 +359,11 @@ function walkFlow(nodes, startIdx, contact) {
       else out.notes.push('msg skipped: ' + c.channel);
     } else if (s.t === 'cond') {
       const v = aCond(s.text, c);
-      if (v === false) { out.notes.push('cond stop'); out.nextIdx = i + 1; return out; }
+      if (v === false) {
+        const skip = Math.max(0, Math.min(20, parseInt(s.elseSkip, 10) || 0));
+        if (skip > 0) { out.notes.push('cond else: skip ' + skip); i += skip; continue; }
+        out.notes.push('cond stop'); out.nextIdx = i + 1; return out;
+      }
       if (v === null) out.notes.push('cond unknown');
     } else if (s.t === 'buy') {
       const url = String(s.url || '').trim();
