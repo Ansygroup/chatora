@@ -420,11 +420,22 @@ async function metaHandle(env, conn, msg) {
   let ctx;
   try { ctx = await sbRpc('meta_inbound', { p_key: key, p_id: conn.id, p_msg: msg.id.slice(0, 200), p_user: msg.user.slice(0, 64), p_name: msg.name.slice(0, 80), p_text: msg.text.slice(0, 4000) }); }
   catch (e) { console.log('meta_inbound', String(e)); return ''; }
-  if (!ctx || ctx.skip) return '';
+  if (!ctx || ctx.dup || (ctx.skip && !ctx.logged)) return '';
   try {
     const hws = ctx.workspace_id;
     if (hws) await hookEmit(env, hws, 'message.received', { channel: conn.provider, handle: msg.user, name: msg.name.slice(0, 80), text: msg.text.slice(0, 1000) });
   } catch (e) { console.log('hook meta', String(e)); }
+  if (STOP_RE.test(msg.text)) {
+    let did = false;
+    try { did = await sbRpc('meta_unsub', { p_key: key, p_id: conn.id, p_user: msg.user.slice(0, 64) }); } catch (e) { console.log('meta_unsub', String(e)); }
+    const bye = 'You are unsubscribed. You will not get more broadcasts.';
+    const sentB = await metaSend(conn, msg.user, bye);
+    if (sentB !== null) { try { await sbRpc('meta_log_out', { p_key: key, p_id: conn.id, p_user: msg.user.slice(0, 64), p_text: bye, p_msg: sentB }); } catch (e) {} }
+    return did ? bye : '';
+  }
+  const fr = await inboundRun(env, 'meta', conn.id, msg.user.slice(0, 64), msg.id.slice(0, 30), msg.text);
+  if (fr) return '';
+  if (ctx.skip) return '';
   const ai = await aiAnswer(env, { workspace: ctx.workspace, knowledge: ctx.knowledge || [] }, [{ role: 'user', content: msg.text.slice(0, 400) }]);
   const out = ai && ai.reply;
   if (!out) return '';
@@ -580,20 +591,41 @@ async function fireHooks(r, contact, flowName) {
     } catch (e) { r.notes.push('webhook failed'); }
   }
 }
+// Sends what walkFlow collected. Telegram uses the bot token. Meta channels use the workspace connection and only
+// send inside the 24 hour customer window (Meta rejects free-form text outside it); skipped steps are logged, not retried.
+const META_WINDOW_MS = 24 * 3600 * 1000;
+async function deliverFlow(env, tgTok, contact, r) {
+  if (!r || !r.tg || !r.tg.length) return;
+  if (contact && META_PROV[contact.channel] === 1) {
+    const key = env && env.AUTOMATION_SECRET;
+    if (!key || !contact.workspace_id) return;
+    let conn = null;
+    try { conn = await sbRpc('meta_flow_conn', { p_key: key, p_ws: contact.workspace_id, p_provider: contact.channel, p_handle: String(contact.handle || '') }); } catch (e) { console.log('meta_flow_conn', String(e)); }
+    if (!conn || !conn.id) { r.notes.push('meta send skipped: not connected'); return; }
+    if (!conn.test_mode && !(conn.last_inbound_at && Date.now() - new Date(conn.last_inbound_at).getTime() < META_WINDOW_MS)) { r.notes.push('meta send skipped: outside 24h window'); return; }
+    for (const text of r.tg.slice(0, 10)) {
+      const sent = await metaSend(conn, r.chatId, text);
+      if (sent === null) { r.notes.push('meta send failed'); break; }
+      try { await sbRpc('meta_log_out', { p_key: key, p_id: conn.id, p_user: r.chatId.slice(0, 64), p_text: text, p_msg: sent }); } catch (e) { console.log('meta_log_out', String(e)); }
+    }
+    return;
+  }
+  if (tgTok) for (const text of r.tg) await tgCall(tgTok, 'sendMessage', { chat_id: Number(r.chatId), text: text });
+}
 // Walks flow nodes from startIdx. Pure: collects telegram sends (out.tg) and DB
 // effects (out.effects); the caller performs them. Stops at a delay (pending),
 // a false condition (done), or the end (done).
 function walkFlow(nodes, startIdx, contact) {
   const out = { status: 'done', nextIdx: (nodes || []).length, runAt: null, effects: [], tg: [], hooks: [], notes: [], chatId: '' };
   const c = { name: contact.name || '', handle: contact.handle || '', channel: contact.channel || '', tags: Array.isArray(contact.tags) ? contact.tags.slice() : [], fields: Object.assign({}, contact.fields || {}) };
-  out.chatId = String(c.handle).replace(/^tg:/, '');
+  out.chatId = String(c.handle).replace(/^(tg|wa|ig|ms):/, '');
   out.finalTags = c.tags;
   for (let i = startIdx; i < (nodes || []).length; i++) {
     const s = nodes[i] || {};
     if (s.t === 'msg') {
       const body = aTokens(String(s.text || ''), c).slice(0, 1000);
       if (!body) continue;
-      if (c.channel === 'telegram' && /^-?\d{1,20}$/.test(out.chatId)) out.tg.push(body);
+      if ((c.channel === 'telegram' && /^-?\d{1,20}$/.test(out.chatId)) || (META_PROV[c.channel] === 1 && /^[\w.:-]{3,64}$/.test(out.chatId))) out.tg.push(body);
       else if (c.channel === 'web') out.effects.push({ type: 'web_msg', contact_id: contact.id, workspace_id: contact.workspace_id, body: body });
       else out.notes.push('msg skipped: ' + c.channel);
     } else if (s.t === 'cond') {
@@ -609,7 +641,7 @@ function walkFlow(nodes, startIdx, contact) {
       if (!/^https:\/\/(buy|donate)\.stripe\.com\/[A-Za-z0-9_\-\/?=&%.]{4,300}$/.test(url)) { out.notes.push('buy skipped: bad link'); continue; }
       const label = aTokens(String(s.text || ''), c).slice(0, 60) || 'Buy';
       const body = label + ': ' + url;
-      if (c.channel === 'telegram' && /^-?\d{1,20}$/.test(out.chatId)) out.tg.push(body);
+      if ((c.channel === 'telegram' && /^-?\d{1,20}$/.test(out.chatId)) || (META_PROV[c.channel] === 1 && /^[\w.:-]{3,64}$/.test(out.chatId))) out.tg.push(body);
       else if (c.channel === 'web') out.effects.push({ type: 'web_msg', contact_id: contact.id, workspace_id: contact.workspace_id, body: body });
       else out.notes.push('buy skipped: ' + c.channel);
     } else if (s.t === 'webhook') {
@@ -693,7 +725,7 @@ async function automationEvent(request, url, env) {
     const r = walkFlow(f.nodes, 1, contact);
     await fireHooks(r, contact, f.name);
     await trackLinks(env, r, contact, f.id, f.nodes);
-    if (tgTok) for (const text of r.tg) await tgCall(tgTok, 'sendMessage', { chat_id: Number(r.chatId), text: text });
+    await deliverFlow(env, tgTok, contact, r);
     for (const e of r.effects) {
       if (e.type !== 'web_msg') continue;
       const conv = await sb('/rest/v1/conversations?contact_id=eq.' + e.contact_id + '&channel=eq.web&status=neq.closed&order=last_at.desc&limit=1&select=id');
@@ -736,7 +768,7 @@ async function broadcastSend(request, url) {
   const wsid = String(b.workspace || '');
   const name = String(b.name || '').trim().slice(0, 60) || 'Broadcast';
   const text = String(b.body || '').trim();
-  const channel = ['all', 'telegram', 'web'].indexOf(b.channel) !== -1 ? b.channel : 'all';
+  const channel = ['all', 'telegram', 'web', 'whatsapp', 'instagram', 'messenger'].indexOf(b.channel) !== -1 ? b.channel : 'all';
   const tag = String(b.tag || '').trim().slice(0, 40);
   if (!/^[0-9a-f-]{36}$/.test(wsid) || text.length < 1 || text.length > 600) return wjson({ error: 'bad request' }, 400, origin);
   const sb = (path, init) => fetch(WSB + path, Object.assign({}, init, {
@@ -747,7 +779,7 @@ async function broadcastSend(request, url) {
   if (!recent.ok) return wjson({ error: 'lookup failed' }, 502, origin);
   const last = (await recent.json())[0];
   if (last) return wjson({ error: 'too_soon', retry_after_min: Math.max(1, Math.ceil((new Date(last.created_at).getTime() + BC_GAP_MS - Date.now()) / 60000)) }, 429, origin);
-  const cRes = await sb('/rest/v1/contacts?workspace_id=eq.' + wsid + '&channel=in.(telegram,web)&select=id,workspace_id,handle,channel,tags&limit=1000');
+  const cRes = await sb('/rest/v1/contacts?workspace_id=eq.' + wsid + '&channel=in.(telegram,web,whatsapp,instagram,messenger)&select=id,workspace_id,handle,channel,tags&limit=1000');
   if (!cRes.ok) return wjson({ error: 'lookup failed' }, 502, origin);
   const lc = (x) => String(x).toLowerCase();
   const cand = (await cRes.json()).filter((c) => (channel === 'all' || c.channel === channel) && (!tag || (c.tags || []).map(lc).indexOf(lc(tag)) !== -1) && (c.tags || []).map(lc).indexOf(UNSUB_TAG) === -1);
@@ -760,7 +792,14 @@ async function broadcastSend(request, url) {
     if (!cvRes.ok) return wjson({ error: 'lookup failed' }, 502, origin);
     engaged = new Set((await cvRes.json()).map((r) => r.contact_id));
   }
-  const aud = cand.filter((c) => engaged.has(c.id));
+  // Meta channels: free-form text is only allowed inside the 24 hour customer window, so only contacts who wrote in the last 24h are reachable.
+  const metaConv = {};
+  const metaIds = cand.filter((c) => META_PROV[c.channel] === 1 && engaged.has(c.id)).map((c) => c.id);
+  if (metaIds.length) {
+    const mv = await sb('/rest/v1/conversations?contact_id=in.(' + metaIds.join(',') + ')&last_inbound_at=gte.' + encodeURIComponent(new Date(Date.now() - META_WINDOW_MS).toISOString()) + '&select=id,contact_id,channel&order=last_at.desc');
+    (mv.ok ? await mv.json() : []).forEach((r) => { if (!metaConv[r.contact_id]) metaConv[r.contact_id] = r.id; });
+  }
+  const aud = cand.filter((c) => engaged.has(c.id) && (META_PROV[c.channel] !== 1 || metaConv[c.id]));
   if (!aud.length) return wjson({ error: 'empty' }, 400, origin);
   if (aud.length > BC_MAX) return wjson({ error: 'too_many', n: aud.length, max: BC_MAX }, 413, origin);
   const msgText = text + '\n\nReply STOP to unsubscribe.';
@@ -777,6 +816,28 @@ async function broadcastSend(request, url) {
       sent += res.filter(Boolean).length;
       if (i + 20 < tgs.length) await new Promise((r) => setTimeout(r, 1000));
     }
+  }
+  for (const prov of ['whatsapp', 'instagram', 'messenger']) {
+    const ms = aud.filter((c) => c.channel === prov);
+    if (!ms.length) continue;
+    const cr = await sb('/rest/v1/channel_connections?workspace_id=eq.' + wsid + '&provider=eq.' + prov + '&status=eq.connected&select=id,provider,external_account_id,auth_token,test_mode&limit=1');
+    const cc = cr.ok ? (await cr.json())[0] : null;
+    if (!cc) continue;
+    const conn = { id: cc.id, provider: cc.provider, account: cc.external_account_id, token: cc.auth_token, test_mode: !!cc.test_mode };
+    for (let i = 0; i < ms.length; i += 10) {
+      const res = await Promise.all(ms.slice(i, i + 10).map(async (c) => {
+        const to = String(c.handle || '').replace(/^(wa|ig|ms):/, '');
+        if (!/^[\w.:-]{3,64}$/.test(to)) return null;
+        const ok = await metaSend(conn, to, msgText);
+        if (ok === null) return null;
+        await sb('/rest/v1/messages', { method: 'POST', headers: { prefer: 'return=minimal' }, body: JSON.stringify({ conversation_id: metaConv[c.id], direction: 'out', author: 'ai', body: msgText.slice(0, 1200) }) }).catch(() => null);
+        return true;
+      }));
+      sent += res.filter(Boolean).length;
+      if (i + 10 < ms.length) await new Promise((r) => setTimeout(r, 1000));
+    }
+    const idsM = ms.map((c) => metaConv[c.id]).filter(Boolean);
+    if (idsM.length) await sb('/rest/v1/conversations?id=in.(' + idsM.join(',') + ')', { method: 'PATCH', headers: { prefer: 'return=minimal' }, body: JSON.stringify({ last_at: new Date().toISOString() }) });
   }
   const webs = aud.filter((c) => c.channel === 'web');
   if (webs.length) {
@@ -865,7 +926,7 @@ async function inboundRun(env, scope, ref, visitor, update, text, onMatch) {
       const r = walkFlow(run.nodes || [], 1, contact);
       await fireHooks(r, contact, run.name);
       await trackLinks(env, r, contact, run.flow_id, run.nodes);
-      if (m.tg_token) for (const t of r.tg) await tgCall(m.tg_token, 'sendMessage', { chat_id: Number(r.chatId), text: t });
+      await deliverFlow(env, m.tg_token, contact, r);
       for (const e of r.effects) if (e.type === 'web_msg') replies.push(e.body);
       await sbRpc('automation_finish', { p_key: key, p_run_id: run.run_id, p_status: r.status, p_next_step: r.nextIdx, p_run_at: r.runAt, p_note: ('inbound; ' + r.notes.join('; ')).slice(0, 190), p_effects: r.effects });
       if (r.status === 'done') await hookEmit(env, m.workspace_id, 'flow.finished', { flow_id: run.flow_id, flow: run.name || '', contact: contact.handle || '', source: 'inbound' });
@@ -897,7 +958,7 @@ async function automationTick(env) {
       const r = walkFlow(it.nodes || [], it.next_step || 1, contact);
       await fireHooks(r, contact, it.name);
       await trackLinks(env, r, contact, it.flow_id, it.nodes);
-      if (it.tg_token) for (const text of r.tg) await tgCall(it.tg_token, 'sendMessage', { chat_id: Number(r.chatId), text: text });
+      await deliverFlow(env, it.tg_token, contact, r);
       await rpc('automation_finish', { p_key: key, p_run_id: it.run_id, p_status: r.status, p_next_step: r.nextIdx, p_run_at: r.runAt, p_note: (it.note + '; ' + r.notes.join('; ')).slice(0, 190), p_effects: r.effects });
       if (r.status === 'done') await hookEmit(env, it.workspace_id, 'flow.finished', { flow_id: it.flow_id, flow: it.name || '', contact: contact.handle || '', source: it.note || 'tick' });
     } catch (e) {
@@ -1133,7 +1194,7 @@ async function apiEventIngest(request, env, h) {
       const w = walkFlow(run.nodes || [], 1, contact);
       await fireHooks(w, contact, run.name);
       await trackLinks(env, w, contact, run.flow_id, run.nodes);
-      if (r.tg_token) for (const t of w.tg) await tgCall(r.tg_token, 'sendMessage', { chat_id: Number(w.chatId), text: t });
+      await deliverFlow(env, r.tg_token, contact, w);
       await sbRpc('automation_finish', { p_key: env.AUTOMATION_SECRET, p_run_id: run.run_id, p_status: w.status, p_next_step: w.nextIdx, p_run_at: w.runAt, p_note: ('api-event; ' + w.notes.join('; ')).slice(0, 190), p_effects: w.effects });
       if (w.status === 'done') await hookEmit(env, r.workspace_id, 'flow.finished', { flow_id: run.flow_id, flow: run.name || '', contact: contact.handle || '', source: 'api-event' });
     } catch (e) {

@@ -380,7 +380,7 @@
     unit: "Unit", uMin: "minutes", uHour: "hours", uDay: "days",
     seqTitle: "Sequence", seqPick: "Choose a live flow", enroll: "Enroll", stopSeq: "Stop", enrolledOk: "Enrolled. The first step runs now.", stoppedOk: "Stopped.",
     tgNoConn: "Connect Telegram in Settings, Channels, to reply here.",
-    trigEvents: "Contact events: event:tag-applied vip · event:tag-removed vip · event:field-changed city · event:schedule field:renewal_at. Live flows fire on these; messages send on Telegram and web chat."
+    trigEvents: "Contact events: event:tag-applied vip · event:tag-removed vip · event:field-changed city · event:schedule field:renewal_at. Live flows fire on these; messages send on Telegram, web chat and, inside Meta's 24 hour window, WhatsApp, Instagram and Messenger."
   };
   const TK_AR = {
     fieldsTitle: "حقول مخصصة", fieldKeyPh: "المفتاح (مثال: المدينة)", fieldValPh: "القيمة",
@@ -389,7 +389,7 @@
     unit: "الوحدة", uMin: "دقائق", uHour: "ساعات", uDay: "أيام",
     seqTitle: "سلسلة رسائل", seqPick: "اختر سيناريو مباشر", enroll: "اشترك", stopSeq: "أوقف", enrolledOk: "تم الاشتراك. أول خطوة تعمل الآن.", stoppedOk: "تم الإيقاف.",
     tgNoConn: "اربط تيليجرام من الإعدادات، القنوات، لتتمكن من الرد هنا.",
-    trigEvents: "أحداث جهات الاتصال: event:tag-applied vip · event:tag-removed vip · event:field-changed city · event:schedule field:renewal_at. تعمل السيناريوهات المباشرة مع هذه الأحداث؛ تُرسل الرسائل عبر تيليجرام والدردشة."
+    trigEvents: "أحداث جهات الاتصال: event:tag-applied vip · event:tag-removed vip · event:field-changed city · event:schedule field:renewal_at. تعمل السيناريوهات المباشرة مع هذه الأحداث؛ تُرسل الرسائل عبر تيليجرام والدردشة، وعبر واتساب وإنستجرام وماسنجر داخل نافذة الـ24 ساعة."
   };
   const TK = Object.assign({}, TK_EN, ({ ar: TK_AR })[LANG] || {});
   const tgConn = () => (state.channels || []).filter((c) => c.provider === "telegram")[0] || null;
@@ -1388,7 +1388,7 @@
   function audience() {
     const b = state.bc;
     return state.contacts.filter((c) => {
-      if (c.channel !== "telegram" && c.channel !== "web") return false;
+      if (c.channel !== "telegram" && c.channel !== "web" && META_KEYS.indexOf(c.channel) < 0) return false;
       if ((c.tags || []).some((t) => String(t).toLowerCase() === "unsubscribed")) return false;
       if (b.channel !== "all" && c.channel !== b.channel) return false;
       if (b.tag && (c.tags || []).indexOf(b.tag) === -1) return false;
@@ -1399,8 +1399,8 @@
   function renderBroadcast() {
     const b = state.bc;
     const list = audience();
-    T.bcNote = AR ? "الإرسال متاح لجهات اتصال تيليجرام والويب فقط (اللي راسلتك قبل كده). الحد: بثّ واحد كل ساعة، و30 مستلم كحد أقصى. كل رسالة تنتهي بـ «Reply STOP to unsubscribe» ومن يرد STOP يتشال تلقائياً. ابعت بس لناس وافقوا يستقبلوا منك."
-      : "Sends to Telegram and website-chat contacts who already wrote to you. Limits: one broadcast per hour, up to 30 recipients. Every message ends with \"Reply STOP to unsubscribe\" and anyone who replies STOP is skipped from then on. Only message people who agreed to hear from you.";
+    T.bcNote = AR ? "الإرسال متاح لجهات اتصال تيليجرام والويب (اللي راسلتك قبل كده)، ولواتساب وإنستجرام وماسنجر فقط لمن راسلك خلال آخر 24 ساعة (قاعدة ميتا). الحد: بثّ واحد كل ساعة، و30 مستلم كحد أقصى. كل رسالة تنتهي بـ «Reply STOP to unsubscribe» ومن يرد STOP يتشال تلقائياً. ابعت بس لناس وافقوا يستقبلوا منك."
+      : "Sends to Telegram and website-chat contacts who already wrote to you. On WhatsApp, Instagram and Messenger only contacts who wrote in the last 24 hours are reached (Meta rule), the rest are skipped. Limits: one broadcast per hour, up to 30 recipients. Every message ends with \"Reply STOP to unsubscribe\" and anyone who replies STOP is skipped from then on. Only message people who agreed to hear from you.";
     T.bcSend = AR ? "إرسال الآن" : "Send now";
     const chOpts = [`<option value="all"${b.channel === "all" ? " selected" : ""}>${esc(T.bcAll8)}</option>`]
       .concat(Object.keys(CH).map((k) => `<option value="${k}"${b.channel === k ? " selected" : ""}>${esc(chLabel(k))}</option>`)).join("");

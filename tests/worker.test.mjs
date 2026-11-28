@@ -315,3 +315,12 @@ test('metaSigOk accepts a correct HMAC and rejects wrong or missing', async () =
   assert.equal(await W.metaSigOk('topsecret', '{"a":1}', ''), false);
   assert.equal(await W.metaSigOk('', '{"a":1}', sig), false);
 });
+
+test('walkFlow queues messages for Meta channel contacts with the prefix stripped', () => {
+  const nodes = [{ t: 'trigger', text: 'keyword: price' }, { t: 'msg', text: 'Hi {name}' }];
+  const r = W.walkFlow(nodes, 1, { name: 'Sam', handle: 'wa:201000111222', channel: 'whatsapp', tags: [] });
+  assert.deepEqual(r.tg, ['Hi Sam']);
+  assert.equal(r.chatId, '201000111222');
+  const r2 = W.walkFlow(nodes, 1, { name: 'Sam', handle: 'x:1', channel: 'sms', tags: [] });
+  assert.deepEqual(r2.tg, []);
+});
