@@ -75,6 +75,8 @@
       sMsg: "Message", sDelay: "Delay", sCond: "Condition", sTag: "Tag", sTrigger: "Trigger",
       sMsgPh: "Draft message text", sDelayPh: "Minutes to wait", sCondPh: "e.g. asks about price",
       sTagPh: "tag to add", stepUp: "Move up", stepDown: "Move down", stepDel: "Delete step",
+      sAutoSaving: "Saving\u2026", sAutoSaved: "Saved automatically", sAutoFix: "Not saved yet, fix the invalid link", sAutoErr: "Couldn't save automatically, press Save",
+      sCondElse: "If the condition is not met", sCondStop: "Stop the flow", sCondSkipN: "Skip next {n} step(s)", sCondStopped: "Flow stopped (condition not met)",
       savedFlow: "Flow saved", deleteFlow: "Delete this flow", confirmDelete: "Delete this flow and its steps?",
       noSteps: "No steps yet — add the first one below.", flowName: "Flow name",
       pwdTitle: "Password", pwNew: "New password", pwSave: "Change password", pwOk: "Password changed.",
@@ -183,6 +185,8 @@
       sMsg: "رسالة", sDelay: "انتظار", sCond: "شرط", sTag: "تاج", sTrigger: "المُشغّل",
       sMsgPh: "نص الرسالة في المسودة", sDelayPh: "دقايق الانتظار", sCondPh: "مثال: بيسأل عن السعر",
       sTagPh: "التاج اللي يتضاف", stepUp: "طلّع خطوة", stepDown: "نزّل خطوة", stepDel: "امسح الخطوة",
+      sAutoSaving: "بيحفظ\u2026", sAutoSaved: "اتحفظ تلقائي", sAutoFix: "مش اتحفظ، ظبط اللينك الغلط", sAutoErr: "مش قادر يحفظ تلقائي، دوس حفظ",
+      sCondElse: "لو الشرط مش متحقق", sCondStop: "أوقف السيناريو", sCondSkipN: "تخطَّ {n} خطوة", sCondStopped: "السيناريو اتوقف (الشرط مش متحقق)",
       savedFlow: "السيناريو اتحفظ", deleteFlow: "امسح السيناريو", confirmDelete: "تمسح السيناريو وخطواته؟",
       noSteps: "مفيش خطوات لسه — ضيف أول واحدة تحت.", flowName: "اسم السيناريو",
       pwdTitle: "الباسورد", pwNew: "باسورد جديد", pwSave: "تغيير الباسورد", pwOk: "الباسورد اتغيّر.",
@@ -280,7 +284,8 @@
     view: "overview", templates: false, filter: "all", q: "", edit: null, steps: [], cedit: null, channels: [], chanView: null, gtrig: "all",
     broadcasts: [], bc: { name: "", channel: "all", tag: "", body: "" }, gq: "", gcat: "all", cLimit: 50,
     imp: { open: false, text: "", fileName: "", preview: null, status: "", statusError: false, busy: false },
-    meta: { connections: null, loaded: false, loading: false, loadFailed: false, pending: "", message: "", messageError: false, pin: "", currency: "", igState: "", igPages: [], igPageId: "", sendDrafts: {} }
+    meta: { connections: null, loaded: false, loading: false, loadFailed: false, pending: "", message: "", messageError: false, pin: "", currency: "", igState: "", igPages: [], igPageId: "", sendDrafts: {} },
+    auto: { timer: 0, busy: false, dirty: false }, pendingStatus: ""
   };
 
   const CH = {
@@ -833,7 +838,8 @@
         : s.t === "webhook" ? `<input class="dstep-in" data-i="${i}" data-k="url" type="url" inputmode="url" value="${esc(s.url || "")}" aria-label="${esc(T.sHookUrlPh)}" placeholder="${esc(T.sHookUrlPh)}">`
         : s.t === "buy" ? `<input class="dstep-in" data-i="${i}" data-k="text" maxlength="60" value="${esc(s.text || "")}" aria-label="${esc(T.sBuyLabelPh)}" placeholder="${esc(T.sBuyLabelPh)}"><input class="dstep-in" data-i="${i}" data-k="url" type="url" inputmode="url" value="${esc(s.url || "")}" aria-label="${esc(T.sBuyUrlPh)}" placeholder="${esc(T.sBuyUrlPh)}">`
         : s.t === "delay" ? `<input class="dstep-in" data-i="${i}" data-k="v" type="number" min="1" max="999" value="${esc(s.v || 5)}" aria-label="${esc(T.sDelayPh)}" placeholder="${esc(T.sDelayPh)}"><select class="dstep-in dstep-unit" data-i="${i}" data-k="u" aria-label="${esc(TK.unit)}">` + [["m", TK.uMin], ["h", TK.uHour], ["d", TK.uDay]].map((u) => `<option value="${u[0]}"${(s.u || "m") === u[0] ? " selected" : ""}>${esc(u[1])}</option>`).join("") + `</select>`
-          : `<input class="dstep-in" data-i="${i}" data-k="text" value="${esc(s.text || "")}" aria-label="${esc(s.t === "tag" ? T.sTagPh : T.sCondPh)}" placeholder="${esc(s.t === "tag" ? T.sTagPh : T.sCondPh)}">`;
+          : s.t === "cond" ? `<input class="dstep-in" data-i="${i}" data-k="text" value="${esc(s.text || "")}" aria-label="${esc(T.sCondPh)}" placeholder="${esc(T.sCondPh)}"><select class="dstep-in dstep-unit" data-i="${i}" data-k="elseSkip" aria-label="${esc(T.sCondElse)}">` + [0, 1, 2, 3].map((n) => `<option value="${n}"${(parseInt(s.elseSkip, 10) || 0) === n ? " selected" : ""}>${esc(n === 0 ? T.sCondStop : T.sCondSkipN.replace("{n}", n))}</option>`).join("") + `</select>`
+          : `<input class="dstep-in" data-i="${i}" data-k="text" value="${esc(s.text || "")}" aria-label="${esc(T.sTagPh)}" placeholder="${esc(T.sTagPh)}">`;
       return `<li class="dstep is-${kind}"><span class="dstep-n">${i + 1}</span>` +
         `<span class="dstep-type">${esc(T["s" + kind[0].toUpperCase() + kind.slice(1)])}</span>` +
         `<div class="dstep-body">${body}</div>` +
@@ -849,7 +855,7 @@
 
     return `<div class="dash-head"><button type="button" class="btn btn-ghost btn-sm" id="ed-back">← ${esc(T.back)}</button>` +
       `<div class="ed-actions"><span class="dash-ok" id="ed-ok"></span>` +
-      `<select id="ed-status" class="ed-status" aria-label="${esc(T.status || 'Status')}">` + ["draft", "live", "paused"].map((s) => `<option value="${s}"${f.status === s ? " selected" : ""}>${esc(T[s] || s)}</option>`).join("") + `</select>` +
+      `<select id="ed-status" class="ed-status" aria-label="${esc(T.status || 'Status')}">` + ["draft", "live", "paused"].map((s) => `<option value="${s}"${(state.pendingStatus || f.status) === s ? " selected" : ""}>${esc(T[s] || s)}</option>`).join("") + `</select>` +
       `<button type="button" class="btn btn-ghost btn-sm" id="ed-test">${esc(T.testRun)}</button>` +
       `<button type="button" class="btn btn-primary btn-sm" id="ed-save">${esc(T.save)}</button></div></div>` +
       guideHtml() + `<div class="dash-card"><h2>${esc(T.flowName)}</h2>` +
@@ -2637,50 +2643,49 @@
 
   function bindEditor(p) {
     if (!state.edit) return;
-    $("#ed-back", p).addEventListener("click", () => { state.edit = null; state.steps = []; state.guide = false; state.ready = false; paint(); });
+    $("#ed-back", p).addEventListener("click", () => { flushEditor(); state.edit = null; state.steps = []; state.guide = false; state.ready = false; paint(); });
     const goConnect = $("#ed-connect", p);
-    if (goConnect) goConnect.addEventListener("click", () => { state.edit = null; state.steps = []; state.guide = false; state.ready = false; setView("settings"); });
+    if (goConnect) goConnect.addEventListener("click", () => { flushEditor(); state.edit = null; state.steps = []; state.guide = false; state.ready = false; setView("settings"); });
     const tryIt = $("#ed-try", p);
     if (tryIt) tryIt.addEventListener("click", () => { const t = $("#ed-test"); if (t) t.click(); });
     const nm = $("#ed-name", p);
-    if (nm) nm.addEventListener("input", () => { state.edit.name = nm.value; });
+    if (nm) nm.addEventListener("input", () => { state.edit.name = nm.value; markDirty(); });
 
     $$(".dstep-in, .step-in", p).forEach((el) => el.addEventListener("input", () => {
       const i = +el.getAttribute("data-i"), k = el.getAttribute("data-k");
-      state.steps[i][k] = k === "v" ? Math.max(1, parseInt(el.value || "1", 10)) : el.value;
+      if (k === "v") state.steps[i][k] = Math.max(1, parseInt(el.value || "1", 10));
+      else if (k === "elseSkip") { const n = parseInt(el.value, 10) || 0; if (n > 0) state.steps[i][k] = n; else delete state.steps[i][k]; }
+      else state.steps[i][k] = el.value;
+      markDirty();
     }));
     $$("[data-move]", p).forEach((b) => b.addEventListener("click", () => {
       const i = +b.getAttribute("data-move"), d = +b.getAttribute("data-dir");
       const j = i + d;
       [state.steps[i], state.steps[j]] = [state.steps[j], state.steps[i]];
+      markDirty();
       paint();
     }));
     $$("[data-del]", p).forEach((b) => b.addEventListener("click", () => {
       state.steps.splice(+b.getAttribute("data-del"), 1);
+      markDirty();
       paint();
     }));
     $$("[data-add]", p).forEach((b) => b.addEventListener("click", () => {
       const kind = b.getAttribute("data-add");
       state.steps.push(kind === "delay" ? { t: "delay", v: 10 } : kind === "buy" ? { t: "buy", text: "", url: "" } : kind === "webhook" ? { t: "webhook", url: "" } : { t: kind, text: "" });
+      markDirty();
       paint();
     }));
     const edFolder = $("#ed-folder", p), edTrack = $("#ed-track", p);
-    if (edFolder) edFolder.addEventListener("input", () => { const v = tidy(edFolder.value, 30).trim(); if (v) state.steps[0].folder = v; else delete state.steps[0].folder; });
-    if (edTrack) edTrack.addEventListener("change", () => { if (edTrack.checked) state.steps[0].track = true; else delete state.steps[0].track; });
+    if (edFolder) edFolder.addEventListener("input", () => { const v = tidy(edFolder.value, 30).trim(); if (v) state.steps[0].folder = v; else delete state.steps[0].folder; markDirty(); });
+    if (edTrack) edTrack.addEventListener("change", () => { if (edTrack.checked) state.steps[0].track = true; else delete state.steps[0].track; markDirty(); });
+    const edStatus = $("#ed-status", p);
+    if (edStatus) edStatus.addEventListener("change", () => { state.pendingStatus = edStatus.value; markDirty(); });
     $("#ed-save", p).addEventListener("click", async () => {
-      const name = tidy($("#ed-name").value, 70).trim() || state.edit.name;
-      const stEl = $("#ed-status");
-      const fstatus = stEl && ["draft", "live", "paused"].indexOf(stEl.value) !== -1 ? stEl.value : state.edit.status;
-      state.steps.forEach((s) => { if (typeof s.text === "string") s.text = tidy(s.text, 1000); if (s.t === "buy" || s.t === "webhook") s.url = String(s.url || "").trim(); });
-      if (state.steps.some((s) => s.t === "webhook" && !HOOK_OK(s.url))) { window.alert(T.sHookBad); return; }
-      if (state.steps.some((s) => s.t === "buy" && !BUY_RE.test(s.url))) { const okEl = $("#ed-ok"); if (okEl) { okEl.textContent = T.sBuyBad; } window.alert(T.sBuyBad); return; }
-      await A.rest("/rest/v1/flows?id=eq." + state.edit.id, {
-        method: "PATCH",
-        body: JSON.stringify({ name, status: fstatus, nodes: state.steps, updated_at: new Date().toISOString() })
-      });
-      state.edit.name = name;
-      state.edit.status = fstatus;
-      state.edit.nodes = state.steps;
+      clearTimeout(state.auto.timer);
+      state.auto.dirty = false;
+      const done = await persistFlow(true);
+      if (!done) return;
       if (state.guide) { state.ready = true; paint(); return; }
       const ok = $("#ed-ok");
       ok.textContent = T.savedFlow;
@@ -2700,12 +2705,62 @@
     });
 
     $("#ed-del", p).addEventListener("click", async () => {
+      clearTimeout(state.auto.timer);
+      state.auto.dirty = false;
       if (!confirm(T.confirmDelete)) return;
       await A.rest("/rest/v1/flows?id=eq." + state.edit.id, { method: "DELETE" });
       state.flows = state.flows.filter((f) => f.id !== state.edit.id);
       state.edit = null; state.steps = [];
       paint();
     });
+  }
+
+  function persistFlow(loud) {
+    const name = tidy(($("#ed-name") ? $("#ed-name").value : state.edit.name), 70).trim() || state.edit.name;
+    const stEl = $("#ed-status");
+    const fstatus = state.pendingStatus || (stEl && ["draft", "live", "paused"].indexOf(stEl.value) !== -1 ? stEl.value : state.edit.status);
+    state.steps.forEach((s) => { if (typeof s.text === "string") s.text = tidy(s.text, 1000); if (s.t === "buy" || s.t === "webhook") s.url = String(s.url || "").trim(); });
+    if (state.steps.some((s) => s.t === "webhook" && !HOOK_OK(s.url))) { if (loud) window.alert(T.sHookBad); return Promise.resolve(false); }
+    if (state.steps.some((s) => s.t === "buy" && !BUY_RE.test(s.url))) { if (loud) { const okEl = $("#ed-ok"); if (okEl) { okEl.textContent = T.sBuyBad; } window.alert(T.sBuyBad); } return Promise.resolve(false); }
+    return A.rest("/rest/v1/flows?id=eq." + state.edit.id, {
+      method: "PATCH",
+      body: JSON.stringify({ name: name, status: fstatus, nodes: state.steps, updated_at: new Date().toISOString() })
+    }).then(() => {
+      state.edit.name = name;
+      state.edit.status = fstatus;
+      state.edit.nodes = state.steps;
+      state.pendingStatus = "";
+      return true;
+    });
+  }
+
+  function markDirty() {
+    if (!state.edit) return;
+    state.auto.dirty = true;
+    clearTimeout(state.auto.timer);
+    state.auto.timer = setTimeout(autoSave, 1600);
+  }
+
+  function autoSave() {
+    if (!state.edit || state.auto.busy) return;
+    state.auto.busy = true;
+    state.auto.dirty = false;
+    const ok = $("#ed-ok");
+    if (ok) ok.textContent = T.sAutoSaving;
+    Promise.resolve(persistFlow(false)).then((saved) => {
+      state.auto.busy = false;
+      if (ok && state.edit) ok.textContent = saved ? T.sAutoSaved : T.sAutoFix;
+      if (state.auto.dirty) markDirty();
+    }).catch(() => {
+      state.auto.busy = false;
+      state.auto.dirty = true;
+      if (ok && state.edit) ok.textContent = T.sAutoErr;
+    });
+  }
+
+  function flushEditor() {
+    clearTimeout(state.auto.timer);
+    if (state.auto.dirty && state.edit) { state.auto.dirty = false; persistFlow(false).catch(() => {}); }
   }
 
   function testOverlay() {
@@ -2744,6 +2799,16 @@
         const verdict = contactMatchesCond(s.text, sampleContact());
         const mark = verdict == null ? "" : verdict ? " ✓" : " ✗";
         body.insertAdjacentHTML("beforeend", `<div class="tmodal-sys">❓ ${esc(s.text || "")}${mark}</div>`);
+        if (verdict === false) {
+          const sk = Math.max(0, Math.min(20, parseInt(s.elseSkip, 10) || 0));
+          if (sk > 0 && i + sk < state.steps.length) {
+            body.insertAdjacentHTML("beforeend", `<div class="tmodal-sys">↷ ${esc(T.sCondSkipN.replace("{n}", sk))}</div>`);
+            i += sk;
+          } else {
+            body.insertAdjacentHTML("beforeend", `<div class="tmodal-sys">■ ${esc(T.sCondStopped)}</div>`);
+            i = state.steps.length;
+          }
+        }
       } else if (s.t === "webhook") {
         body.insertAdjacentHTML("beforeend", `<div class="tmodal-sys">🔗 ${esc(s.url || "")}</div>`);
       } else if (s.t === "buy") {
