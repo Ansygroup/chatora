@@ -839,8 +839,97 @@ async function leadNotify(request, env, url) {
   return Response.json({ ok: true, queued: false });
 }
 
+
+/* ---- Email channel (inbound via Cloudflare Email Routing) ---- */
+function mimeHdr(raw, name) {
+  const m = new RegExp('^' + name + ':\\s*(.*?)(?=\\r?\\n[^ \\t]|$)', 'ims').exec(raw);
+  return m ? m[1].replace(/\r?\n[ \t]+/g, ' ').trim() : '';
+}
+function rfc2047(s) {
+  return String(s || '').replace(/=\?([^?]+)\?([bBqQ])\?([^?]*)\?=/g, (all, cs, enc, txt) => {
+    try {
+      let bytes;
+      if (enc.toUpperCase() === 'B') bytes = Uint8Array.from(atob(txt.replace(/\s+/g, '')), (c) => c.charCodeAt(0));
+      else bytes = Uint8Array.from(txt.replace(/_/g, ' ').replace(/=([0-9A-Fa-f]{2})/g, (m, h) => String.fromCharCode(parseInt(h, 16))), (c) => c.charCodeAt(0));
+      return new TextDecoder(cs.toLowerCase() === 'utf-8' ? 'utf-8' : 'utf-8').decode(bytes);
+    } catch (e) { return all; }
+  });
+}
+function qpDecode(s, cs) {
+  try {
+    const bytes = Uint8Array.from(String(s).replace(/=\r?\n/g, '').replace(/=([0-9A-Fa-f]{2})/g, (m, h) => String.fromCharCode(parseInt(h, 16))), (c) => c.charCodeAt(0));
+    return new TextDecoder(/^utf-?8$/i.test(cs || '') ? 'utf-8' : 'utf-8').decode(bytes);
+  } catch (e) { return s; }
+}
+function b64Decode(s) {
+  try { return new TextDecoder('utf-8').decode(Uint8Array.from(atob(String(s).replace(/\s+/g, '')), (c) => c.charCodeAt(0))); } catch (e) { return ''; }
+}
+function emailBodyText(raw) {
+  const ct = mimeHdr(raw, 'Content-Type');
+  const head = raw.slice(0, 4096);
+  const sep = raw.indexOf('\r\n\r\n') > -1 ? '\r\n\r\n' : '\n\n';
+  const bi = raw.indexOf(sep);
+  let body = bi > -1 ? raw.slice(bi + sep.length) : '';
+  const bm = /boundary="?([^";]+)"?/i.exec(ct);
+  if (bm) {
+    const bnd = bm[1];
+    const parts = body.split('--' + bnd);
+    let chosen = '';
+    for (const part of parts) {
+      if (/Content-Type:\s*text\/plain/i.test(part) && !/Content-Disposition:\s*attachment/i.test(part)) { chosen = part; break; }
+    }
+    if (!chosen) for (const part of parts) { if (/Content-Type:\s*text\/html/i.test(part) && !/Content-Disposition:\s*attachment/i.test(part)) { chosen = part; break; } }
+    if (chosen) {
+      const pc = mimeHdr(chosen, 'Content-Type');
+      const pe = (mimeHdr(chosen, 'Content-Transfer-Encoding') || '').toLowerCase();
+      const psep = chosen.indexOf('\r\n\r\n') > -1 ? '\r\n\r\n' : '\n\n';
+      const pb = chosen.slice(chosen.indexOf(psep) + psep.length);
+      const cm = /charset="?([^";]+)"?/i.exec(pc);
+      const cs = cm ? cm[1] : 'utf-8';
+      let out = pe.indexOf('base64') > -1 ? b64Decode(pb) : (pe.indexOf('quoted-printable') > -1 ? qpDecode(pb, cs) : pb);
+      if (/text\/html/i.test(pc)) out = out.replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
+      return out.replace(/\s+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+    }
+    return '';
+  }
+  const enc = (mimeHdr(raw, 'Content-Transfer-Encoding') || '').toLowerCase();
+  const cm = /charset="?([^";]+)"?/i.exec(ct);
+  const cs = cm ? cm[1] : 'utf-8';
+  if (enc.indexOf('base64') > -1) return b64Decode(body).trim();
+  if (enc.indexOf('quoted-printable') > -1) return qpDecode(body, cs).trim();
+  if (/text\/html/i.test(ct)) return body.replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').trim();
+  return body.trim();
+}
+async function emailInbound(message, env) {
+  const to = String(message.to || '').toLowerCase();
+  const tm = /^([0-9a-f-]{36})@chatora\.us\.ci$/.exec(to);
+  if (!tm) { try { message.setReject('Unknown recipient'); } catch (e) {} return; }
+  const connId = tm[1];
+  const rawFrom = String(message.from || '');
+  const fm = /^\s*"?([^"<]*)"?\s*<([^>]+)>\s*$/.exec(rawFrom);
+  const fromName = rfc2047(fm ? fm[1].trim() : '').slice(0, 80);
+  const fromAddr = String((fm ? fm[2] : rawFrom) || '').trim().toLowerCase().slice(0, 200);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(fromAddr)) { try { message.setReject('Bad sender'); } catch (e) {} return; }
+  let raw = '';
+  try { raw = await new Response(message.raw).text(); } catch (e) { console.log('email raw', String(e)); return; }
+  if (raw.length > 300000) raw = raw.slice(0, 300000);
+  const subject = rfc2047(mimeHdr(raw, 'Subject')).slice(0, 200);
+  const msgId = mimeHdr(raw, 'Message-ID').slice(0, 200) || (fromAddr + '|' + Date.now());
+  const text = (emailBodyText(raw) || subject || '(no text)').slice(0, 4000);
+  const key = env && env.AUTOMATION_SECRET;
+  if (!key) { console.log('email: AUTOMATION_SECRET not set'); return; }
+  let ok = false;
+  try {
+    const r = await sbRpc('email_inbound', { p_key: key, p_conn: connId, p_from: fromAddr, p_name: fromName, p_subject: subject, p_text: text, p_msgid: msgId });
+    ok = !!(r && r.ok);
+  } catch (e) { console.log('email_inbound', String(e)); }
+  if (!ok) { console.log('email_inbound failed for ' + connId); return; }
+  try { await inboundRun(env, 'email', connId, fromAddr, msgId, (subject ? subject + '\n' : '') + text); } catch (e) { console.log('email inboundRun', String(e)); }
+}
+
 export default {
   async scheduled(event, env, ctx) { ctx.waitUntil(automationTick(env)); },
+  async email(message, env, ctx) { ctx.waitUntil(emailInbound(message, env)); },
   async fetch(request, env) {
     const url = new URL(request.url);
     if (url.pathname.indexOf('/api/v1') === 0) return apiV1(request, url);
