@@ -496,7 +496,8 @@
     if (emc) emc.addEventListener("click", async () => {
       emc.disabled = true;
       try {
-        await A.rest("/rest/v1/channel_connections", { method: "POST", body: JSON.stringify({ workspace_id: state.ws.id, provider: "email", display_name: "Email", status: "connected" }) });
+        const emid = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(16).slice(2));
+        await A.rest("/rest/v1/channel_connections", { method: "POST", body: JSON.stringify({ id: emid, workspace_id: state.ws.id, provider: "email", display_name: "Email", external_account_id: emid + "@chatora.us.ci", status: "connected" }) });
         await loadChannels(); paint();
       } catch (e) {
         emc.disabled = false;
