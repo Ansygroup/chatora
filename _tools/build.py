@@ -455,7 +455,7 @@ FAQ_INDEX = {
         {"@type": "Question", "name": "Will automating my Instagram get my account banned?",
          "acceptedAnswer": {"@type": "Answer", "text": "Chatora does not automate Instagram in the current preview. No channel provider is connected. Any future integration must use an approved provider and follow the platform’s current policies; no account-safety guarantee is made."}},
         {"@type": "Question", "name": "Do I need to know how to code?",
-         "acceptedAnswer": {"@type": "Answer", "text": "No coding is needed to explore the current draft editor, CSV tools or local flow simulation. AI-generated flows, a public API and webhooks are not available in this preview."}},
+         "acceptedAnswer": {"@type": "Answer", "text": "No coding is needed to explore the current draft editor, CSV tools or local flow simulation. A public REST API with scoped keys, outgoing webhooks and an MCP endpoint are live; AI-generated flows are not available in this preview."}},
         {"@type": "Question", "name": "What counts as an \"active contact\"?",
          "acceptedAnswer": {"@type": "Answer", "text": "Chatora has not published contact-based plan limits or billing rules. The preview has no subscription billing; see the pricing page for current availability."}},
         {"@type": "Question", "name": "Does the AI speak Arabic?",
