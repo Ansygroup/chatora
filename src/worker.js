@@ -854,13 +854,20 @@ export default {
     if (url.pathname === '/favicon.ico') return Response.redirect(url.origin + '/assets/img/favicon.svg', 301);
     if (url.pathname === '/og.png') return Response.redirect(url.origin + '/assets/img/og.jpg', 301);
     if (url.pathname === '/quiz.html') return Response.redirect(url.origin + '/pricing.html#p11-quiz', 301);
+    { const cmpr = /^(?:\/(ar|de|es|fr|pt))?\/compare\/?$/.exec(url.pathname); if (cmpr) return Response.redirect(url.origin + (cmpr[1] ? '/' + cmpr[1] : '') + '/compare.html', 301); }
     if (url.pathname === '/manifest.json' || url.pathname === '/site.webmanifest') return new Response(JSON.stringify({name:'Chatora',short_name:'Chatora',start_url:'/',display:'standalone',background_color:'#06060c',theme_color:'#06060c',icons:[{src:'/assets/img/favicon.svg',sizes:'any',type:'image/svg+xml'}]}), {headers:{'content-type':'application/manifest+json','cache-control':'public, max-age=3600'}});
     if (url.pathname === '/api/lead') return leadNotify(request, env, url);
     if (url.pathname !== '/api/chat') {
-      const res = await env.ASSETS.fetch(request);
+      let res = await env.ASSETS.fetch(request);
+      let nf404 = false;
+      if (request.method === 'GET' && res.status === 404 && /text\/html/.test(request.headers.get('accept') || '')) {
+        const lm404 = /^\/(ar|de|es|fr|pt)\//.exec(url.pathname);
+        const nf = await env.ASSETS.fetch(new Request(url.origin + (lm404 ? '/' + lm404[1] : '') + '/404.html', request));
+        if (nf.status === 200) { res = nf; nf404 = true; }
+      }
       const ct = res.headers.get('content-type') || '';
       if (request.method === 'GET' && res.status === 200 && /^\/assets\/js\/(i18n\.(ar|de|es|fr|pt)|i18n-pages)\.js$/.test(url.pathname)) { const hj = new Headers(res.headers); hj.delete('content-length'); hj.delete('etag'); hj.delete('content-encoding'); { let jt = await res.text(); const jm = /i18n\.(ar|de|es|fr|pt)\.js$/.exec(url.pathname); if (jm) jt = sweepFix(jt, jm[1]); return new Response(jm && jm[1] === 'ar' ? arFix(jt) : (jm ? jt : arFix(jt)), { status: 200, headers: hj }); } }
-      if (request.method !== 'GET' || res.status !== 200 || !/(text\/html|xml|text\/plain|json)/i.test(ct)) return res;
+      if (request.method !== 'GET' || (res.status !== 200 && !nf404) || !/(text\/html|xml|text\/plain|json)/i.test(ct)) return res;
       let text = await res.text();
       const isContact = /\/contact(\.html)?$/.test(url.pathname);
       if (isContact) text = text.split('hello@chatora.ansygroup.com').join('hello@CHATORA-EMAIL');
@@ -895,7 +902,7 @@ export default {
       if (text.includes('</head>')) text = text.replace('</head>', '<style id="p12x">.consent{left:12px!important;right:auto!important;margin:0!important;max-width:300px;padding:10px 12px!important;border-radius:12px!important;gap:8px 10px!important;bottom:12px!important}.consent-text{font-size:12.5px!important;flex:1 1 100%!important;line-height:1.4!important}.consent-actions{gap:6px!important}.consent-actions .btn{padding:6px 12px!important;font-size:12.5px!important;min-height:0!important}@media(min-width:900px){.hero-copy h1{font-size:clamp(2.2rem,4.3vw,3.9rem)!important;line-height:1.05!important;max-width:100%}.hero-copy{position:relative;z-index:2;max-width:52%}.hero-visual{z-index:1}}@media(max-width:700px){.cmp-wrap,.table-wrap,table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}}@media(max-width:520px){.consent{max-width:calc(100% - 150px)!important}.consent-actions{width:auto!important}}</style></head>');
       const h = new Headers(res.headers);
       h.delete('content-length'); h.delete('etag'); h.delete('content-encoding');
-      return new Response(text, { status: res.status, headers: h });
+      return new Response(text, { status: nf404 ? 404 : res.status, headers: h });
     }
     if (request.method !== 'POST') return new Response('Method not allowed', { status: 405 });
     const origin = request.headers.get('origin');
