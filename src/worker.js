@@ -148,6 +148,10 @@ async function aiAnswer(env, cfg, msgs) {
   return { reply: reply, fallback: fallback };
 }
 
+function normVisitor(v) {
+  const t = String(v || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 32);
+  return t ? t.padEnd(8, '0') : '';
+}
 async function widget(request, env, url) {
   const origin = request.headers.get('origin');
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: wcors(origin) });
@@ -166,7 +170,8 @@ async function widget(request, env, url) {
     if (request.method !== 'GET') return wjson({ error: 'method' }, 405, origin);
     const key = url.searchParams.get('key') || '';
     if (!KEYRE.test(key)) return wjson({ error: 'bad key' }, 404, origin);
-    const visitor = String(url.searchParams.get('visitor') || '');
+    const visitor = normVisitor(url.searchParams.get('visitor'));
+    if (!visitor) return wjson({ error: 'bad visitor' }, 400, origin);
     const since = String(url.searchParams.get('since') || '');
     if (wlimited('p' + rip, 120, 600000)) return wjson({ error: 'rate' }, 429, origin);
     let cfg; try { cfg = await sbRpc('widget_config', { p_key: key }); } catch { return wjson({ error: 'unavailable' }, 502, origin); }
@@ -185,7 +190,8 @@ async function widget(request, env, url) {
   } catch { return wjson({ error: 'bad json' }, 400, origin); }
   const key = String(body.key || '');
   if (!KEYRE.test(key)) return wjson({ error: 'bad key' }, 404, origin);
-  const visitor = String(body.visitor || '');
+  const visitor = normVisitor(body.visitor);
+  if (!visitor) return wjson({ error: 'bad visitor' }, 400, origin);
   if (wlimited(rip + key, 20, 600000) || wlimited('k' + key, 300, 3600000) || await wlimitedEdge(rip + key, 20))
     return wjson({ reply: 'Too many messages for now. Please try again later.' }, 429, origin);
   let cfg; try { cfg = await sbRpc('widget_config', { p_key: key }); } catch { return wjson({ error: 'unavailable' }, 502, origin); }
