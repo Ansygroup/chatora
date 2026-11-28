@@ -467,7 +467,7 @@
     wrap.innerHTML = `<div class="tmodal" id="tgmodal" role="dialog" aria-modal="true" aria-label="${esc(CHS.tgTitle)}">` +
       `<div class="tmodal-card"><header style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)"><b>${esc(CHS.tgTitle)}</b>` +
       `<button type="button" class="icon-btn" id="tgmodal-x" aria-label="${esc(CHS.tgCancel || "Close")}">\u2715</button></header>` +
-      `<div class="tmodal-body" style="padding:16px"><ol class="tg-steps"><li>${esc(CHS.tgHow1)}</li><li>${esc(CHS.tgHow2)}</li></ol>` +
+      `<div class="tmodal-body" style="padding:16px"><ol class="tg-steps"><li>${esc(CHS.tgHow1).replace("@BotFather", '<a href="https://t.me/BotFather" target="_blank" rel="noopener noreferrer" dir="ltr">@BotFather</a>')}</li><li>${esc(CHS.tgHow2)}</li></ol>` +
       `<form id="tg-form"><input id="tg-token" class="dstep-in" style="width:100%" dir="ltr" autocomplete="off" spellcheck="false" placeholder="${esc(CHS.tgPh)}" aria-label="Bot token">` +
       `<div class="dash-inline" style="margin-top:12px"><button type="submit" class="btn btn-primary btn-sm" id="tg-go">${esc(CHS.tgGo)}</button>` +
       `<span class="dash-note" id="tg-msg" role="status"></span></div></form></div></div></div>`;
@@ -508,7 +508,7 @@
     wrap.innerHTML = `<div class="tmodal" id="mtmodal" role="dialog" aria-modal="true" aria-label="${esc(CHS.mtTitle + " " + chLabel(k))}">` +
       `<div class="tmodal-card"><header style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)"><b>${esc(CHS.mtTitle + " " + chLabel(k))}</b>` +
       `<button type="button" class="icon-btn" id="mtmodal-x" aria-label="Close">\u2715</button></header>` +
-      `<div class="tmodal-body" style="padding:16px"><p class="dash-note">${esc(CHS.mtHow)}</p>` +
+      `<div class="tmodal-body" style="padding:16px"><p class="dash-note">${esc(CHS.mtHow).replace("developers.facebook.com", '<a href="https://developers.facebook.com/apps" target="_blank" rel="noopener noreferrer" dir="ltr">developers.facebook.com</a>')}</p>` +
       `<form id="mt-form">${inp("mt-acc", CHS["mtAcc_" + k])}${inp("mt-tok", CHS.mtTok)}${inp("mt-sec", CHS.mtSec)}` +
       `<label style="display:flex;gap:8px;align-items:center;margin-top:12px"><input type="checkbox" id="mt-test"><span>${esc(CHS.mtTest)}</span></label>` +
       `<div class="dash-inline" style="margin-top:12px"><button type="submit" class="btn btn-primary btn-sm" id="mt-go">${esc(CHS.connect)}</button>` +
